@@ -46,14 +46,18 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: {{ $app.port }}
-{{/*          resources:*/}}
-{{/*            requests:*/}}
-{{/*              cpu: {{ $app.cpuRequests }}*/}}
-{{/*              memory: {{ $app.memoryRequests }}*/}}
-{{/*            limits:*/}}
-{{/*              cpu: {{ $app.cpuLimits }}*/}}
-{{/*              memory: {{ $app.memoryLimits }}*/}}
+          {{- if $app.memoryLimits }}
+          resources:
+            requests:
+              memory: {{ $app.memoryRequests }}
+            limits:
+              memory: {{ $app.memoryLimits }}
+          {{- end }}
           env:
+            {{- if $app.javaOptions }}
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ $app.javaOptions | quote }}
+            {{- end }}
             {{- if $app.valkey }}
             - name: VALKEY_PASSWORD
               valueFrom:
