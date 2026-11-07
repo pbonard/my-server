@@ -204,10 +204,10 @@ apps:
     valkey: false
     opensearch: true
     framework: spring-boot
-  #    cpuRequests: "0.3"
-  #    memoryRequests: "100Mi"
-  #    cpuLimits: "0.4"
-  #    memoryLimits: "100Mi"
+    # without -Xmx the default max heap is a quarter of the node, about 7 GiB
+    javaOptions: "-Xmx192m -XX:+ExitOnOutOfMemoryError"
+    memoryRequests: "384Mi"
+    memoryLimits: "448Mi"
   turn:
     image: "backend/turn:fba1f73"
     port: 3478
