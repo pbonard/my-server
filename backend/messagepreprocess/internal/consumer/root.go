@@ -179,7 +179,7 @@ func (c *Consumer) distinguishMessage(
 			"payload.Value", message.Value)
 		return nil
 	}
-	err = c.service.ManageMessage(ctx, uuid.UUID(p.Id), uuid.UUID(p.FromId), p.ToIdType, uuid.UUID(p.ToId), p.ContentType, p.Contents)
+	err = c.service.ManageMessage(ctx, common.AppOrDefault(p.App), uuid.UUID(p.Id), uuid.UUID(p.FromId), p.ToIdType, uuid.UUID(p.ToId), p.ContentType, p.Contents, p.NoPush)
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}
 		for _, h := range message.Headers {

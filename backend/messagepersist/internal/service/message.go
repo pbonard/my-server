@@ -12,6 +12,7 @@ import (
 
 func (s *service) PersistMessage(
 	ctx context.Context,
+	app string,
 	id uuid.UUID,
 	toIds [][]byte,
 	roomId, fromId uuid.UUID,
@@ -26,7 +27,7 @@ func (s *service) PersistMessage(
 		go func() {
 			defer wg.Done()
 			if bytes.Equal(tid, roomId[:]) {
-				err := s.repository.SaveMessage(ctx, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(fromId), contentType, contents)
+				err := s.repository.SaveMessage(ctx, app, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(fromId), contentType, contents)
 				if err != nil {
 					em.Lock()
 					es = append(es, err)
@@ -34,7 +35,7 @@ func (s *service) PersistMessage(
 				}
 				return
 			}
-			err := s.repository.SaveMessage(ctx, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(roomId), contentType, contents)
+			err := s.repository.SaveMessage(ctx, app, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(roomId), contentType, contents)
 			if err != nil {
 				em.Lock()
 				es = append(es, err)

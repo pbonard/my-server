@@ -7,6 +7,8 @@ type SendMessagingRequest struct {
 	ToId        uuid.UUID `json:"toId"`
 	ContentType string    `json:"contentType"`
 	Contents    []string  `json:"contents"`
+	// true from a client whose users aren't pushed about messages, the holidayfriend web app. the mobile app leaves it out
+	NoPush bool `json:"noPush"`
 }
 
 type MessagingResponse struct {

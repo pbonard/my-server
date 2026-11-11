@@ -45,7 +45,7 @@ func TestManageMessage(t *testing.T) {
 			name: "personal text, receiver did not block sender", toIdType: "personal", contentType: "text",
 			contents: []string{"hi"},
 			expect: func(r *MockRepository_Expecter) {
-				r.IsBlocked(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
+				r.IsBlocked(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
 			},
 			wantToIds: []uuid.UUID{fromId, toId}, wantContents: []string{"hi"},
 		},
@@ -53,7 +53,7 @@ func TestManageMessage(t *testing.T) {
 			name: "personal text, receiver blocked sender", toIdType: "personal", contentType: "text",
 			contents: []string{"hi"},
 			expect: func(r *MockRepository_Expecter) {
-				r.IsBlocked(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(true, nil)
+				r.IsBlocked(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(true, nil)
 			},
 			wantToIds: []uuid.UUID{fromId}, wantContents: []string{"hi"},
 		},
@@ -61,7 +61,7 @@ func TestManageMessage(t *testing.T) {
 			name: "personal text, block lookup fails", toIdType: "personal", contentType: "text",
 			contents: []string{"hi"},
 			expect: func(r *MockRepository_Expecter) {
-				r.IsBlocked(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(false, errRepo)
+				r.IsBlocked(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(false, errRepo)
 			},
 			wantErr: errRepo,
 		},
@@ -69,7 +69,7 @@ func TestManageMessage(t *testing.T) {
 			name: "personal block", toIdType: "personal", contentType: "block",
 			contents: []string{},
 			expect: func(r *MockRepository_Expecter) {
-				r.AddBlock(mock.Anything, gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
+				r.AddBlock(mock.Anything, "production", gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
 			},
 			wantToIds: []uuid.UUID{fromId}, wantContents: []string{},
 		},
@@ -77,7 +77,7 @@ func TestManageMessage(t *testing.T) {
 			name: "personal unblock", toIdType: "personal", contentType: "unblock",
 			contents: []string{},
 			expect: func(r *MockRepository_Expecter) {
-				r.RemoveBlock(mock.Anything, gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
+				r.RemoveBlock(mock.Anything, "production", gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
 			},
 			wantToIds: []uuid.UUID{fromId}, wantContents: []string{},
 		},
@@ -86,7 +86,7 @@ func TestManageMessage(t *testing.T) {
 			name: "group text goes to participants", toIdType: "group", contentType: "text",
 			contents: []string{"hi"},
 			expect: func(r *MockRepository_Expecter) {
-				r.FindParticipantIds(mock.Anything, gocql.UUID(toId)).
+				r.FindParticipantIds(mock.Anything, "production", gocql.UUID(toId)).
 					Return([]gocql.UUID{gocql.UUID(member1), gocql.UUID(member2)}, nil)
 			},
 			wantToIds: []uuid.UUID{member1, member2}, wantContents: []string{"hi"},
@@ -95,7 +95,7 @@ func TestManageMessage(t *testing.T) {
 			name: "group text, room not found is not an error", toIdType: "group", contentType: "text",
 			contents: []string{"hi"},
 			expect: func(r *MockRepository_Expecter) {
-				r.FindParticipantIds(mock.Anything, gocql.UUID(toId)).Return(nil, gocql.ErrNotFound)
+				r.FindParticipantIds(mock.Anything, "production", gocql.UUID(toId)).Return(nil, gocql.ErrNotFound)
 			},
 			wantToIds: nil, wantContents: []string{"hi"},
 		},
@@ -103,7 +103,7 @@ func TestManageMessage(t *testing.T) {
 			name: "group create makes the room and clears contents", toIdType: "group", contentType: "create",
 			contents: []string{"Seoul"},
 			expect: func(r *MockRepository_Expecter) {
-				r.CreateChatRoom(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId), "Seoul").Return(nil)
+				r.CreateChatRoom(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId), "Seoul").Return(nil)
 			},
 			wantToIds: []uuid.UUID{fromId}, wantContents: []string{},
 		},
@@ -111,7 +111,7 @@ func TestManageMessage(t *testing.T) {
 			name: "group create fails", toIdType: "group", contentType: "create",
 			contents: []string{"Seoul"},
 			expect: func(r *MockRepository_Expecter) {
-				r.CreateChatRoom(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId), "Seoul").Return(errRepo)
+				r.CreateChatRoom(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId), "Seoul").Return(errRepo)
 			},
 			wantErr: errRepo,
 		},
@@ -119,9 +119,9 @@ func TestManageMessage(t *testing.T) {
 			name: "group participate adds member and notifies participants and member", toIdType: "group",
 			contentType: "participate", contents: []string{},
 			expect: func(r *MockRepository_Expecter) {
-				r.FindParticipantIds(mock.Anything, gocql.UUID(toId)).
+				r.FindParticipantIds(mock.Anything, "production", gocql.UUID(toId)).
 					Return([]gocql.UUID{gocql.UUID(member1)}, nil)
-				r.AddParticipantId(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(nil)
+				r.AddParticipantId(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(nil)
 			},
 			wantToIds: []uuid.UUID{member1, fromId}, wantContents: []string{},
 		},
@@ -129,7 +129,7 @@ func TestManageMessage(t *testing.T) {
 			name: "group quit removes member", toIdType: "group", contentType: "quit",
 			contents: []string{},
 			expect: func(r *MockRepository_Expecter) {
-				r.RemoveParticipantId(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(nil)
+				r.RemoveParticipantId(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(nil)
 			},
 			wantToIds: []uuid.UUID{fromId}, wantContents: []string{},
 		},
@@ -139,9 +139,9 @@ func TestManageMessage(t *testing.T) {
 			contents: []string{file1.String(), file2.String()},
 			expect: func(r *MockRepository_Expecter) {
 				participants := []gocql.UUID{gocql.UUID(member1), gocql.UUID(member2)}
-				r.FindParticipantIds(mock.Anything, gocql.UUID(toId)).Return(participants, nil)
-				r.SaveIdsByFileName(mock.Anything, participants, gocql.UUID(file1)).Return(nil).Once()
-				r.SaveIdsByFileName(mock.Anything, participants, gocql.UUID(file2)).Return(nil).Once()
+				r.FindParticipantIds(mock.Anything, "production", gocql.UUID(toId)).Return(participants, nil)
+				r.SaveIdsByFileName(mock.Anything, "production", participants, gocql.UUID(file1)).Return(nil).Once()
+				r.SaveIdsByFileName(mock.Anything, "production", participants, gocql.UUID(file2)).Return(nil).Once()
 			},
 			wantToIds: []uuid.UUID{member1, member2}, wantContents: []string{file1.String(), file2.String()},
 		},
@@ -151,8 +151,8 @@ func TestManageMessage(t *testing.T) {
 			contents: []string{"not-a-uuid", file1.String()},
 			expect: func(r *MockRepository_Expecter) {
 				participants := []gocql.UUID{gocql.UUID(member1)}
-				r.FindParticipantIds(mock.Anything, gocql.UUID(toId)).Return(participants, nil)
-				r.SaveIdsByFileName(mock.Anything, participants, gocql.UUID(file1)).Return(nil).Once()
+				r.FindParticipantIds(mock.Anything, "production", gocql.UUID(toId)).Return(participants, nil)
+				r.SaveIdsByFileName(mock.Anything, "production", participants, gocql.UUID(file1)).Return(nil).Once()
 			},
 			wantErr: errAny,
 		},
@@ -172,7 +172,7 @@ func TestManageMessage(t *testing.T) {
 			}
 
 			err := service.NewService(repo, producer).
-				ManageMessage(context.Background(), msgId, fromId, tt.toIdType, toId, tt.contentType, tt.contents)
+				ManageMessage(context.Background(), "production", msgId, fromId, tt.toIdType, toId, tt.contentType, tt.contents, false)
 
 			if tt.wantErr != nil {
 				require.Error(t, err)
@@ -199,13 +199,32 @@ func TestManageMessage_sendFailureIsReturned(t *testing.T) {
 	repo := NewMockRepository(t)
 	producer := mocks.NewMockSyncProducer(t)
 	errKafka := errors.New("kafka down")
-	repo.EXPECT().IsBlocked(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
+	repo.EXPECT().IsBlocked(mock.Anything, "production", gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
 	producer.EXPECT().Commit("prepared-message", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
 
 	err := service.NewService(repo, producer).
-		ManageMessage(context.Background(), msgId, fromId, "personal", toId, "text", []string{"hi"})
+		ManageMessage(context.Background(), "production", msgId, fromId, "personal", toId, "text", []string{"hi"}, false)
 
 	assert.ErrorIs(t, err, errKafka)
+}
+
+// a holidayfriend message: read in its keyspace, and handed on with its app and without a push
+func TestManageMessage_appAndNoPushAreCarried(t *testing.T) {
+	repo := NewMockRepository(t)
+	producer := mocks.NewMockSyncProducer(t)
+	repo.EXPECT().IsBlocked(mock.Anything, "holidayfriend", gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
+	var pushed []byte
+	producer.EXPECT().Commit("prepared-message", mock.Anything, mock.Anything, mock.Anything).
+		Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil)
+
+	err := service.NewService(repo, producer).
+		ManageMessage(context.Background(), "holidayfriend", msgId, fromId, "personal", toId, "text", []string{"hi"}, true)
+
+	require.NoError(t, err)
+	var msg common.PreparedMessage
+	require.NoError(t, json.Unmarshal(pushed, &msg))
+	assert.True(t, msg.NoPush)
+	assert.Equal(t, "holidayfriend", msg.App)
 }
 
 // errAny marks a case that must fail without caring which error it is

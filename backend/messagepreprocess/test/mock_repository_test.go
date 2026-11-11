@@ -48,16 +48,16 @@ func (_m *MockRepository) EXPECT() *MockRepository_Expecter {
 }
 
 // AddBlock provides a mock function for the type MockRepository
-func (_mock *MockRepository) AddBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error {
-	ret := _mock.Called(ctx, blockerId, blockedId)
+func (_mock *MockRepository) AddBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error {
+	ret := _mock.Called(ctx, app, blockerId, blockedId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddBlock")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r0 = returnFunc(ctx, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, app, blockerId, blockedId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -71,30 +71,36 @@ type MockRepository_AddBlock_Call struct {
 
 // AddBlock is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - blockerId gocql.UUID
 //   - blockedId gocql.UUID
-func (_e *MockRepository_Expecter) AddBlock(ctx any, blockerId any, blockedId any) *MockRepository_AddBlock_Call {
-	return &MockRepository_AddBlock_Call{Call: _e.mock.On("AddBlock", ctx, blockerId, blockedId)}
+func (_e *MockRepository_Expecter) AddBlock(ctx any, app any, blockerId any, blockedId any) *MockRepository_AddBlock_Call {
+	return &MockRepository_AddBlock_Call{Call: _e.mock.On("AddBlock", ctx, app, blockerId, blockedId)}
 }
 
-func (_c *MockRepository_AddBlock_Call) Run(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_AddBlock_Call {
+func (_c *MockRepository_AddBlock_Call) Run(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_AddBlock_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -105,22 +111,22 @@ func (_c *MockRepository_AddBlock_Call) Return(err error) *MockRepository_AddBlo
 	return _c
 }
 
-func (_c *MockRepository_AddBlock_Call) RunAndReturn(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error) *MockRepository_AddBlock_Call {
+func (_c *MockRepository_AddBlock_Call) RunAndReturn(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error) *MockRepository_AddBlock_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // AddParticipantId provides a mock function for the type MockRepository
-func (_mock *MockRepository) AddParticipantId(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error {
-	ret := _mock.Called(ctx, roomId, participantId)
+func (_mock *MockRepository) AddParticipantId(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error {
+	ret := _mock.Called(ctx, app, roomId, participantId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddParticipantId")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r0 = returnFunc(ctx, roomId, participantId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, app, roomId, participantId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -134,30 +140,36 @@ type MockRepository_AddParticipantId_Call struct {
 
 // AddParticipantId is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - roomId gocql.UUID
 //   - participantId gocql.UUID
-func (_e *MockRepository_Expecter) AddParticipantId(ctx any, roomId any, participantId any) *MockRepository_AddParticipantId_Call {
-	return &MockRepository_AddParticipantId_Call{Call: _e.mock.On("AddParticipantId", ctx, roomId, participantId)}
+func (_e *MockRepository_Expecter) AddParticipantId(ctx any, app any, roomId any, participantId any) *MockRepository_AddParticipantId_Call {
+	return &MockRepository_AddParticipantId_Call{Call: _e.mock.On("AddParticipantId", ctx, app, roomId, participantId)}
 }
 
-func (_c *MockRepository_AddParticipantId_Call) Run(run func(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID)) *MockRepository_AddParticipantId_Call {
+func (_c *MockRepository_AddParticipantId_Call) Run(run func(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID)) *MockRepository_AddParticipantId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -168,22 +180,22 @@ func (_c *MockRepository_AddParticipantId_Call) Return(err error) *MockRepositor
 	return _c
 }
 
-func (_c *MockRepository_AddParticipantId_Call) RunAndReturn(run func(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error) *MockRepository_AddParticipantId_Call {
+func (_c *MockRepository_AddParticipantId_Call) RunAndReturn(run func(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error) *MockRepository_AddParticipantId_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CreateChatRoom provides a mock function for the type MockRepository
-func (_mock *MockRepository) CreateChatRoom(ctx context.Context, roomId gocql.UUID, memberId gocql.UUID, roomName string) error {
-	ret := _mock.Called(ctx, roomId, memberId, roomName)
+func (_mock *MockRepository) CreateChatRoom(ctx context.Context, app string, roomId gocql.UUID, memberId gocql.UUID, roomName string) error {
+	ret := _mock.Called(ctx, app, roomId, memberId, roomName)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateChatRoom")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, string) error); ok {
-		r0 = returnFunc(ctx, roomId, memberId, roomName)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID, string) error); ok {
+		r0 = returnFunc(ctx, app, roomId, memberId, roomName)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -197,36 +209,42 @@ type MockRepository_CreateChatRoom_Call struct {
 
 // CreateChatRoom is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - roomId gocql.UUID
 //   - memberId gocql.UUID
 //   - roomName string
-func (_e *MockRepository_Expecter) CreateChatRoom(ctx any, roomId any, memberId any, roomName any) *MockRepository_CreateChatRoom_Call {
-	return &MockRepository_CreateChatRoom_Call{Call: _e.mock.On("CreateChatRoom", ctx, roomId, memberId, roomName)}
+func (_e *MockRepository_Expecter) CreateChatRoom(ctx any, app any, roomId any, memberId any, roomName any) *MockRepository_CreateChatRoom_Call {
+	return &MockRepository_CreateChatRoom_Call{Call: _e.mock.On("CreateChatRoom", ctx, app, roomId, memberId, roomName)}
 }
 
-func (_c *MockRepository_CreateChatRoom_Call) Run(run func(ctx context.Context, roomId gocql.UUID, memberId gocql.UUID, roomName string)) *MockRepository_CreateChatRoom_Call {
+func (_c *MockRepository_CreateChatRoom_Call) Run(run func(ctx context.Context, app string, roomId gocql.UUID, memberId gocql.UUID, roomName string)) *MockRepository_CreateChatRoom_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
-		var arg3 string
+		var arg3 gocql.UUID
 		if args[3] != nil {
-			arg3 = args[3].(string)
+			arg3 = args[3].(gocql.UUID)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -237,14 +255,14 @@ func (_c *MockRepository_CreateChatRoom_Call) Return(err error) *MockRepository_
 	return _c
 }
 
-func (_c *MockRepository_CreateChatRoom_Call) RunAndReturn(run func(ctx context.Context, roomId gocql.UUID, memberId gocql.UUID, roomName string) error) *MockRepository_CreateChatRoom_Call {
+func (_c *MockRepository_CreateChatRoom_Call) RunAndReturn(run func(ctx context.Context, app string, roomId gocql.UUID, memberId gocql.UUID, roomName string) error) *MockRepository_CreateChatRoom_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // FindParticipantIds provides a mock function for the type MockRepository
-func (_mock *MockRepository) FindParticipantIds(ctx context.Context, roomId gocql.UUID) ([]gocql.UUID, error) {
-	ret := _mock.Called(ctx, roomId)
+func (_mock *MockRepository) FindParticipantIds(ctx context.Context, app string, roomId gocql.UUID) ([]gocql.UUID, error) {
+	ret := _mock.Called(ctx, app, roomId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindParticipantIds")
@@ -252,18 +270,18 @@ func (_mock *MockRepository) FindParticipantIds(ctx context.Context, roomId gocq
 
 	var r0 []gocql.UUID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) ([]gocql.UUID, error)); ok {
-		return returnFunc(ctx, roomId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID) ([]gocql.UUID, error)); ok {
+		return returnFunc(ctx, app, roomId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) []gocql.UUID); ok {
-		r0 = returnFunc(ctx, roomId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID) []gocql.UUID); ok {
+		r0 = returnFunc(ctx, app, roomId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]gocql.UUID)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID) error); ok {
-		r1 = returnFunc(ctx, roomId)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, app, roomId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -277,24 +295,30 @@ type MockRepository_FindParticipantIds_Call struct {
 
 // FindParticipantIds is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - roomId gocql.UUID
-func (_e *MockRepository_Expecter) FindParticipantIds(ctx any, roomId any) *MockRepository_FindParticipantIds_Call {
-	return &MockRepository_FindParticipantIds_Call{Call: _e.mock.On("FindParticipantIds", ctx, roomId)}
+func (_e *MockRepository_Expecter) FindParticipantIds(ctx any, app any, roomId any) *MockRepository_FindParticipantIds_Call {
+	return &MockRepository_FindParticipantIds_Call{Call: _e.mock.On("FindParticipantIds", ctx, app, roomId)}
 }
 
-func (_c *MockRepository_FindParticipantIds_Call) Run(run func(ctx context.Context, roomId gocql.UUID)) *MockRepository_FindParticipantIds_Call {
+func (_c *MockRepository_FindParticipantIds_Call) Run(run func(ctx context.Context, app string, roomId gocql.UUID)) *MockRepository_FindParticipantIds_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -305,14 +329,14 @@ func (_c *MockRepository_FindParticipantIds_Call) Return(uUIDs []gocql.UUID, err
 	return _c
 }
 
-func (_c *MockRepository_FindParticipantIds_Call) RunAndReturn(run func(ctx context.Context, roomId gocql.UUID) ([]gocql.UUID, error)) *MockRepository_FindParticipantIds_Call {
+func (_c *MockRepository_FindParticipantIds_Call) RunAndReturn(run func(ctx context.Context, app string, roomId gocql.UUID) ([]gocql.UUID, error)) *MockRepository_FindParticipantIds_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // IsBlocked provides a mock function for the type MockRepository
-func (_mock *MockRepository) IsBlocked(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
-	ret := _mock.Called(ctx, blockerId, blockedId)
+func (_mock *MockRepository) IsBlocked(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
+	ret := _mock.Called(ctx, app, blockerId, blockedId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for IsBlocked")
@@ -320,16 +344,16 @@ func (_mock *MockRepository) IsBlocked(ctx context.Context, blockerId gocql.UUID
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) (bool, error)); ok {
-		return returnFunc(ctx, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) (bool, error)); ok {
+		return returnFunc(ctx, app, blockerId, blockedId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) bool); ok {
-		r0 = returnFunc(ctx, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) bool); ok {
+		r0 = returnFunc(ctx, app, blockerId, blockedId)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r1 = returnFunc(ctx, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, gocql.UUID, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, app, blockerId, blockedId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -343,30 +367,36 @@ type MockRepository_IsBlocked_Call struct {
 
 // IsBlocked is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - blockerId gocql.UUID
 //   - blockedId gocql.UUID
-func (_e *MockRepository_Expecter) IsBlocked(ctx any, blockerId any, blockedId any) *MockRepository_IsBlocked_Call {
-	return &MockRepository_IsBlocked_Call{Call: _e.mock.On("IsBlocked", ctx, blockerId, blockedId)}
+func (_e *MockRepository_Expecter) IsBlocked(ctx any, app any, blockerId any, blockedId any) *MockRepository_IsBlocked_Call {
+	return &MockRepository_IsBlocked_Call{Call: _e.mock.On("IsBlocked", ctx, app, blockerId, blockedId)}
 }
 
-func (_c *MockRepository_IsBlocked_Call) Run(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_IsBlocked_Call {
+func (_c *MockRepository_IsBlocked_Call) Run(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_IsBlocked_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -377,22 +407,22 @@ func (_c *MockRepository_IsBlocked_Call) Return(b bool, err error) *MockReposito
 	return _c
 }
 
-func (_c *MockRepository_IsBlocked_Call) RunAndReturn(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)) *MockRepository_IsBlocked_Call {
+func (_c *MockRepository_IsBlocked_Call) RunAndReturn(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)) *MockRepository_IsBlocked_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RemoveBlock provides a mock function for the type MockRepository
-func (_mock *MockRepository) RemoveBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error {
-	ret := _mock.Called(ctx, blockerId, blockedId)
+func (_mock *MockRepository) RemoveBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error {
+	ret := _mock.Called(ctx, app, blockerId, blockedId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveBlock")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r0 = returnFunc(ctx, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, app, blockerId, blockedId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -406,30 +436,36 @@ type MockRepository_RemoveBlock_Call struct {
 
 // RemoveBlock is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - blockerId gocql.UUID
 //   - blockedId gocql.UUID
-func (_e *MockRepository_Expecter) RemoveBlock(ctx any, blockerId any, blockedId any) *MockRepository_RemoveBlock_Call {
-	return &MockRepository_RemoveBlock_Call{Call: _e.mock.On("RemoveBlock", ctx, blockerId, blockedId)}
+func (_e *MockRepository_Expecter) RemoveBlock(ctx any, app any, blockerId any, blockedId any) *MockRepository_RemoveBlock_Call {
+	return &MockRepository_RemoveBlock_Call{Call: _e.mock.On("RemoveBlock", ctx, app, blockerId, blockedId)}
 }
 
-func (_c *MockRepository_RemoveBlock_Call) Run(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_RemoveBlock_Call {
+func (_c *MockRepository_RemoveBlock_Call) Run(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID)) *MockRepository_RemoveBlock_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -440,22 +476,22 @@ func (_c *MockRepository_RemoveBlock_Call) Return(err error) *MockRepository_Rem
 	return _c
 }
 
-func (_c *MockRepository_RemoveBlock_Call) RunAndReturn(run func(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error) *MockRepository_RemoveBlock_Call {
+func (_c *MockRepository_RemoveBlock_Call) RunAndReturn(run func(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error) *MockRepository_RemoveBlock_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RemoveParticipantId provides a mock function for the type MockRepository
-func (_mock *MockRepository) RemoveParticipantId(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error {
-	ret := _mock.Called(ctx, roomId, participantId)
+func (_mock *MockRepository) RemoveParticipantId(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error {
+	ret := _mock.Called(ctx, app, roomId, participantId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveParticipantId")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r0 = returnFunc(ctx, roomId, participantId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, app, roomId, participantId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -469,30 +505,36 @@ type MockRepository_RemoveParticipantId_Call struct {
 
 // RemoveParticipantId is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - roomId gocql.UUID
 //   - participantId gocql.UUID
-func (_e *MockRepository_Expecter) RemoveParticipantId(ctx any, roomId any, participantId any) *MockRepository_RemoveParticipantId_Call {
-	return &MockRepository_RemoveParticipantId_Call{Call: _e.mock.On("RemoveParticipantId", ctx, roomId, participantId)}
+func (_e *MockRepository_Expecter) RemoveParticipantId(ctx any, app any, roomId any, participantId any) *MockRepository_RemoveParticipantId_Call {
+	return &MockRepository_RemoveParticipantId_Call{Call: _e.mock.On("RemoveParticipantId", ctx, app, roomId, participantId)}
 }
 
-func (_c *MockRepository_RemoveParticipantId_Call) Run(run func(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID)) *MockRepository_RemoveParticipantId_Call {
+func (_c *MockRepository_RemoveParticipantId_Call) Run(run func(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID)) *MockRepository_RemoveParticipantId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
+			arg1 = args[1].(string)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
 			arg2 = args[2].(gocql.UUID)
 		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -503,22 +545,22 @@ func (_c *MockRepository_RemoveParticipantId_Call) Return(err error) *MockReposi
 	return _c
 }
 
-func (_c *MockRepository_RemoveParticipantId_Call) RunAndReturn(run func(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error) *MockRepository_RemoveParticipantId_Call {
+func (_c *MockRepository_RemoveParticipantId_Call) RunAndReturn(run func(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error) *MockRepository_RemoveParticipantId_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveIdsByFileName provides a mock function for the type MockRepository
-func (_mock *MockRepository) SaveIdsByFileName(ctx context.Context, ids []gocql.UUID, filename gocql.UUID) error {
-	ret := _mock.Called(ctx, ids, filename)
+func (_mock *MockRepository) SaveIdsByFileName(ctx context.Context, app string, ids []gocql.UUID, filename gocql.UUID) error {
+	ret := _mock.Called(ctx, app, ids, filename)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveIdsByFileName")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []gocql.UUID, gocql.UUID) error); ok {
-		r0 = returnFunc(ctx, ids, filename)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, app, ids, filename)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -532,30 +574,36 @@ type MockRepository_SaveIdsByFileName_Call struct {
 
 // SaveIdsByFileName is a helper method to define mock.On call
 //   - ctx context.Context
+//   - app string
 //   - ids []gocql.UUID
 //   - filename gocql.UUID
-func (_e *MockRepository_Expecter) SaveIdsByFileName(ctx any, ids any, filename any) *MockRepository_SaveIdsByFileName_Call {
-	return &MockRepository_SaveIdsByFileName_Call{Call: _e.mock.On("SaveIdsByFileName", ctx, ids, filename)}
+func (_e *MockRepository_Expecter) SaveIdsByFileName(ctx any, app any, ids any, filename any) *MockRepository_SaveIdsByFileName_Call {
+	return &MockRepository_SaveIdsByFileName_Call{Call: _e.mock.On("SaveIdsByFileName", ctx, app, ids, filename)}
 }
 
-func (_c *MockRepository_SaveIdsByFileName_Call) Run(run func(ctx context.Context, ids []gocql.UUID, filename gocql.UUID)) *MockRepository_SaveIdsByFileName_Call {
+func (_c *MockRepository_SaveIdsByFileName_Call) Run(run func(ctx context.Context, app string, ids []gocql.UUID, filename gocql.UUID)) *MockRepository_SaveIdsByFileName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []gocql.UUID
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].([]gocql.UUID)
+			arg1 = args[1].(string)
 		}
-		var arg2 gocql.UUID
+		var arg2 []gocql.UUID
 		if args[2] != nil {
-			arg2 = args[2].(gocql.UUID)
+			arg2 = args[2].([]gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -566,7 +614,7 @@ func (_c *MockRepository_SaveIdsByFileName_Call) Return(err error) *MockReposito
 	return _c
 }
 
-func (_c *MockRepository_SaveIdsByFileName_Call) RunAndReturn(run func(ctx context.Context, ids []gocql.UUID, filename gocql.UUID) error) *MockRepository_SaveIdsByFileName_Call {
+func (_c *MockRepository_SaveIdsByFileName_Call) RunAndReturn(run func(ctx context.Context, app string, ids []gocql.UUID, filename gocql.UUID) error) *MockRepository_SaveIdsByFileName_Call {
 	_c.Call.Return(run)
 	return _c
 }

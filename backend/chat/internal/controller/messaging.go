@@ -31,7 +31,7 @@ func (c *Controller) sendMessaging(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.PublishMessaging(r.Context(), memberId, req.ToIdType, req.ToId, req.ContentType, req.Contents)
+	result, err := c.service.PublishMessaging(r.Context(), appOf(r), memberId, req.ToIdType, req.ToId, req.ContentType, req.Contents, req.NoPush)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -56,7 +56,7 @@ func (c *Controller) getRecentMessages(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetRecentMessages(r.Context(), memberId, cursor)
+	result, err := c.service.GetRecentMessages(r.Context(), appOf(r), memberId, cursor)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -116,7 +116,7 @@ func (c *Controller) getSignedURL(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("bad request"))
 		return
 	}
-	result, err := c.service.GenerateSignedURL(r.Context(), memberId, contentType, filename)
+	result, err := c.service.GenerateSignedURL(r.Context(), appOf(r), memberId, contentType, filename)
 	if err != nil {
 		handleError(w, err)
 		return

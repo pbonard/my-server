@@ -2,6 +2,7 @@
 # its web app deploys from its own repo (holidayfriend-web)
 namespace: holidayfriend
 hostname: "holidayfriend.pbonard.com"
+app: "holidayfriend"
 
 # public key of the holidayfriend access tokens, never the one of the mobile app, so neither app trusts the other's tokens
 jwks: |
@@ -25,7 +26,12 @@ apps:
     twilio: false
     # the key that seals the secrets of authenticators
     totp: true
-  chat: null
+  # chat of the mobile release serves this host too: no second chat stack. its route here sets X-App: holidayfriend, so
+  # chat, messagepreprocess and messagepersist use the holidayfriend keyspace (APPS in the backend config map).
+  # the mobile release allows this route with allowRoutesFrom
+  chat:
+    deployment: false
+    backendNamespace: backend
   expo-notification: null
   fcmnotification: null
   messagepersist: null

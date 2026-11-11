@@ -2,6 +2,7 @@ package controller
 
 import (
 	"backend/chat/internal/service"
+	"backend/common"
 	"context"
 	"log/slog"
 	"net/http"
@@ -62,6 +63,13 @@ func (c *Controller) Router(httpMethod HTTPMethod, path string, handler http.Han
 	default:
 		panic("This HTTP method is not supported")
 	}
+}
+
+// appOf is the app the request is for, the X-App the gateway sets from the hostname it came in on, and
+// common.DefaultApp without it. the cassandra keyspace of the app, so its tables are read and written, and
+// common.AuthTopic(appOf(r)) is the topic of its auth. one not in APPS fails at the repository
+func appOf(r *http.Request) string {
+	return common.AppOrDefault(r.Header.Get("X-App"))
 }
 
 func getStatusCode(err error) int {

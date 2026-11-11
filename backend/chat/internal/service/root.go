@@ -13,20 +13,20 @@ import (
 )
 
 type Service interface {
-	SetName(ctx context.Context, memberId uuid.UUID, name string) error
-	GetProfile(ctx context.Context, id uuid.UUID) (*dto.GetProfileResponse, error)
-	GetChatRoomInfo(ctx context.Context, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error)
+	SetName(ctx context.Context, app string, memberId uuid.UUID, name string) error
+	GetProfile(ctx context.Context, app string, id uuid.UUID) (*dto.GetProfileResponse, error)
+	GetChatRoomInfo(ctx context.Context, app string, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error)
 	SetServerIP(ctx context.Context, memberId uuid.UUID, ip string) error
 	RemoveServerIP(ctx context.Context, memberId []byte, ip string) error
-	CheckBlock(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error)
-	GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error)
-	ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error
-	BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error
-	GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error)
-	GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) (res []dto.MessagingResponse, err error)
-	PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) (map[string]uuid.UUID, error)
+	CheckBlock(ctx context.Context, app string, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error)
+	GetChatParticipants(ctx context.Context, app string, roomId uuid.UUID) ([]dto.GetProfileResponse, error)
+	ReportUser(ctx context.Context, app string, reporterId, reportedId uuid.UUID) error
+	BlockConversation(ctx context.Context, app string, memberId, conversationId uuid.UUID) error
+	GetBlockedConversations(ctx context.Context, app string, memberId uuid.UUID) ([]dto.BlockReport, error)
+	GetRecentMessages(ctx context.Context, app string, id, cursor uuid.UUID) (res []dto.MessagingResponse, err error)
+	PublishMessaging(ctx context.Context, app string, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)
 	GeneratePresignedURL(ctx context.Context, id uuid.UUID, contentType string, n int) (res []dto.GeneratePresignedURLResponse, err error)
-	GenerateSignedURL(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)
+	GenerateSignedURL(ctx context.Context, app string, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)
 }
 
 type service struct {

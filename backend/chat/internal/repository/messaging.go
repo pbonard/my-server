@@ -3,14 +3,19 @@ package repository
 import (
 	"backend/chat/internal/projection"
 	"context"
+	"fmt"
 	"log/slog"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
-func (r *repository) FindRecentMessagesByToId(ctx context.Context, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error) {
-	iter := r.session.Query(`SELECT id, room_id, from_id, content_type, contents FROM message_by_to_id 
-                                                   WHERE to_id = ? AND id > ?`,
+func (r *repository) FindRecentMessagesByToId(ctx context.Context, app string, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error) {
+	messages, err := r.apps.Table(app, "message_by_to_id")
+	if err != nil {
+		return nil, err
+	}
+	iter := r.session.Query(fmt.Sprintf(`SELECT id, room_id, from_id, content_type, contents FROM %s
+                                                   WHERE to_id = ? AND id > ?`, messages),
 		id, cursor).IterContext(ctx)
 	var messageId, fromId gocql.UUID
 	var roomId []byte
@@ -71,8 +76,12 @@ func (r *repository) RemoveFilepath(ctx context.Context, id string, filenames []
 	return nil
 }
 
-func (r *repository) FindIdsByFilename(ctx context.Context, filename gocql.UUID) (ids []gocql.UUID, err error) {
-	err = r.session.Query("SELECT ids FROM ids_by_filename WHERE filename = ?", filename).ScanContext(ctx, &ids)
+func (r *repository) FindIdsByFilename(ctx context.Context, app string, filename gocql.UUID) (ids []gocql.UUID, err error) {
+	idsByFilename, err := r.apps.Table(app, "ids_by_filename")
+	if err != nil {
+		return nil, err
+	}
+	err = r.session.Query(fmt.Sprintf("SELECT ids FROM %s WHERE filename = ?", idsByFilename), filename).ScanContext(ctx, &ids)
 	if err != nil {
 		slog.Error("fail to find ids by filename",
 			"err", err)

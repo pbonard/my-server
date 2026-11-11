@@ -48,6 +48,63 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 	return &MockService_Expecter{mock: &_m.Mock}
 }
 
+// BanMember provides a mock function for the type MockService
+func (_mock *MockService) BanMember(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BanMember")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_BanMember_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BanMember'
+type MockService_BanMember_Call struct {
+	*mock.Call
+}
+
+// BanMember is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockService_Expecter) BanMember(ctx any, id any) *MockService_BanMember_Call {
+	return &MockService_BanMember_Call{Call: _e.mock.On("BanMember", ctx, id)}
+}
+
+func (_c *MockService_BanMember_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockService_BanMember_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_BanMember_Call) Return(err error) *MockService_BanMember_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_BanMember_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *MockService_BanMember_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ConfirmTOTPSetup provides a mock function for the type MockService
 func (_mock *MockService) ConfirmTOTPSetup(ctx context.Context, setupToken uuid.UUID, code string) (*dto.SignInWithThirdPartyResponse, string, error) {
 	ret := _mock.Called(ctx, setupToken, code)

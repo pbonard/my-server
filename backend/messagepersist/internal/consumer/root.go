@@ -178,7 +178,7 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 			"payload.Value", message.Value)
 		return nil
 	}
-	err = c.service.PersistMessage(ctx, uuid.UUID(p.Id), p.ToIds, uuid.UUID(p.RoomId), uuid.UUID(p.FromId), p.ContentType, p.Contents)
+	err = c.service.PersistMessage(ctx, common.AppOrDefault(p.App), uuid.UUID(p.Id), p.ToIds, uuid.UUID(p.RoomId), uuid.UUID(p.FromId), p.ContentType, p.Contents)
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}
 		for _, h := range message.Headers {

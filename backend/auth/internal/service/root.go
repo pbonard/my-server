@@ -33,6 +33,7 @@ type Service interface {
 	GenerateAccessToken(refreshToken string) (map[string]string, error)
 	RemoveJTI(refreshToken string) error
 	DeleteAccount(ctx context.Context, refreshToken string) error
+	BanMember(ctx context.Context, id uuid.UUID) error
 }
 
 type service struct {

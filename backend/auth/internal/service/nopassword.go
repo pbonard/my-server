@@ -43,6 +43,10 @@ func (s *service) StartNoPasswordEmailLogin(ctx context.Context, email string) (
 	if !errors.Is(err, gocql.ErrNotFound) {
 		return nil, ErrInternalServer
 	}
+	// before the code is mailed, so a banned email doesn't get one
+	if err = s.checkEmailNotBanned(ctx, email); err != nil {
+		return nil, err
+	}
 	vid, err := s.sendNoPasswordEmailOTP(ctx, email, constant.OTPPurposeSignup)
 	if err != nil {
 		return nil, err
@@ -300,6 +304,10 @@ func (s *service) claimTOTPAttempt(ctx context.Context, email string) error {
 func (s *service) signInVerifiedEmail(ctx context.Context, email string) (*dto.SignInWithThirdPartyResponse, string, error) {
 	emailVerified, phoneNumberVerified, id, _, role, err := s.repository.FindLoginInfoByEmail(email)
 	if errors.Is(err, gocql.ErrNotFound) {
+		// banned after the code was mailed
+		if err = s.checkEmailNotBanned(ctx, email); err != nil {
+			return nil, "", err
+		}
 		idv7, err := uuid.NewV7()
 		if err != nil {
 			slog.Error("fail to create uuid v7 for email signup user")

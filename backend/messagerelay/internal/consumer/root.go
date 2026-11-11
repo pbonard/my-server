@@ -186,6 +186,7 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 		uuid.UUID(p.FromId),
 		p.ContentType,
 		p.Contents,
+		p.NoPush,
 	)
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}

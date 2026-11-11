@@ -51,11 +51,15 @@ func ips(d *deps, id uuid.UUID, ips ...string) {
 }
 
 func relay(t *testing.T, s service.Service, contentType string, toIds ...uuid.UUID) {
+	relayWithNoPush(t, s, contentType, false, toIds...)
+}
+
+func relayWithNoPush(t *testing.T, s service.Service, contentType string, noPush bool, toIds ...uuid.UUID) {
 	var ids [][]byte
 	for _, id := range toIds {
 		ids = append(ids, id[:])
 	}
-	require.NoError(t, s.RelayMessage(context.Background(), msgId, ids, roomId, fromId, contentType, []string{"hi"}))
+	require.NoError(t, s.RelayMessage(context.Background(), msgId, ids, roomId, fromId, contentType, []string{"hi"}, noPush))
 }
 
 func TestRelayMessage_onlineReceiverIsRelayedToItsServer(t *testing.T) {
@@ -90,7 +94,7 @@ func TestRelayMessage_notificationPublishFailureIsReturned(t *testing.T) {
 	ips(d, offline)
 
 	err := service.NewService(d.repo, d.producer, d.relay).
-		RelayMessage(context.Background(), msgId, [][]byte{offline[:]}, roomId, fromId, "text", []string{"hi"})
+		RelayMessage(context.Background(), msgId, [][]byte{offline[:]}, roomId, fromId, "text", []string{"hi"}, false)
 
 	assert.ErrorIs(t, err, errKafka)
 }
@@ -127,6 +131,27 @@ func TestRelayMessage_failedRelayFallsBackToPushAndForgetsTheServer(t *testing.T
 	require.Len(t, d.pushed, 1)
 	assert.Equal(t, uint8(1), d.pushed[0].NotificationId)
 	assert.Equal(t, [][]byte{online[:]}, d.pushed[0].ToIds)
+}
+
+func TestRelayMessage_noPushIsNeverPushed(t *testing.T) {
+	t.Run("offline receiver", func(t *testing.T) {
+		s, d := newService(t)
+		ips(d, offline)
+
+		relayWithNoPush(t, s, "text", true, offline)
+
+		assert.Empty(t, d.pushed)
+	})
+	t.Run("failed relay", func(t *testing.T) {
+		s, d := newService(t)
+		ips(d, online, serverIP)
+		d.relay.EXPECT().Do(mock.Anything, serverIP, mock.Anything).Return(nil, errors.New("unavailable"))
+		d.repo.EXPECT().RemoveServerIP(mock.Anything, string(online[:]), serverIP).Return(nil)
+
+		relayWithNoPush(t, s, "text", true, online)
+
+		assert.Empty(t, d.pushed)
+	})
 }
 
 func TestRelayMessage_serverReportsReceiversItCouldNotDeliverTo(t *testing.T) {

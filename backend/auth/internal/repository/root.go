@@ -45,6 +45,9 @@ type Repository interface {
 	FindEmailByPhoneNumber(phoneNumber string) (email string, err error)
 	ReplaceAndLinkMemberWithOldAccount(newId, oldAccountId gocql.UUID, email, phoneNumber string) error
 	WasBanned(phoneNumber string) error
+	BanPhoneNumber(ctx context.Context, phoneNumber string) error
+	BanEmail(ctx context.Context, email string) error
+	WasEmailBanned(ctx context.Context, email string) (bool, error)
 	SaveNonce(nonce string) error
 	ClaimNoPasswordEmailOTPCooldown(ctx context.Context, email string) error
 	SaveNoPasswordEmailOTP(ctx context.Context, verificationId gocql.UUID, email, otp, purpose string) error
@@ -140,6 +143,10 @@ func NewRepository() Repository {
 		);`,
 		`CREATE TABLE IF NOT EXISTS banned_phone_number (
 			phone_number text PRIMARY KEY
+		);`,
+		// lowercased, the way an email is compared at sign up
+		`CREATE TABLE IF NOT EXISTS banned_email (
+			email text PRIMARY KEY
 		);`,
 	}
 

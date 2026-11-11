@@ -3,6 +3,7 @@ package repository
 import (
 	"backend/common"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -13,27 +14,30 @@ import (
 	"github.com/valkey-io/valkey-go"
 )
 
+// Repository reads and writes the tables of an app, in its keyspace
 type Repository interface {
-	FindParticipantIds(ctx context.Context, roomId gocql.UUID) ([]gocql.UUID, error)
-	SaveIdsByFileName(ctx context.Context, ids []gocql.UUID, filename gocql.UUID) error
-	CreateChatRoom(ctx context.Context, roomId gocql.UUID, memberId gocql.UUID, roomName string) error
-	AddParticipantId(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error
-	RemoveParticipantId(ctx context.Context, roomId gocql.UUID, participantId gocql.UUID) error
-	IsBlocked(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
-	AddBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error
-	RemoveBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error
+	FindParticipantIds(ctx context.Context, app string, roomId gocql.UUID) ([]gocql.UUID, error)
+	SaveIdsByFileName(ctx context.Context, app string, ids []gocql.UUID, filename gocql.UUID) error
+	CreateChatRoom(ctx context.Context, app string, roomId gocql.UUID, memberId gocql.UUID, roomName string) error
+	AddParticipantId(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error
+	RemoveParticipantId(ctx context.Context, app string, roomId gocql.UUID, participantId gocql.UUID) error
+	IsBlocked(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
+	AddBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error
+	RemoveBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) error
 }
 
 type repository struct {
-	client  valkey.Client
+	client valkey.Client
+	// without a keyspace of its own, so a query names the keyspace of its app and one without fails instead of
+	// reading some default
 	session *gocql.Session
+	apps    common.Apps
 }
 
 func NewRepository() Repository {
 	k8ssandraHost := os.Getenv("K8SSANDRA_HOST")
 	cluster := gocql.NewCluster(k8ssandraHost)
 	cluster.Port = 9042
-	cluster.Keyspace = os.Getenv("PROFILE")
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: os.Getenv("K8SSANDRA_USERNAME"),
 		Password: os.Getenv("K8SSANDRA_PASSWORD"),
@@ -57,21 +61,25 @@ func NewRepository() Repository {
 	if err != nil {
 		panic(err)
 	}
-	err = session.Query(`CREATE TABLE IF NOT EXISTS ids_by_filename (
+	apps := common.LoadApps()
+	// in the keyspace of every app, which bootstrap creates
+	for app := range apps {
+		err = session.Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s.ids_by_filename (
     filename uuid,
     ids set<uuid>,
     PRIMARY KEY (filename)
-    );`).Exec()
-	if err != nil {
-		log.Panicf("fail to create table ids_by_filename: %v", err)
-	}
-	err = session.Query(`CREATE TABLE IF NOT EXISTS block (
+    );`, app)).Exec()
+		if err != nil {
+			log.Panicf("fail to create table %s.ids_by_filename: %v", app, err)
+		}
+		err = session.Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s.block (
     blocker_id uuid,
     blocked_id uuid,
     PRIMARY KEY ((blocker_id), blocked_id)
-	);`).Exec()
-	if err != nil {
-		log.Panicf("fail to create table block: %v", err)
+	);`, app)).Exec()
+		if err != nil {
+			log.Panicf("fail to create table %s.block: %v", app, err)
+		}
 	}
 
 	log.Print("success to connect cassandra")
@@ -97,6 +105,7 @@ func NewRepository() Repository {
 
 	r := repository{
 		session: session,
+		apps:    apps,
 		client:  client,
 	}
 

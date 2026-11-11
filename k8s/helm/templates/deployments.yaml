@@ -1,4 +1,6 @@
 {{- range $name, $app := .Values.apps }}
+{{- /* deployment: false, an app of another release this one only routes to (backendNamespace in http-routes.yaml) */}}
+{{- if dig "deployment" true $app }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -210,6 +212,27 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: {{ $app.port }}
+{{- if $app.allowRoutesFrom }}
+---
+# HTTPRoutes of these namespaces may point at this service, like the chat route of holidayfriend: a route can't use a
+# service of another namespace unless the namespace of the service allows it here
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ $name }}-routes
+  namespace: {{ $.Values.namespace }}
+spec:
+  from:
+  {{- range $from := $app.allowRoutesFrom }}
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ $from }}
+  {{- end }}
+  to:
+    - group: ""
+      kind: Service
+      name: {{ $name }}
+{{- end }}
 {{- end }}
 
 {{/*apiVersion: autoscaling/v2*/}}
@@ -232,4 +255,5 @@ spec:
 {{/*          type: Utilization*/}}
 {{/*          averageUtilization: 80*/}}
 
+{{- end }}
 {{- end }}

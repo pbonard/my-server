@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: holidayfriend
+  name: holidayfriend-auth
   namespace: argocd
 spec:
   project: default
@@ -10,7 +10,7 @@ spec:
     targetRevision: main
     path: k8s/helm
     helm:
-      releaseName: holidayfriend
+      releaseName: holidayfriend-auth
       valueFiles:
         - values-holidayfriend.yaml
   destination:

@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) error
+	ManageMessage(ctx context.Context, app string, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) error
 }
 
 type service struct {

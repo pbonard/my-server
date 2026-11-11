@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
@@ -26,27 +27,14 @@ func (r *repository) RemoveServerIP(ctx context.Context, memberId, ip string) er
 	return nil
 }
 
-func (r *repository) DeleteAccount(ctx context.Context, id gocql.UUID, email, phoneNumber string) error {
-	err := r.session.Batch(gocql.LoggedBatch).
-		Query("DELETE FROM member_by_id WHERE id = ?", id).
-		Query("DELETE FROM profile_by_id WHERE id = ?", id).
-		Query("DELETE FROM member_by_email WHERE email = ?", email).
-		Query("DELETE FROM member_by_phone_number WHERE phone_number = ?", phoneNumber).
-		ExecContext(ctx)
+func (r *repository) DidBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
+	block, err := r.apps.Table(app, "block")
 	if err != nil {
-		slog.Error("fail to delete account",
-			"err", err,
-			"id", id.String(),
-		)
-		return err
+		return false, err
 	}
-	return nil
-}
-
-func (r *repository) DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
 	var a gocql.UUID
-	err := r.session.Query(
-		`SELECT blocked_id FROM block WHERE blocker_id = ? AND blocked_id = ?`, blockerId, blockedId,
+	err = r.session.Query(
+		fmt.Sprintf(`SELECT blocked_id FROM %s WHERE blocker_id = ? AND blocked_id = ?`, block), blockerId, blockedId,
 	).ScanContext(ctx, &a)
 	if errors.Is(gocql.ErrNotFound, err) {
 		return false, nil
@@ -60,9 +48,13 @@ func (r *repository) DidBlock(ctx context.Context, blockerId gocql.UUID, blocked
 	return true, nil
 }
 
-func (r *repository) FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error) {
+func (r *repository) FindChatParticipantIds(ctx context.Context, app string, roomId gocql.UUID) (ids []gocql.UUID, err error) {
+	chatRoom, err := r.apps.Table(app, "chat_room_by_id")
+	if err != nil {
+		return nil, err
+	}
 	err = r.session.Query(
-		`SELECT participant_ids FROM chat_room_by_id WHERE id = ?`, roomId).
+		fmt.Sprintf(`SELECT participant_ids FROM %s WHERE id = ?`, chatRoom), roomId).
 		ScanContext(ctx, &ids)
 	if err != nil {
 		slog.Error("fail to find chat participant ids", "err", err,
@@ -72,8 +64,12 @@ func (r *repository) FindChatParticipantIds(ctx context.Context, roomId gocql.UU
 	return ids, nil
 }
 
-func (r *repository) AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error {
-	err := r.session.Query(`UPDATE profile_by_id USING TTL ? SET reporter_ids = reporter_ids + ? WHERE id = ?`,
+func (r *repository) AddReporterIdByReportedId(ctx context.Context, app string, reporterId gocql.UUID, reportedId gocql.UUID) error {
+	profile, err := r.apps.Table(app, "profile_by_id")
+	if err != nil {
+		return err
+	}
+	err = r.session.Query(fmt.Sprintf(`UPDATE %s USING TTL ? SET reporter_ids = reporter_ids + ? WHERE id = ?`, profile),
 		30*24*60*60, []gocql.UUID{reporterId}, reportedId).ExecContext(ctx)
 	if err != nil {
 		slog.Error("fail to add reporter id by reported id",
@@ -85,10 +81,14 @@ func (r *repository) AddReporterIdByReportedId(ctx context.Context, reporterId g
 	return nil
 }
 
-func (r *repository) FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error) {
+func (r *repository) FindReportCountById(ctx context.Context, app string, reportedId gocql.UUID) (count int, err error) {
+	profile, err := r.apps.Table(app, "profile_by_id")
+	if err != nil {
+		return 0, err
+	}
 	var reporterIds []gocql.UUID
 	err = r.session.Query(
-		`SELECT reporter_ids FROM profile_by_id WHERE id = ?`,
+		fmt.Sprintf(`SELECT reporter_ids FROM %s WHERE id = ?`, profile),
 		reportedId,
 	).ScanContext(ctx, &reporterIds)
 	if err != nil {
@@ -100,30 +100,12 @@ func (r *repository) FindReportCountById(ctx context.Context, reportedId gocql.U
 	return len(reporterIds), nil
 }
 
-func (r *repository) FindEmailAndPhoneNumberById(ctx context.Context, id gocql.UUID) (email, phoneNumber string, err error) {
-	err = r.session.Query("SELECT email, phone_number FROM member_by_id WHERE id = ?", id).
-		ScanContext(ctx, &email, &phoneNumber)
+func (r *repository) AddBlockedConversation(ctx context.Context, app string, memberId gocql.UUID, conversationId gocql.UUID) error {
+	profile, err := r.apps.Table(app, "profile_by_id")
 	if err != nil {
-		slog.Error("fail to find email and phone number by id",
-			"err", err,
-			"id", id)
-		return "", "", err
-	}
-	return email, phoneNumber, nil
-}
-
-func (r *repository) BanPhoneNumber(ctx context.Context, phoneNumber string) error {
-	err := r.session.Query(`INSERT INTO banned_phone_number (phone_number) VALUES (?)`, phoneNumber).ExecContext(ctx)
-	if err != nil {
-		slog.Error("fail to ban phone number",
-			"err", err)
 		return err
 	}
-	return nil
-}
-
-func (r *repository) AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error {
-	err := r.session.Query(`UPDATE profile_by_id USING TTL ? SET blocked_conversations = blocked_conversations + ? WHERE id = ?`,
+	err = r.session.Query(fmt.Sprintf(`UPDATE %s USING TTL ? SET blocked_conversations = blocked_conversations + ? WHERE id = ?`, profile),
 		360*24*60*60, []gocql.UUID{conversationId}, memberId).ExecContext(ctx)
 	if err != nil {
 		slog.Error("fail to add blocked conversation", "err", err,
@@ -134,8 +116,12 @@ func (r *repository) AddBlockedConversation(ctx context.Context, memberId gocql.
 	return nil
 }
 
-func (r *repository) FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error) {
-	err = r.session.Query(`SELECT blocked_conversations FROM profile_by_id WHERE id = ?`, id).ScanContext(ctx, &ids)
+func (r *repository) FindBlockedConversations(ctx context.Context, app string, id gocql.UUID) (ids []gocql.UUID, err error) {
+	profile, err := r.apps.Table(app, "profile_by_id")
+	if err != nil {
+		return nil, err
+	}
+	err = r.session.Query(fmt.Sprintf(`SELECT blocked_conversations FROM %s WHERE id = ?`, profile), id).ScanContext(ctx, &ids)
 	if err != nil {
 		slog.Error("fail to find blocked conversations by id", "err", err,
 			"id", id)

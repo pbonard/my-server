@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	PersistMessage(ctx context.Context, id uuid.UUID, toIds [][]byte, roomId, fromId uuid.UUID, contentType string, contents []string) error
+	PersistMessage(ctx context.Context, app string, id uuid.UUID, toIds [][]byte, roomId, fromId uuid.UUID, contentType string, contents []string) error
 }
 
 type service struct {

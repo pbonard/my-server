@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	RelayMessage(ctx context.Context, id uuid.UUID, toIds [][]byte, roomId, fromId uuid.UUID, contentType string, contents []string) error
+	RelayMessage(ctx context.Context, id uuid.UUID, toIds [][]byte, roomId, fromId uuid.UUID, contentType string, contents []string, noPush bool) error
 }
 
 type service struct {
