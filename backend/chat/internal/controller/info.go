@@ -28,7 +28,7 @@ func (c *Controller) getChatRoomInfo(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetChatRoomInfo(r.Context(), appOf(r), roomId)
+	result, err := c.service.GetChatRoomInfo(r.Context(), roomId)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -47,7 +47,7 @@ func (c *Controller) getProfile(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetProfile(r.Context(), appOf(r), id)
+	result, err := c.service.GetProfile(r.Context(), id)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -69,7 +69,7 @@ func (c *Controller) getMyProfile(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetProfile(r.Context(), appOf(r), memberId)
+	result, err := c.service.GetProfile(r.Context(), memberId)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -101,7 +101,7 @@ func (c *Controller) setName(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	err = c.service.SetName(r.Context(), appOf(r), memberId, req.Name)
+	err = c.service.SetName(r.Context(), memberId, req.Name)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -124,7 +124,7 @@ func (c *Controller) checkBlock(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.CheckBlock(r.Context(), appOf(r), memberId, checkingId)
+	result, err := c.service.CheckBlock(r.Context(), memberId, checkingId)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -145,7 +145,7 @@ func (c *Controller) getChatParticipants(w http.ResponseWriter, r *http.Request)
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetChatParticipants(r.Context(), appOf(r), roomId)
+	result, err := c.service.GetChatParticipants(r.Context(), roomId)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -175,7 +175,7 @@ func (c *Controller) reportUser(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	err = c.service.ReportUser(r.Context(), appOf(r), reporterId, req.Id)
+	err = c.service.ReportUser(r.Context(), reporterId, req.Id)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -200,7 +200,7 @@ func (c *Controller) blockConversation(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	err = c.service.BlockConversation(r.Context(), appOf(r), memberId, req.Id)
+	err = c.service.BlockConversation(r.Context(), memberId, req.Id)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -216,7 +216,7 @@ func (c *Controller) GetBlockedConversations(w http.ResponseWriter, r *http.Requ
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.GetBlockedConversations(r.Context(), appOf(r), memberId)
+	result, err := c.service.GetBlockedConversations(r.Context(), memberId)
 	if err != nil {
 		handleError(w, err)
 		return

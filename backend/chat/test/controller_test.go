@@ -33,7 +33,7 @@ func serve(svc *MockService, method, target, userId, body string) *httptest.Resp
 func TestController_sendMessaging(t *testing.T) {
 	svc := NewMockService(t)
 	msgId := uuid.New()
-	svc.EXPECT().PublishMessaging(mock.Anything, "production", memberId, "group", roomId, "text", []string{"hi"}, false).
+	svc.EXPECT().PublishMessaging(mock.Anything, memberId, "group", roomId, "text", []string{"hi"}, false).
 		Return(map[string]uuid.UUID{"id": msgId}, nil)
 
 	rec := serve(svc, http.MethodPost, "/chat/messaging/send", memberId.String(),
@@ -43,24 +43,9 @@ func TestController_sendMessaging(t *testing.T) {
 	assert.JSONEq(t, fmt.Sprintf(`{"id":"%s"}`, msgId), rec.Body.String())
 }
 
-func TestController_reportUserIsForTheAppOfTheGateway(t *testing.T) {
-	svc := NewMockService(t)
-	svc.EXPECT().ReportUser(mock.Anything, "holidayfriend", memberId, otherId).Return(nil)
-	mux := http.NewServeMux()
-	controller.NewController(svc, mux)
-	req := httptest.NewRequest(http.MethodPost, "/chat/report/user", strings.NewReader(fmt.Sprintf(`{"id":"%s"}`, otherId)))
-	req.Header.Set("X-User-Id", memberId.String())
-	req.Header.Set("X-App", "holidayfriend")
-	rec := httptest.NewRecorder()
-
-	mux.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-}
-
 func TestController_sendMessagingWithNoPush(t *testing.T) {
 	svc := NewMockService(t)
-	svc.EXPECT().PublishMessaging(mock.Anything, "production", memberId, "personal", otherId, "text", []string{"hi"}, true).
+	svc.EXPECT().PublishMessaging(mock.Anything, memberId, "personal", otherId, "text", []string{"hi"}, true).
 		Return(map[string]uuid.UUID{"id": uuid.New()}, nil)
 
 	rec := serve(svc, http.MethodPost, "/chat/messaging/send", memberId.String(),
@@ -89,7 +74,7 @@ func TestController_presignedAndSignedURL(t *testing.T) {
 	file := uuid.New()
 	svc.EXPECT().GeneratePresignedURL(mock.Anything, memberId, "image", 2).
 		Return([]dto.GeneratePresignedURLResponse{{Filename: file, URL: "https://s3"}}, nil)
-	svc.EXPECT().GenerateSignedURL(mock.Anything, "production", memberId, "video", file).Return(map[string]string{"url": "https://cdn"}, nil)
+	svc.EXPECT().GenerateSignedURL(mock.Anything, memberId, "video", file).Return(map[string]string{"url": "https://cdn"}, nil)
 
 	presigned := serve(svc, http.MethodPost, "/chat/messaging/presigned", memberId.String(), `{"contentType":"image","n":2}`)
 	signed := serve(svc, http.MethodGet, "/chat/messaging/signed?contentType=video&filename="+file.String(), memberId.String(), "")
@@ -136,42 +121,41 @@ func TestController_delegatesToTheService(t *testing.T) {
 	}{
 		{"recent messages", http.MethodGet, "/chat/messaging/recent?cursor=" + roomId.String(), "",
 			func(s *MockService_Expecter) {
-				s.GetRecentMessages(mock.Anything, "production", memberId, roomId).Return([]dto.MessagingResponse{{ContentType: "text"}}, nil)
+				s.GetRecentMessages(mock.Anything, memberId, roomId).Return([]dto.MessagingResponse{{ContentType: "text"}}, nil)
 			}, `"contentType":"text"`},
 		{"room info", http.MethodGet, "/chat/room/info?id=" + roomId.String(), "",
 			func(s *MockService_Expecter) {
-				s.GetChatRoomInfo(mock.Anything, "production", roomId).Return(&dto.GetChatRoomInfoResponse{Name: "Seoul"}, nil)
+				s.GetChatRoomInfo(mock.Anything, roomId).Return(&dto.GetChatRoomInfoResponse{Name: "Seoul"}, nil)
 			}, `"Seoul"`},
 		{"profile", http.MethodGet, "/chat/profile?id=" + otherId.String(), "",
 			func(s *MockService_Expecter) {
-				s.GetProfile(mock.Anything, "production", otherId).Return(&dto.GetProfileResponse{Name: "bob"}, nil)
+				s.GetProfile(mock.Anything, otherId).Return(&dto.GetProfileResponse{Name: "bob"}, nil)
 			}, `"name":"bob"`},
 		{"my profile", http.MethodGet, "/chat/profile/my", "",
 			func(s *MockService_Expecter) {
-				s.GetProfile(mock.Anything, "production", memberId).Return(&dto.GetProfileResponse{Name: "alice"}, nil)
+				s.GetProfile(mock.Anything, memberId).Return(&dto.GetProfileResponse{Name: "alice"}, nil)
 			}, `"name":"alice"`},
 		{"set name", http.MethodPut, "/chat/profile/name", `{"name":"alice"}`,
-			func(s *MockService_Expecter) { s.SetName(mock.Anything, "production", memberId, "alice").Return(nil) }, ""},
+			func(s *MockService_Expecter) { s.SetName(mock.Anything, memberId, "alice").Return(nil) }, ""},
 		{"check block", http.MethodGet, "/chat/block/check?id=" + otherId.String(), "",
 			func(s *MockService_Expecter) {
-				s.CheckBlock(mock.Anything, "production", memberId, otherId).Return(map[string]bool{"didBlock": true}, nil)
+				s.CheckBlock(mock.Anything, memberId, otherId).Return(map[string]bool{"didBlock": true}, nil)
 			}, `"didBlock":true`},
 		{"participants", http.MethodGet, "/chat/participants?roomId=" + roomId.String(), "",
 			func(s *MockService_Expecter) {
-				s.GetChatParticipants(mock.Anything, "production", roomId).Return([]dto.GetProfileResponse{{Id: otherId}}, nil)
+				s.GetChatParticipants(mock.Anything, roomId).Return([]dto.GetProfileResponse{{Id: otherId}}, nil)
 			}, otherId.String()},
 		{"report user", http.MethodPost, "/chat/report/user", idBody,
-			// no X-App: the mobile app, whose routes were the only ones before the header
 			func(s *MockService_Expecter) {
-				s.ReportUser(mock.Anything, "production", memberId, otherId).Return(nil)
+				s.ReportUser(mock.Anything, memberId, otherId).Return(nil)
 			}, ""},
 		{"block conversation", http.MethodPost, "/chat/block/conversation", idBody,
 			func(s *MockService_Expecter) {
-				s.BlockConversation(mock.Anything, "production", memberId, otherId).Return(nil)
+				s.BlockConversation(mock.Anything, memberId, otherId).Return(nil)
 			}, ""},
 		{"blocked conversations", http.MethodGet, "/chat/block/conversations", "",
 			func(s *MockService_Expecter) {
-				s.GetBlockedConversations(mock.Anything, "production", memberId).Return([]dto.BlockReport{{Id: roomId}}, nil)
+				s.GetBlockedConversations(mock.Anything, memberId).Return([]dto.BlockReport{{Id: roomId}}, nil)
 			}, roomId.String()},
 	}
 	for _, tt := range tests {
@@ -189,7 +173,7 @@ func TestController_delegatesToTheService(t *testing.T) {
 
 func TestController_serviceErrorIsBadRequest(t *testing.T) {
 	svc := NewMockService(t)
-	svc.EXPECT().SetName(mock.Anything, "production", memberId, " ").Return(errors.New("incorrect name"))
+	svc.EXPECT().SetName(mock.Anything, memberId, " ").Return(errors.New("incorrect name"))
 
 	rec := serve(svc, http.MethodPut, "/chat/profile/name", memberId.String(), `{"name":" "}`)
 

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
@@ -27,14 +26,10 @@ func (r *repository) RemoveServerIP(ctx context.Context, memberId, ip string) er
 	return nil
 }
 
-func (r *repository) DidBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
-	block, err := r.apps.Table(app, "block")
-	if err != nil {
-		return false, err
-	}
+func (r *repository) DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
 	var a gocql.UUID
-	err = r.session.Query(
-		fmt.Sprintf(`SELECT blocked_id FROM %s WHERE blocker_id = ? AND blocked_id = ?`, block), blockerId, blockedId,
+	err := r.session.Query(
+		`SELECT blocked_id FROM block WHERE blocker_id = ? AND blocked_id = ?`, blockerId, blockedId,
 	).ScanContext(ctx, &a)
 	if errors.Is(gocql.ErrNotFound, err) {
 		return false, nil
@@ -48,13 +43,9 @@ func (r *repository) DidBlock(ctx context.Context, app string, blockerId gocql.U
 	return true, nil
 }
 
-func (r *repository) FindChatParticipantIds(ctx context.Context, app string, roomId gocql.UUID) (ids []gocql.UUID, err error) {
-	chatRoom, err := r.apps.Table(app, "chat_room_by_id")
-	if err != nil {
-		return nil, err
-	}
+func (r *repository) FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error) {
 	err = r.session.Query(
-		fmt.Sprintf(`SELECT participant_ids FROM %s WHERE id = ?`, chatRoom), roomId).
+		`SELECT participant_ids FROM chat_room_by_id WHERE id = ?`, roomId).
 		ScanContext(ctx, &ids)
 	if err != nil {
 		slog.Error("fail to find chat participant ids", "err", err,
@@ -64,12 +55,8 @@ func (r *repository) FindChatParticipantIds(ctx context.Context, app string, roo
 	return ids, nil
 }
 
-func (r *repository) AddReporterIdByReportedId(ctx context.Context, app string, reporterId gocql.UUID, reportedId gocql.UUID) error {
-	profile, err := r.apps.Table(app, "profile_by_id")
-	if err != nil {
-		return err
-	}
-	err = r.session.Query(fmt.Sprintf(`UPDATE %s USING TTL ? SET reporter_ids = reporter_ids + ? WHERE id = ?`, profile),
+func (r *repository) AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error {
+	err := r.session.Query(`UPDATE profile_by_id USING TTL ? SET reporter_ids = reporter_ids + ? WHERE id = ?`,
 		30*24*60*60, []gocql.UUID{reporterId}, reportedId).ExecContext(ctx)
 	if err != nil {
 		slog.Error("fail to add reporter id by reported id",
@@ -81,14 +68,10 @@ func (r *repository) AddReporterIdByReportedId(ctx context.Context, app string, 
 	return nil
 }
 
-func (r *repository) FindReportCountById(ctx context.Context, app string, reportedId gocql.UUID) (count int, err error) {
-	profile, err := r.apps.Table(app, "profile_by_id")
-	if err != nil {
-		return 0, err
-	}
+func (r *repository) FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error) {
 	var reporterIds []gocql.UUID
 	err = r.session.Query(
-		fmt.Sprintf(`SELECT reporter_ids FROM %s WHERE id = ?`, profile),
+		`SELECT reporter_ids FROM profile_by_id WHERE id = ?`,
 		reportedId,
 	).ScanContext(ctx, &reporterIds)
 	if err != nil {
@@ -100,12 +83,8 @@ func (r *repository) FindReportCountById(ctx context.Context, app string, report
 	return len(reporterIds), nil
 }
 
-func (r *repository) AddBlockedConversation(ctx context.Context, app string, memberId gocql.UUID, conversationId gocql.UUID) error {
-	profile, err := r.apps.Table(app, "profile_by_id")
-	if err != nil {
-		return err
-	}
-	err = r.session.Query(fmt.Sprintf(`UPDATE %s USING TTL ? SET blocked_conversations = blocked_conversations + ? WHERE id = ?`, profile),
+func (r *repository) AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error {
+	err := r.session.Query(`UPDATE profile_by_id USING TTL ? SET blocked_conversations = blocked_conversations + ? WHERE id = ?`,
 		360*24*60*60, []gocql.UUID{conversationId}, memberId).ExecContext(ctx)
 	if err != nil {
 		slog.Error("fail to add blocked conversation", "err", err,
@@ -116,12 +95,8 @@ func (r *repository) AddBlockedConversation(ctx context.Context, app string, mem
 	return nil
 }
 
-func (r *repository) FindBlockedConversations(ctx context.Context, app string, id gocql.UUID) (ids []gocql.UUID, err error) {
-	profile, err := r.apps.Table(app, "profile_by_id")
-	if err != nil {
-		return nil, err
-	}
-	err = r.session.Query(fmt.Sprintf(`SELECT blocked_conversations FROM %s WHERE id = ?`, profile), id).ScanContext(ctx, &ids)
+func (r *repository) FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error) {
+	err = r.session.Query(`SELECT blocked_conversations FROM profile_by_id WHERE id = ?`, id).ScanContext(ctx, &ids)
 	if err != nil {
 		slog.Error("fail to find blocked conversations by id", "err", err,
 			"id", id)

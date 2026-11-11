@@ -33,14 +33,6 @@ spec:
         - path:
             type: PathPrefix
             value: {{ $app.routePath }}
-      # which app the request is for, from the hostname it came in on. set and not added, so a client's own X-App
-      # is replaced: a service can trust it to pick the app's data, like the auth topic of a report
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-App
-                value: {{ $.Values.app | quote }}
       backendRefs:
         - name: {{ $name }}
           {{- if $app.backendNamespace }}

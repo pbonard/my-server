@@ -12,22 +12,19 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// Repository writes the messages of an app, in its keyspace. chat creates the table there
 type Repository interface {
-	SaveMessage(ctx context.Context, app string, id, toId, fromId, roomId gocql.UUID, contentType string, contents []string) error
+	SaveMessage(ctx context.Context, id, toId, fromId, roomId gocql.UUID, contentType string, contents []string) error
 }
 
 type repository struct {
-	// without a keyspace of its own, so a query names the keyspace of its app and one without fails instead of
-	// writing to some default
 	session *gocql.Session
-	apps    common.Apps
 }
 
 func NewRepository() Repository {
 	k8ssandraHost := os.Getenv("K8SSANDRA_HOST")
 	cluster := gocql.NewCluster(k8ssandraHost)
 	cluster.Port = 9042
+	cluster.Keyspace = os.Getenv("PROFILE")
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: os.Getenv("K8SSANDRA_USERNAME"),
 		Password: os.Getenv("K8SSANDRA_PASSWORD"),
@@ -56,7 +53,6 @@ func NewRepository() Repository {
 
 	r := repository{
 		session: session,
-		apps:    common.LoadApps(),
 	}
 
 	return &r

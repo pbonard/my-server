@@ -1,45 +1,24 @@
 package common
 
 import (
-	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestLoadApps(t *testing.T) {
-	t.Run("from APPS", func(t *testing.T) {
-		t.Setenv("APPS", "production, holidayfriend,")
-		apps := LoadApps()
-		if len(apps) != 2 || !apps["production"] || !apps["holidayfriend"] {
-			t.Fatalf("apps = %v", apps)
-		}
-	})
-	t.Run("PROFILE alone without APPS", func(t *testing.T) {
-		t.Setenv("APPS", "")
-		t.Setenv("PROFILE", "production")
-		apps := LoadApps()
-		if len(apps) != 1 || !apps["production"] {
-			t.Fatalf("apps = %v", apps)
-		}
-	})
-}
-
-func TestTable(t *testing.T) {
-	apps := Apps{"production": true, "holidayfriend": true}
-
-	table, err := apps.Table("holidayfriend", "profile_by_id")
-	if err != nil || table != "holidayfriend.profile_by_id" {
-		t.Fatalf("table = %q, err = %v", table, err)
+func TestAppScoped(t *testing.T) {
+	tests := []struct {
+		profile string
+		want    string
+	}{
+		{profile: "production", want: "chat-message"},
+		// a service without PROFILE is the production one, as before there were other apps
+		{profile: "", want: "chat-message"},
+		{profile: "holidayfriend", want: "holidayfriend.chat-message"},
 	}
-	// a keyspace not served, or anything else a header could carry, never reaches a query
-	for _, app := range []string{"other", "", "production.profile_by_id; DROP"} {
-		if _, err := apps.Table(app, "profile_by_id"); !errors.Is(err, ErrUnknownApp) {
-			t.Fatalf("app %q: err = %v", app, err)
-		}
-	}
-}
-
-func TestAppOrDefault(t *testing.T) {
-	if AppOrDefault("") != DefaultApp || AppOrDefault("holidayfriend") != "holidayfriend" {
-		t.Fatal("AppOrDefault")
+	for _, tt := range tests {
+		t.Run(tt.profile, func(t *testing.T) {
+			assert.Equal(t, tt.want, AppScoped(tt.profile, "chat-message"))
+		})
 	}
 }

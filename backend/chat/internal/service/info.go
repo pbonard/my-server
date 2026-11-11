@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *service) SetName(ctx context.Context, app string, memberId uuid.UUID, name string) error {
+func (s *service) SetName(ctx context.Context, memberId uuid.UUID, name string) error {
 	sanitizedName := strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return -1
@@ -23,15 +23,15 @@ func (s *service) SetName(ctx context.Context, app string, memberId uuid.UUID, n
 		slog.Info("incorrect name")
 		return errors.New("incorrect name")
 	}
-	err := s.repository.SaveNameById(ctx, app, gocql.UUID(memberId), sanitizedName)
+	err := s.repository.SaveNameById(ctx, gocql.UUID(memberId), sanitizedName)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *service) GetProfile(ctx context.Context, app string, id uuid.UUID) (*dto.GetProfileResponse, error) {
-	name, err := s.repository.FindProfileById(ctx, app, gocql.UUID(id))
+func (s *service) GetProfile(ctx context.Context, id uuid.UUID) (*dto.GetProfileResponse, error) {
+	name, err := s.repository.FindProfileById(ctx, gocql.UUID(id))
 	if errors.Is(err, gocql.ErrNotFound) {
 		err = nil
 	}
@@ -44,8 +44,8 @@ func (s *service) GetProfile(ctx context.Context, app string, id uuid.UUID) (*dt
 	return &res, nil
 }
 
-func (s *service) GetChatRoomInfo(ctx context.Context, app string, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error) {
-	name, roomType, err := s.repository.FindChatRoomInfoById(ctx, app, gocql.UUID(id))
+func (s *service) GetChatRoomInfo(ctx context.Context, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error) {
+	name, roomType, err := s.repository.FindChatRoomInfoById(ctx, gocql.UUID(id))
 	if err != nil {
 		return nil, err
 	}

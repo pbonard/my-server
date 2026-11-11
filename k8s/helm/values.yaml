@@ -1,8 +1,5 @@
 namespace: backend
 hostname: "backend.pbonard.com"
-# the app the routes of this release serve, the X-App header the gateway sets. the cassandra keyspace of the app,
-# so "<app>.auth" is the topic of its auth
-app: "production"
 email: ""
 registry: "ghcr.io/pbonard"
 
@@ -54,9 +51,6 @@ apps:
     image: "backend/chat:fba1f73"
     port: 8080
     routePath: /chat
-    # the chat route of holidayfriend points at this service (its backendNamespace)
-    allowRoutesFrom:
-      - holidayfriend
     authentication: false
     garage: true
     kafka: true

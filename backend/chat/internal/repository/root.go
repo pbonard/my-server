@@ -4,7 +4,6 @@ import (
 	"backend/chat/internal/projection"
 	"backend/common"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -15,32 +14,27 @@ import (
 	"github.com/valkey-io/valkey-go"
 )
 
-// Repository reads and writes the cassandra tables of an app, its keyspace, and valkey, which all the apps share:
-// its keys are member ids and file names, never the same in two apps
 type Repository interface {
-	FindChatRoomInfoById(ctx context.Context, app string, id gocql.UUID) (name string, roomType string, err error)
-	FindProfileById(ctx context.Context, app string, id gocql.UUID) (name string, err error)
-	SaveNameById(ctx context.Context, app string, id gocql.UUID, name string) error
+	FindChatRoomInfoById(ctx context.Context, id gocql.UUID) (name string, roomType string, err error)
+	FindProfileById(ctx context.Context, id gocql.UUID) (name string, err error)
+	SaveNameById(ctx context.Context, id gocql.UUID, name string) error
 	SetServerIP(ctx context.Context, memberId, ip string) error
 	RemoveServerIP(ctx context.Context, memberId, ip string) error
-	DidBlock(ctx context.Context, app string, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
-	FindChatParticipantIds(ctx context.Context, app string, roomId gocql.UUID) (ids []gocql.UUID, err error)
-	AddReporterIdByReportedId(ctx context.Context, app string, reporterId gocql.UUID, reportedId gocql.UUID) error
-	FindReportCountById(ctx context.Context, app string, reportedId gocql.UUID) (count int, err error)
-	AddBlockedConversation(ctx context.Context, app string, memberId gocql.UUID, conversationId gocql.UUID) error
-	FindBlockedConversations(ctx context.Context, app string, id gocql.UUID) (ids []gocql.UUID, err error)
-	FindRecentMessagesByToId(ctx context.Context, app string, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error)
+	DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
+	FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error)
+	AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error
+	FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error)
+	AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error
+	FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error)
+	FindRecentMessagesByToId(ctx context.Context, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error)
 	SetFilepath(ctx context.Context, id string, filenames []string) error
 	HasFilepath(ctx context.Context, id string, filenames []string) (bool, error)
 	RemoveFilepath(ctx context.Context, id string, filenames []string) error
-	FindIdsByFilename(ctx context.Context, app string, filename gocql.UUID) (ids []gocql.UUID, err error)
+	FindIdsByFilename(ctx context.Context, filename gocql.UUID) (ids []gocql.UUID, err error)
 }
 
 type repository struct {
-	// without a keyspace of its own, so a query names the keyspace of its app and one without fails instead of
-	// reading some default
 	session *gocql.Session
-	apps    common.Apps
 	client  valkey.Client
 }
 
@@ -48,6 +42,7 @@ func NewRepository() Repository {
 	k8ssandraHost := os.Getenv("K8SSANDRA_HOST")
 	cluster := gocql.NewCluster(k8ssandraHost)
 	cluster.Port = 9042
+	cluster.Keyspace = os.Getenv("PROFILE")
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: os.Getenv("K8SSANDRA_USERNAME"),
 		Password: os.Getenv("K8SSANDRA_PASSWORD"),
@@ -72,10 +67,7 @@ func NewRepository() Repository {
 		panic(err)
 	}
 
-	apps := common.LoadApps()
-	// in the keyspace of every app, which bootstrap creates
-	for app := range apps {
-		err = session.Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s.message_by_to_id (
+	err = session.Query(`CREATE TABLE IF NOT EXISTS message_by_to_id (
     id uuid,
     to_id uuid,
     from_id uuid,
@@ -83,30 +75,29 @@ func NewRepository() Repository {
     content_type text,
     contents set<text>,
     PRIMARY KEY ((to_id), id)
-    ) WITH CLUSTERING ORDER BY (id DESC);`, app)).Exec()
-		if err != nil {
-			log.Panicf("fail to create table %s.message_by_to_id: %v", app, err)
-		}
-		err = session.Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s.profile_by_id (
+    ) WITH CLUSTERING ORDER BY (id DESC);`).Exec()
+	if err != nil {
+		log.Panicf("fail to create table payload: %v", err)
+	}
+	err = session.Query(`CREATE TABLE IF NOT EXISTS profile_by_id (
     id uuid,
     name text,
     reporter_ids set<uuid>,
     blocked_conversations set<uuid>,
     PRIMARY KEY (id)
-    );`, app)).Exec()
-		if err != nil {
-			log.Panicf("fail to create table %s.profile_by_id: %v", app, err)
-		}
-		err = session.Query(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s.chat_room_by_id (
+    );`).Exec()
+	if err != nil {
+		log.Panicf("fail to create table profile_by_id: %v", err)
+	}
+	err = session.Query(`CREATE TABLE IF NOT EXISTS chat_room_by_id (
     id uuid,
     name text,
     room_type text,
     participant_ids set<uuid>,
     PRIMARY KEY (id)
-    );`, app)).Exec()
-		if err != nil {
-			log.Panicf("fail to create table %s.chat_room_by_id: %v", app, err)
-		}
+    );`).Exec()
+	if err != nil {
+		log.Panicf("fail to create table chat_room_by_id: %v", err)
 	}
 	log.Print("success to connect cassandra")
 
@@ -130,7 +121,6 @@ func NewRepository() Repository {
 
 	r := &repository{
 		session: session,
-		apps:    apps,
 		client:  client,
 	}
 

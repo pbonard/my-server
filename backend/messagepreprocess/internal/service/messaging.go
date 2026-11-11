@@ -11,13 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *service) ManageMessage(ctx context.Context, app string, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) error {
+func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) error {
 	var toIds [][]byte
 	roomId := toId
 	if toIdType == "personal" {
 		toIds = append(toIds, fromId[:])
 		if contentType != "block" && contentType != "unblock" && contentType != "quit" && contentType != "delete" {
-			b, err := s.repository.IsBlocked(ctx, app, gocql.UUID(toId), gocql.UUID(fromId))
+			b, err := s.repository.IsBlocked(ctx, gocql.UUID(toId), gocql.UUID(fromId))
 			if err != nil {
 				return err
 			}
@@ -27,19 +27,19 @@ func (s *service) ManageMessage(ctx context.Context, app string, id, fromId uuid
 		}
 	}
 	if contentType == "block" {
-		err := s.repository.AddBlock(ctx, app, gocql.UUID(fromId), gocql.UUID(toId))
+		err := s.repository.AddBlock(ctx, gocql.UUID(fromId), gocql.UUID(toId))
 		if err != nil {
 			return err
 		}
 	}
 	if contentType == "unblock" {
-		err := s.repository.RemoveBlock(ctx, app, gocql.UUID(fromId), gocql.UUID(toId))
+		err := s.repository.RemoveBlock(ctx, gocql.UUID(fromId), gocql.UUID(toId))
 		if err != nil {
 			return err
 		}
 	}
 	if toIdType == "group" && contentType != "create" && contentType != "quit" && contentType != "delete" {
-		participantIds, err := s.repository.FindParticipantIds(ctx, app, gocql.UUID(toId))
+		participantIds, err := s.repository.FindParticipantIds(ctx, gocql.UUID(toId))
 		if errors.Is(err, gocql.ErrNotFound) {
 			err = nil
 		}
@@ -51,20 +51,20 @@ func (s *service) ManageMessage(ctx context.Context, app string, id, fromId uuid
 		}
 	}
 	if contentType == "create" {
-		err := s.repository.CreateChatRoom(ctx, app, gocql.UUID(roomId), gocql.UUID(fromId), contents[0])
+		err := s.repository.CreateChatRoom(ctx, gocql.UUID(roomId), gocql.UUID(fromId), contents[0])
 		contents = []string{}
 		if err != nil {
 			return err
 		}
 	}
 	if contentType == "participate" {
-		err := s.repository.AddParticipantId(ctx, app, gocql.UUID(roomId), gocql.UUID(fromId))
+		err := s.repository.AddParticipantId(ctx, gocql.UUID(roomId), gocql.UUID(fromId))
 		if err != nil {
 			return err
 		}
 	}
 	if toIdType == "group" && contentType == "quit" {
-		err := s.repository.RemoveParticipantId(ctx, app, gocql.UUID(roomId), gocql.UUID(fromId))
+		err := s.repository.RemoveParticipantId(ctx, gocql.UUID(roomId), gocql.UUID(fromId))
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func (s *service) ManageMessage(ctx context.Context, app string, id, fromId uuid
 				for _, tid := range toIds {
 					castedIds = append(castedIds, gocql.UUID(tid))
 				}
-				err = s.repository.SaveIdsByFileName(ctx, app, castedIds, gocql.UUID(filename))
+				err = s.repository.SaveIdsByFileName(ctx, castedIds, gocql.UUID(filename))
 				if err != nil {
 					em.Lock()
 					es = append(es, err)
@@ -115,8 +115,7 @@ func (s *service) ManageMessage(ctx context.Context, app string, id, fromId uuid
 		ContentType: contentType,
 		Contents:    contents,
 		NoPush:      noPush,
-		App:         app,
 	})
 
-	return s.producer.Commit("prepared-message", nil, p, nil)
+	return s.producer.Commit(common.AppScoped(s.profile, "prepared-message"), nil, p, nil)
 }

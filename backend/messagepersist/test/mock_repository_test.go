@@ -48,16 +48,16 @@ func (_m *MockRepository) EXPECT() *MockRepository_Expecter {
 }
 
 // SaveMessage provides a mock function for the type MockRepository
-func (_mock *MockRepository) SaveMessage(ctx context.Context, app string, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error {
-	ret := _mock.Called(ctx, app, id, toId, fromId, roomId, contentType, contents)
+func (_mock *MockRepository) SaveMessage(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error {
+	ret := _mock.Called(ctx, id, toId, fromId, roomId, contentType, contents)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveMessage")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, string, []string) error); ok {
-		r0 = returnFunc(ctx, app, id, toId, fromId, roomId, contentType, contents)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, string, []string) error); ok {
+		r0 = returnFunc(ctx, id, toId, fromId, roomId, contentType, contents)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -71,26 +71,25 @@ type MockRepository_SaveMessage_Call struct {
 
 // SaveMessage is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - id gocql.UUID
 //   - toId gocql.UUID
 //   - fromId gocql.UUID
 //   - roomId gocql.UUID
 //   - contentType string
 //   - contents []string
-func (_e *MockRepository_Expecter) SaveMessage(ctx any, app any, id any, toId any, fromId any, roomId any, contentType any, contents any) *MockRepository_SaveMessage_Call {
-	return &MockRepository_SaveMessage_Call{Call: _e.mock.On("SaveMessage", ctx, app, id, toId, fromId, roomId, contentType, contents)}
+func (_e *MockRepository_Expecter) SaveMessage(ctx any, id any, toId any, fromId any, roomId any, contentType any, contents any) *MockRepository_SaveMessage_Call {
+	return &MockRepository_SaveMessage_Call{Call: _e.mock.On("SaveMessage", ctx, id, toId, fromId, roomId, contentType, contents)}
 }
 
-func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, app string, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string)) *MockRepository_SaveMessage_Call {
+func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string)) *MockRepository_SaveMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 gocql.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(gocql.UUID)
 		}
 		var arg2 gocql.UUID
 		if args[2] != nil {
@@ -104,17 +103,13 @@ func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, app
 		if args[4] != nil {
 			arg4 = args[4].(gocql.UUID)
 		}
-		var arg5 gocql.UUID
+		var arg5 string
 		if args[5] != nil {
-			arg5 = args[5].(gocql.UUID)
+			arg5 = args[5].(string)
 		}
-		var arg6 string
+		var arg6 []string
 		if args[6] != nil {
-			arg6 = args[6].(string)
-		}
-		var arg7 []string
-		if args[7] != nil {
-			arg7 = args[7].([]string)
+			arg6 = args[6].([]string)
 		}
 		run(
 			arg0,
@@ -124,7 +119,6 @@ func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, app
 			arg4,
 			arg5,
 			arg6,
-			arg7,
 		)
 	})
 	return _c
@@ -135,7 +129,7 @@ func (_c *MockRepository_SaveMessage_Call) Return(err error) *MockRepository_Sav
 	return _c
 }
 
-func (_c *MockRepository_SaveMessage_Call) RunAndReturn(run func(ctx context.Context, app string, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error) *MockRepository_SaveMessage_Call {
+func (_c *MockRepository_SaveMessage_Call) RunAndReturn(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error) *MockRepository_SaveMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }

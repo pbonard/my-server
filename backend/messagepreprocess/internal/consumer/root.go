@@ -21,16 +21,20 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+// the group of the production app, the one of any other is common.AppScoped(profile, groupId)
 const groupId = "message-preprocess"
 
 type Consumer struct {
 	consumerGroup sarama.ConsumerGroup
 	service       service.Service
 	producer      producer.SyncProducer
+	// the app this consumer runs for, read once: its group and topics are built from it
+	profile string
 }
 
 func NewConsumer(s service.Service, p producer.SyncProducer) *Consumer {
-	consumerGroup, err := connectConsumer(groupId)
+	profile := os.Getenv("PROFILE")
+	consumerGroup, err := connectConsumer(common.AppScoped(profile, groupId))
 	if err != nil {
 		log.Panicf("fail to create consumer group client: %v", err)
 	}
@@ -38,6 +42,7 @@ func NewConsumer(s service.Service, p producer.SyncProducer) *Consumer {
 		consumerGroup: consumerGroup,
 		service:       s,
 		producer:      p,
+		profile:       profile,
 	}
 }
 
@@ -94,7 +99,12 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	}
 }
 
-func (c *Consumer) GetMessage(topics []string) error {
+// GetMessage consumes the topics of this consumer's app, named as production's, like "prepared-message"
+func (c *Consumer) GetMessage(names []string) error {
+	topics := make([]string, len(names))
+	for i, name := range names {
+		topics[i] = common.AppScoped(c.profile, name)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -167,7 +177,7 @@ func (c *Consumer) distinguishMessage(
 ) error {
 	for _, h := range message.Headers {
 		// a copy re-sent for another group's retry, this group handles the original record itself
-		if string(h.Key) == "partitionId" && !strings.HasPrefix(string(h.Value), groupId+":") {
+		if string(h.Key) == "partitionId" && !strings.HasPrefix(string(h.Value), common.AppScoped(c.profile, groupId)+":") {
 			return nil
 		}
 	}
@@ -179,17 +189,17 @@ func (c *Consumer) distinguishMessage(
 			"payload.Value", message.Value)
 		return nil
 	}
-	err = c.service.ManageMessage(ctx, common.AppOrDefault(p.App), uuid.UUID(p.Id), uuid.UUID(p.FromId), p.ToIdType, uuid.UUID(p.ToId), p.ContentType, p.Contents, p.NoPush)
+	err = c.service.ManageMessage(ctx, uuid.UUID(p.Id), uuid.UUID(p.FromId), p.ToIdType, uuid.UUID(p.ToId), p.ContentType, p.Contents, p.NoPush)
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}
 		for _, h := range message.Headers {
 			// a re-sent record carries the partition id of the group that failed, other groups treat it as a new record
-			if string(h.Key) == "partitionId" && strings.HasPrefix(string(h.Value), groupId+":") {
+			if string(h.Key) == "partitionId" && strings.HasPrefix(string(h.Value), common.AppScoped(c.profile, groupId)+":") {
 				e.PartitionId = string(h.Value)
 			}
 		}
 		if e.PartitionId == "" {
-			e.PartitionId = fmt.Sprintf("%s:%s:%d:%d", groupId, message.Topic, message.Partition, message.Offset)
+			e.PartitionId = fmt.Sprintf("%s:%s:%d:%d", common.AppScoped(c.profile, groupId), message.Topic, message.Partition, message.Offset)
 			e.Backoff = common.AddJitter(2000)
 			e.Multiplier = 2
 			e.Cap = 15000000

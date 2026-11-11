@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *service) GetRecentMessages(ctx context.Context, app string, id, cursor uuid.UUID) (res []dto.MessagingResponse, err error) {
-	result, err := s.repository.FindRecentMessagesByToId(ctx, app, gocql.UUID(id), gocql.UUID(cursor))
+func (s *service) GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) (res []dto.MessagingResponse, err error) {
+	result, err := s.repository.FindRecentMessagesByToId(ctx, gocql.UUID(id), gocql.UUID(cursor))
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (s *service) GetRecentMessages(ctx context.Context, app string, id, cursor 
 	return res, nil
 }
 
-func (s *service) PublishMessaging(ctx context.Context, app string, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
+func (s *service) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
@@ -59,9 +59,8 @@ func (s *service) PublishMessaging(ctx context.Context, app string, fromId uuid.
 		ContentType: contentType,
 		Contents:    contents,
 		NoPush:      noPush,
-		App:         app,
 	})
-	err = s.producer.Commit("chat-message", nil, p, nil)
+	err = s.producer.Commit(common.AppScoped(s.profile, "chat-message"), nil, p, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,8 @@ func (s *service) GeneratePresignedURL(ctx context.Context, id uuid.UUID, conten
 	return res, nil
 }
 
-func (s *service) GenerateSignedURL(ctx context.Context, app string, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error) {
-	ids, err := s.repository.FindIdsByFilename(ctx, app, gocql.UUID(filename))
+func (s *service) GenerateSignedURL(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error) {
+	ids, err := s.repository.FindIdsByFilename(ctx, gocql.UUID(filename))
 	if err != nil {
 		return nil, err
 	}

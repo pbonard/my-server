@@ -66,7 +66,7 @@ func (s *service) RelayMessage(
 			ContentType:    contentType,
 			Contents:       contents,
 		})
-		err := s.producer.Commit("notification", nil, p, nil)
+		err := s.producer.Commit(common.AppScoped(s.profile, "notification"), nil, p, nil)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (s *service) RelayMessage(
 			ContentType:    contentType,
 			Contents:       contents,
 		})
-		return s.producer.Commit("notification", nil, p, nil)
+		return s.producer.Commit(common.AppScoped(s.profile, "notification"), nil, p, nil)
 	}
 	return nil
 }

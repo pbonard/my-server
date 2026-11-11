@@ -22,8 +22,6 @@ type ChatMessage struct {
 	// true for a message no one is pushed about, like the ones of the holidayfriend web app. left out it's false, so
 	// the messages from before it was added, and of every client that doesn't send it, push as they always did
 	NoPush bool `json:"noPush,omitempty"`
-	// the app of the sender, its keyspace: the services after chat read and write its tables. left out, DefaultApp
-	App string `json:"app,omitempty"`
 }
 
 type PreparedMessage struct {
@@ -36,8 +34,6 @@ type PreparedMessage struct {
 	Contents       []string `json:"contents"`
 	// the ChatMessage's, messagerelay doesn't hand an undelivered one to notification
 	NoPush bool `json:"noPush,omitempty"`
-	// the ChatMessage's, messagepersist saves it in the keyspace of the app
-	App string `json:"app,omitempty"`
 }
 
 // TaskTypeHeader is the kafka header that says what a record asks for, so a consumer picks its handler without

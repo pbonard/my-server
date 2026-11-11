@@ -27,16 +27,16 @@ func (s *service) RemoveServerIP(ctx context.Context, memberId []byte, ip string
 	return nil
 }
 
-func (s *service) CheckBlock(ctx context.Context, app string, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error) {
-	w, err := s.repository.DidBlock(ctx, app, gocql.UUID(blockerId), gocql.UUID(blockedId))
+func (s *service) CheckBlock(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error) {
+	w, err := s.repository.DidBlock(ctx, gocql.UUID(blockerId), gocql.UUID(blockedId))
 	if err != nil {
 		return nil, err
 	}
 	return map[string]bool{"didBlock": w}, nil
 }
 
-func (s *service) GetChatParticipants(ctx context.Context, app string, roomId uuid.UUID) ([]dto.GetProfileResponse, error) {
-	ps, err := s.repository.FindChatParticipantIds(ctx, app, gocql.UUID(roomId))
+func (s *service) GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error) {
+	ps, err := s.repository.FindChatParticipantIds(ctx, gocql.UUID(roomId))
 	if err != nil {
 		return nil, err
 	}
@@ -50,25 +50,23 @@ func (s *service) GetChatParticipants(ctx context.Context, app string, roomId uu
 	return res, nil
 }
 
-// ReportUser records a report, app is the app of the reporter: the reported one is of the same app, the members of
-// one never meet those of another
-func (s *service) ReportUser(ctx context.Context, app string, reporterId, reportedId uuid.UUID) error {
-	err := s.repository.AddReporterIdByReportedId(ctx, app, gocql.UUID(reporterId), gocql.UUID(reportedId))
+func (s *service) ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error {
+	err := s.repository.AddReporterIdByReportedId(ctx, gocql.UUID(reporterId), gocql.UUID(reportedId))
 	if err != nil {
 		return err
 	}
-	rc, err := s.repository.FindReportCountById(ctx, app, gocql.UUID(reportedId))
+	rc, err := s.repository.FindReportCountById(ctx, gocql.UUID(reportedId))
 	if err != nil {
 		return err
 	}
 	log.Printf("report count of %v : %v", reportedId, rc)
 	if rc > 5 {
-		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of their app,
-		// so an auth only ever gets its own members. keyed by the member so their events stay ordered.
+		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of this chat's
+		// app, its PROFILE, so an auth only ever gets its own members. keyed by the member so their events stay ordered.
 		// a report past the limit asks again, auth finds the account already gone
 		p := common.Marshal(common.AuthEvent{Id: reportedId[:]})
 		headers := []sarama.RecordHeader{{Key: []byte(common.TaskTypeHeader), Value: []byte(common.AuthTaskBan)}}
-		err = s.producer.Commit(common.AuthTopic(app), reportedId[:], p, headers)
+		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], p, headers)
 		if err != nil {
 			return err
 		}
@@ -76,16 +74,16 @@ func (s *service) ReportUser(ctx context.Context, app string, reporterId, report
 	return nil
 }
 
-func (s *service) BlockConversation(ctx context.Context, app string, memberId, conversationId uuid.UUID) error {
-	err := s.repository.AddBlockedConversation(ctx, app, gocql.UUID(memberId), gocql.UUID(conversationId))
+func (s *service) BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error {
+	err := s.repository.AddBlockedConversation(ctx, gocql.UUID(memberId), gocql.UUID(conversationId))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *service) GetBlockedConversations(ctx context.Context, app string, memberId uuid.UUID) ([]dto.BlockReport, error) {
-	ids, err := s.repository.FindBlockedConversations(ctx, app, gocql.UUID(memberId))
+func (s *service) GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error) {
+	ids, err := s.repository.FindBlockedConversations(ctx, gocql.UUID(memberId))
 	if err != nil {
 		return nil, err
 	}

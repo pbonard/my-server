@@ -49,16 +49,16 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // BlockConversation provides a mock function for the type MockService
-func (_mock *MockService) BlockConversation(ctx context.Context, app string, memberId uuid.UUID, conversationId uuid.UUID) error {
-	ret := _mock.Called(ctx, app, memberId, conversationId)
+func (_mock *MockService) BlockConversation(ctx context.Context, memberId uuid.UUID, conversationId uuid.UUID) error {
+	ret := _mock.Called(ctx, memberId, conversationId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for BlockConversation")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, app, memberId, conversationId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, memberId, conversationId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -72,36 +72,30 @@ type MockService_BlockConversation_Call struct {
 
 // BlockConversation is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - memberId uuid.UUID
 //   - conversationId uuid.UUID
-func (_e *MockService_Expecter) BlockConversation(ctx any, app any, memberId any, conversationId any) *MockService_BlockConversation_Call {
-	return &MockService_BlockConversation_Call{Call: _e.mock.On("BlockConversation", ctx, app, memberId, conversationId)}
+func (_e *MockService_Expecter) BlockConversation(ctx any, memberId any, conversationId any) *MockService_BlockConversation_Call {
+	return &MockService_BlockConversation_Call{Call: _e.mock.On("BlockConversation", ctx, memberId, conversationId)}
 }
 
-func (_c *MockService_BlockConversation_Call) Run(run func(ctx context.Context, app string, memberId uuid.UUID, conversationId uuid.UUID)) *MockService_BlockConversation_Call {
+func (_c *MockService_BlockConversation_Call) Run(run func(ctx context.Context, memberId uuid.UUID, conversationId uuid.UUID)) *MockService_BlockConversation_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
 		var arg2 uuid.UUID
 		if args[2] != nil {
 			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 uuid.UUID
-		if args[3] != nil {
-			arg3 = args[3].(uuid.UUID)
-		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -112,14 +106,14 @@ func (_c *MockService_BlockConversation_Call) Return(err error) *MockService_Blo
 	return _c
 }
 
-func (_c *MockService_BlockConversation_Call) RunAndReturn(run func(ctx context.Context, app string, memberId uuid.UUID, conversationId uuid.UUID) error) *MockService_BlockConversation_Call {
+func (_c *MockService_BlockConversation_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID, conversationId uuid.UUID) error) *MockService_BlockConversation_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CheckBlock provides a mock function for the type MockService
-func (_mock *MockService) CheckBlock(ctx context.Context, app string, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error) {
-	ret := _mock.Called(ctx, app, blockerId, blockedId)
+func (_mock *MockService) CheckBlock(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error) {
+	ret := _mock.Called(ctx, blockerId, blockedId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CheckBlock")
@@ -127,18 +121,18 @@ func (_mock *MockService) CheckBlock(ctx context.Context, app string, blockerId 
 
 	var r0 map[string]bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) (map[string]bool, error)); ok {
-		return returnFunc(ctx, app, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (map[string]bool, error)); ok {
+		return returnFunc(ctx, blockerId, blockedId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) map[string]bool); ok {
-		r0 = returnFunc(ctx, app, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) map[string]bool); ok {
+		r0 = returnFunc(ctx, blockerId, blockedId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]bool)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, blockerId, blockedId)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, blockerId, blockedId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -152,36 +146,30 @@ type MockService_CheckBlock_Call struct {
 
 // CheckBlock is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - blockerId uuid.UUID
 //   - blockedId uuid.UUID
-func (_e *MockService_Expecter) CheckBlock(ctx any, app any, blockerId any, blockedId any) *MockService_CheckBlock_Call {
-	return &MockService_CheckBlock_Call{Call: _e.mock.On("CheckBlock", ctx, app, blockerId, blockedId)}
+func (_e *MockService_Expecter) CheckBlock(ctx any, blockerId any, blockedId any) *MockService_CheckBlock_Call {
+	return &MockService_CheckBlock_Call{Call: _e.mock.On("CheckBlock", ctx, blockerId, blockedId)}
 }
 
-func (_c *MockService_CheckBlock_Call) Run(run func(ctx context.Context, app string, blockerId uuid.UUID, blockedId uuid.UUID)) *MockService_CheckBlock_Call {
+func (_c *MockService_CheckBlock_Call) Run(run func(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID)) *MockService_CheckBlock_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
 		var arg2 uuid.UUID
 		if args[2] != nil {
 			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 uuid.UUID
-		if args[3] != nil {
-			arg3 = args[3].(uuid.UUID)
-		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -192,7 +180,7 @@ func (_c *MockService_CheckBlock_Call) Return(stringToBool map[string]bool, err 
 	return _c
 }
 
-func (_c *MockService_CheckBlock_Call) RunAndReturn(run func(ctx context.Context, app string, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error)) *MockService_CheckBlock_Call {
+func (_c *MockService_CheckBlock_Call) RunAndReturn(run func(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error)) *MockService_CheckBlock_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -278,8 +266,8 @@ func (_c *MockService_GeneratePresignedURL_Call) RunAndReturn(run func(ctx conte
 }
 
 // GenerateSignedURL provides a mock function for the type MockService
-func (_mock *MockService) GenerateSignedURL(ctx context.Context, app string, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error) {
-	ret := _mock.Called(ctx, app, memberId, contentType, filename)
+func (_mock *MockService) GenerateSignedURL(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error) {
+	ret := _mock.Called(ctx, memberId, contentType, filename)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GenerateSignedURL")
@@ -287,18 +275,18 @@ func (_mock *MockService) GenerateSignedURL(ctx context.Context, app string, mem
 
 	var r0 map[string]string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, string, uuid.UUID) (map[string]string, error)); ok {
-		return returnFunc(ctx, app, memberId, contentType, filename)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID) (map[string]string, error)); ok {
+		return returnFunc(ctx, memberId, contentType, filename)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, string, uuid.UUID) map[string]string); ok {
-		r0 = returnFunc(ctx, app, memberId, contentType, filename)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID) map[string]string); ok {
+		r0 = returnFunc(ctx, memberId, contentType, filename)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]string)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, memberId, contentType, filename)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, memberId, contentType, filename)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -312,408 +300,26 @@ type MockService_GenerateSignedURL_Call struct {
 
 // GenerateSignedURL is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - memberId uuid.UUID
 //   - contentType string
 //   - filename uuid.UUID
-func (_e *MockService_Expecter) GenerateSignedURL(ctx any, app any, memberId any, contentType any, filename any) *MockService_GenerateSignedURL_Call {
-	return &MockService_GenerateSignedURL_Call{Call: _e.mock.On("GenerateSignedURL", ctx, app, memberId, contentType, filename)}
+func (_e *MockService_Expecter) GenerateSignedURL(ctx any, memberId any, contentType any, filename any) *MockService_GenerateSignedURL_Call {
+	return &MockService_GenerateSignedURL_Call{Call: _e.mock.On("GenerateSignedURL", ctx, memberId, contentType, filename)}
 }
 
-func (_c *MockService_GenerateSignedURL_Call) Run(run func(ctx context.Context, app string, memberId uuid.UUID, contentType string, filename uuid.UUID)) *MockService_GenerateSignedURL_Call {
+func (_c *MockService_GenerateSignedURL_Call) Run(run func(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID)) *MockService_GenerateSignedURL_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 uuid.UUID
+		var arg2 string
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		var arg3 string
-		if args[3] != nil {
-			arg3 = args[3].(string)
-		}
-		var arg4 uuid.UUID
-		if args[4] != nil {
-			arg4 = args[4].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-			arg4,
-		)
-	})
-	return _c
-}
-
-func (_c *MockService_GenerateSignedURL_Call) Return(stringToString map[string]string, err error) *MockService_GenerateSignedURL_Call {
-	_c.Call.Return(stringToString, err)
-	return _c
-}
-
-func (_c *MockService_GenerateSignedURL_Call) RunAndReturn(run func(ctx context.Context, app string, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)) *MockService_GenerateSignedURL_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetBlockedConversations provides a mock function for the type MockService
-func (_mock *MockService) GetBlockedConversations(ctx context.Context, app string, memberId uuid.UUID) ([]dto.BlockReport, error) {
-	ret := _mock.Called(ctx, app, memberId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetBlockedConversations")
-	}
-
-	var r0 []dto.BlockReport
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) ([]dto.BlockReport, error)); ok {
-		return returnFunc(ctx, app, memberId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) []dto.BlockReport); ok {
-		r0 = returnFunc(ctx, app, memberId)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.BlockReport)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, memberId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockService_GetBlockedConversations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBlockedConversations'
-type MockService_GetBlockedConversations_Call struct {
-	*mock.Call
-}
-
-// GetBlockedConversations is a helper method to define mock.On call
-//   - ctx context.Context
-//   - app string
-//   - memberId uuid.UUID
-func (_e *MockService_Expecter) GetBlockedConversations(ctx any, app any, memberId any) *MockService_GetBlockedConversations_Call {
-	return &MockService_GetBlockedConversations_Call{Call: _e.mock.On("GetBlockedConversations", ctx, app, memberId)}
-}
-
-func (_c *MockService_GetBlockedConversations_Call) Run(run func(ctx context.Context, app string, memberId uuid.UUID)) *MockService_GetBlockedConversations_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockService_GetBlockedConversations_Call) Return(blockReports []dto.BlockReport, err error) *MockService_GetBlockedConversations_Call {
-	_c.Call.Return(blockReports, err)
-	return _c
-}
-
-func (_c *MockService_GetBlockedConversations_Call) RunAndReturn(run func(ctx context.Context, app string, memberId uuid.UUID) ([]dto.BlockReport, error)) *MockService_GetBlockedConversations_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetChatParticipants provides a mock function for the type MockService
-func (_mock *MockService) GetChatParticipants(ctx context.Context, app string, roomId uuid.UUID) ([]dto.GetProfileResponse, error) {
-	ret := _mock.Called(ctx, app, roomId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetChatParticipants")
-	}
-
-	var r0 []dto.GetProfileResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) ([]dto.GetProfileResponse, error)); ok {
-		return returnFunc(ctx, app, roomId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) []dto.GetProfileResponse); ok {
-		r0 = returnFunc(ctx, app, roomId)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.GetProfileResponse)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, roomId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockService_GetChatParticipants_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatParticipants'
-type MockService_GetChatParticipants_Call struct {
-	*mock.Call
-}
-
-// GetChatParticipants is a helper method to define mock.On call
-//   - ctx context.Context
-//   - app string
-//   - roomId uuid.UUID
-func (_e *MockService_Expecter) GetChatParticipants(ctx any, app any, roomId any) *MockService_GetChatParticipants_Call {
-	return &MockService_GetChatParticipants_Call{Call: _e.mock.On("GetChatParticipants", ctx, app, roomId)}
-}
-
-func (_c *MockService_GetChatParticipants_Call) Run(run func(ctx context.Context, app string, roomId uuid.UUID)) *MockService_GetChatParticipants_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockService_GetChatParticipants_Call) Return(getProfileResponses []dto.GetProfileResponse, err error) *MockService_GetChatParticipants_Call {
-	_c.Call.Return(getProfileResponses, err)
-	return _c
-}
-
-func (_c *MockService_GetChatParticipants_Call) RunAndReturn(run func(ctx context.Context, app string, roomId uuid.UUID) ([]dto.GetProfileResponse, error)) *MockService_GetChatParticipants_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetChatRoomInfo provides a mock function for the type MockService
-func (_mock *MockService) GetChatRoomInfo(ctx context.Context, app string, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error) {
-	ret := _mock.Called(ctx, app, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetChatRoomInfo")
-	}
-
-	var r0 *dto.GetChatRoomInfoResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (*dto.GetChatRoomInfoResponse, error)); ok {
-		return returnFunc(ctx, app, id)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) *dto.GetChatRoomInfoResponse); ok {
-		r0 = returnFunc(ctx, app, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.GetChatRoomInfoResponse)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockService_GetChatRoomInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatRoomInfo'
-type MockService_GetChatRoomInfo_Call struct {
-	*mock.Call
-}
-
-// GetChatRoomInfo is a helper method to define mock.On call
-//   - ctx context.Context
-//   - app string
-//   - id uuid.UUID
-func (_e *MockService_Expecter) GetChatRoomInfo(ctx any, app any, id any) *MockService_GetChatRoomInfo_Call {
-	return &MockService_GetChatRoomInfo_Call{Call: _e.mock.On("GetChatRoomInfo", ctx, app, id)}
-}
-
-func (_c *MockService_GetChatRoomInfo_Call) Run(run func(ctx context.Context, app string, id uuid.UUID)) *MockService_GetChatRoomInfo_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockService_GetChatRoomInfo_Call) Return(getChatRoomInfoResponse *dto.GetChatRoomInfoResponse, err error) *MockService_GetChatRoomInfo_Call {
-	_c.Call.Return(getChatRoomInfoResponse, err)
-	return _c
-}
-
-func (_c *MockService_GetChatRoomInfo_Call) RunAndReturn(run func(ctx context.Context, app string, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error)) *MockService_GetChatRoomInfo_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetProfile provides a mock function for the type MockService
-func (_mock *MockService) GetProfile(ctx context.Context, app string, id uuid.UUID) (*dto.GetProfileResponse, error) {
-	ret := _mock.Called(ctx, app, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetProfile")
-	}
-
-	var r0 *dto.GetProfileResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (*dto.GetProfileResponse, error)); ok {
-		return returnFunc(ctx, app, id)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) *dto.GetProfileResponse); ok {
-		r0 = returnFunc(ctx, app, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.GetProfileResponse)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockService_GetProfile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProfile'
-type MockService_GetProfile_Call struct {
-	*mock.Call
-}
-
-// GetProfile is a helper method to define mock.On call
-//   - ctx context.Context
-//   - app string
-//   - id uuid.UUID
-func (_e *MockService_Expecter) GetProfile(ctx any, app any, id any) *MockService_GetProfile_Call {
-	return &MockService_GetProfile_Call{Call: _e.mock.On("GetProfile", ctx, app, id)}
-}
-
-func (_c *MockService_GetProfile_Call) Run(run func(ctx context.Context, app string, id uuid.UUID)) *MockService_GetProfile_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockService_GetProfile_Call) Return(getProfileResponse *dto.GetProfileResponse, err error) *MockService_GetProfile_Call {
-	_c.Call.Return(getProfileResponse, err)
-	return _c
-}
-
-func (_c *MockService_GetProfile_Call) RunAndReturn(run func(ctx context.Context, app string, id uuid.UUID) (*dto.GetProfileResponse, error)) *MockService_GetProfile_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetRecentMessages provides a mock function for the type MockService
-func (_mock *MockService) GetRecentMessages(ctx context.Context, app string, id uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error) {
-	ret := _mock.Called(ctx, app, id, cursor)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetRecentMessages")
-	}
-
-	var r0 []dto.MessagingResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) ([]dto.MessagingResponse, error)); ok {
-		return returnFunc(ctx, app, id, cursor)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) []dto.MessagingResponse); ok {
-		r0 = returnFunc(ctx, app, id, cursor)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.MessagingResponse)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, app, id, cursor)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockService_GetRecentMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRecentMessages'
-type MockService_GetRecentMessages_Call struct {
-	*mock.Call
-}
-
-// GetRecentMessages is a helper method to define mock.On call
-//   - ctx context.Context
-//   - app string
-//   - id uuid.UUID
-//   - cursor uuid.UUID
-func (_e *MockService_Expecter) GetRecentMessages(ctx any, app any, id any, cursor any) *MockService_GetRecentMessages_Call {
-	return &MockService_GetRecentMessages_Call{Call: _e.mock.On("GetRecentMessages", ctx, app, id, cursor)}
-}
-
-func (_c *MockService_GetRecentMessages_Call) Run(run func(ctx context.Context, app string, id uuid.UUID, cursor uuid.UUID)) *MockService_GetRecentMessages_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(string)
 		}
 		var arg3 uuid.UUID
 		if args[3] != nil {
@@ -729,19 +335,365 @@ func (_c *MockService_GetRecentMessages_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
+func (_c *MockService_GenerateSignedURL_Call) Return(stringToString map[string]string, err error) *MockService_GenerateSignedURL_Call {
+	_c.Call.Return(stringToString, err)
+	return _c
+}
+
+func (_c *MockService_GenerateSignedURL_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)) *MockService_GenerateSignedURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetBlockedConversations provides a mock function for the type MockService
+func (_mock *MockService) GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error) {
+	ret := _mock.Called(ctx, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetBlockedConversations")
+	}
+
+	var r0 []dto.BlockReport
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]dto.BlockReport, error)); ok {
+		return returnFunc(ctx, memberId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []dto.BlockReport); ok {
+		r0 = returnFunc(ctx, memberId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.BlockReport)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, memberId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetBlockedConversations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBlockedConversations'
+type MockService_GetBlockedConversations_Call struct {
+	*mock.Call
+}
+
+// GetBlockedConversations is a helper method to define mock.On call
+//   - ctx context.Context
+//   - memberId uuid.UUID
+func (_e *MockService_Expecter) GetBlockedConversations(ctx any, memberId any) *MockService_GetBlockedConversations_Call {
+	return &MockService_GetBlockedConversations_Call{Call: _e.mock.On("GetBlockedConversations", ctx, memberId)}
+}
+
+func (_c *MockService_GetBlockedConversations_Call) Run(run func(ctx context.Context, memberId uuid.UUID)) *MockService_GetBlockedConversations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetBlockedConversations_Call) Return(blockReports []dto.BlockReport, err error) *MockService_GetBlockedConversations_Call {
+	_c.Call.Return(blockReports, err)
+	return _c
+}
+
+func (_c *MockService_GetBlockedConversations_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error)) *MockService_GetBlockedConversations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetChatParticipants provides a mock function for the type MockService
+func (_mock *MockService) GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error) {
+	ret := _mock.Called(ctx, roomId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetChatParticipants")
+	}
+
+	var r0 []dto.GetProfileResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]dto.GetProfileResponse, error)); ok {
+		return returnFunc(ctx, roomId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []dto.GetProfileResponse); ok {
+		r0 = returnFunc(ctx, roomId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.GetProfileResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, roomId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetChatParticipants_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatParticipants'
+type MockService_GetChatParticipants_Call struct {
+	*mock.Call
+}
+
+// GetChatParticipants is a helper method to define mock.On call
+//   - ctx context.Context
+//   - roomId uuid.UUID
+func (_e *MockService_Expecter) GetChatParticipants(ctx any, roomId any) *MockService_GetChatParticipants_Call {
+	return &MockService_GetChatParticipants_Call{Call: _e.mock.On("GetChatParticipants", ctx, roomId)}
+}
+
+func (_c *MockService_GetChatParticipants_Call) Run(run func(ctx context.Context, roomId uuid.UUID)) *MockService_GetChatParticipants_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetChatParticipants_Call) Return(getProfileResponses []dto.GetProfileResponse, err error) *MockService_GetChatParticipants_Call {
+	_c.Call.Return(getProfileResponses, err)
+	return _c
+}
+
+func (_c *MockService_GetChatParticipants_Call) RunAndReturn(run func(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error)) *MockService_GetChatParticipants_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetChatRoomInfo provides a mock function for the type MockService
+func (_mock *MockService) GetChatRoomInfo(ctx context.Context, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetChatRoomInfo")
+	}
+
+	var r0 *dto.GetChatRoomInfoResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*dto.GetChatRoomInfoResponse, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *dto.GetChatRoomInfoResponse); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.GetChatRoomInfoResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetChatRoomInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatRoomInfo'
+type MockService_GetChatRoomInfo_Call struct {
+	*mock.Call
+}
+
+// GetChatRoomInfo is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockService_Expecter) GetChatRoomInfo(ctx any, id any) *MockService_GetChatRoomInfo_Call {
+	return &MockService_GetChatRoomInfo_Call{Call: _e.mock.On("GetChatRoomInfo", ctx, id)}
+}
+
+func (_c *MockService_GetChatRoomInfo_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockService_GetChatRoomInfo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetChatRoomInfo_Call) Return(getChatRoomInfoResponse *dto.GetChatRoomInfoResponse, err error) *MockService_GetChatRoomInfo_Call {
+	_c.Call.Return(getChatRoomInfoResponse, err)
+	return _c
+}
+
+func (_c *MockService_GetChatRoomInfo_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*dto.GetChatRoomInfoResponse, error)) *MockService_GetChatRoomInfo_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetProfile provides a mock function for the type MockService
+func (_mock *MockService) GetProfile(ctx context.Context, id uuid.UUID) (*dto.GetProfileResponse, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProfile")
+	}
+
+	var r0 *dto.GetProfileResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*dto.GetProfileResponse, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *dto.GetProfileResponse); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.GetProfileResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetProfile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProfile'
+type MockService_GetProfile_Call struct {
+	*mock.Call
+}
+
+// GetProfile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockService_Expecter) GetProfile(ctx any, id any) *MockService_GetProfile_Call {
+	return &MockService_GetProfile_Call{Call: _e.mock.On("GetProfile", ctx, id)}
+}
+
+func (_c *MockService_GetProfile_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockService_GetProfile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetProfile_Call) Return(getProfileResponse *dto.GetProfileResponse, err error) *MockService_GetProfile_Call {
+	_c.Call.Return(getProfileResponse, err)
+	return _c
+}
+
+func (_c *MockService_GetProfile_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*dto.GetProfileResponse, error)) *MockService_GetProfile_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRecentMessages provides a mock function for the type MockService
+func (_mock *MockService) GetRecentMessages(ctx context.Context, id uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error) {
+	ret := _mock.Called(ctx, id, cursor)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRecentMessages")
+	}
+
+	var r0 []dto.MessagingResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) ([]dto.MessagingResponse, error)); ok {
+		return returnFunc(ctx, id, cursor)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) []dto.MessagingResponse); ok {
+		r0 = returnFunc(ctx, id, cursor)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.MessagingResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id, cursor)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetRecentMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRecentMessages'
+type MockService_GetRecentMessages_Call struct {
+	*mock.Call
+}
+
+// GetRecentMessages is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - cursor uuid.UUID
+func (_e *MockService_Expecter) GetRecentMessages(ctx any, id any, cursor any) *MockService_GetRecentMessages_Call {
+	return &MockService_GetRecentMessages_Call{Call: _e.mock.On("GetRecentMessages", ctx, id, cursor)}
+}
+
+func (_c *MockService_GetRecentMessages_Call) Run(run func(ctx context.Context, id uuid.UUID, cursor uuid.UUID)) *MockService_GetRecentMessages_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
 func (_c *MockService_GetRecentMessages_Call) Return(res []dto.MessagingResponse, err error) *MockService_GetRecentMessages_Call {
 	_c.Call.Return(res, err)
 	return _c
 }
 
-func (_c *MockService_GetRecentMessages_Call) RunAndReturn(run func(ctx context.Context, app string, id uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error)) *MockService_GetRecentMessages_Call {
+func (_c *MockService_GetRecentMessages_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error)) *MockService_GetRecentMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // PublishMessaging provides a mock function for the type MockService
-func (_mock *MockService) PublishMessaging(ctx context.Context, app string, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
-	ret := _mock.Called(ctx, app, fromId, toIdType, toId, contentType, contents, noPush)
+func (_mock *MockService) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
+	ret := _mock.Called(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PublishMessaging")
@@ -749,18 +701,18 @@ func (_mock *MockService) PublishMessaging(ctx context.Context, app string, from
 
 	var r0 map[string]uuid.UUID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, string, uuid.UUID, string, []string, bool) (map[string]uuid.UUID, error)); ok {
-		return returnFunc(ctx, app, fromId, toIdType, toId, contentType, contents, noPush)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) (map[string]uuid.UUID, error)); ok {
+		return returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, string, uuid.UUID, string, []string, bool) map[string]uuid.UUID); ok {
-		r0 = returnFunc(ctx, app, fromId, toIdType, toId, contentType, contents, noPush)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) map[string]uuid.UUID); ok {
+		r0 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]uuid.UUID)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, string, uuid.UUID, string, []string, bool) error); ok {
-		r1 = returnFunc(ctx, app, fromId, toIdType, toId, contentType, contents, noPush)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) error); ok {
+		r1 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -774,50 +726,45 @@ type MockService_PublishMessaging_Call struct {
 
 // PublishMessaging is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - fromId uuid.UUID
 //   - toIdType string
 //   - toId uuid.UUID
 //   - contentType string
 //   - contents []string
 //   - noPush bool
-func (_e *MockService_Expecter) PublishMessaging(ctx any, app any, fromId any, toIdType any, toId any, contentType any, contents any, noPush any) *MockService_PublishMessaging_Call {
-	return &MockService_PublishMessaging_Call{Call: _e.mock.On("PublishMessaging", ctx, app, fromId, toIdType, toId, contentType, contents, noPush)}
+func (_e *MockService_Expecter) PublishMessaging(ctx any, fromId any, toIdType any, toId any, contentType any, contents any, noPush any) *MockService_PublishMessaging_Call {
+	return &MockService_PublishMessaging_Call{Call: _e.mock.On("PublishMessaging", ctx, fromId, toIdType, toId, contentType, contents, noPush)}
 }
 
-func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, app string, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool)) *MockService_PublishMessaging_Call {
+func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool)) *MockService_PublishMessaging_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 uuid.UUID
+		var arg2 string
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(string)
 		}
-		var arg3 string
+		var arg3 uuid.UUID
 		if args[3] != nil {
-			arg3 = args[3].(string)
+			arg3 = args[3].(uuid.UUID)
 		}
-		var arg4 uuid.UUID
+		var arg4 string
 		if args[4] != nil {
-			arg4 = args[4].(uuid.UUID)
+			arg4 = args[4].(string)
 		}
-		var arg5 string
+		var arg5 []string
 		if args[5] != nil {
-			arg5 = args[5].(string)
+			arg5 = args[5].([]string)
 		}
-		var arg6 []string
+		var arg6 bool
 		if args[6] != nil {
-			arg6 = args[6].([]string)
-		}
-		var arg7 bool
-		if args[7] != nil {
-			arg7 = args[7].(bool)
+			arg6 = args[6].(bool)
 		}
 		run(
 			arg0,
@@ -827,7 +774,6 @@ func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, a
 			arg4,
 			arg5,
 			arg6,
-			arg7,
 		)
 	})
 	return _c
@@ -838,7 +784,7 @@ func (_c *MockService_PublishMessaging_Call) Return(stringToUUID map[string]uuid
 	return _c
 }
 
-func (_c *MockService_PublishMessaging_Call) RunAndReturn(run func(ctx context.Context, app string, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)) *MockService_PublishMessaging_Call {
+func (_c *MockService_PublishMessaging_Call) RunAndReturn(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)) *MockService_PublishMessaging_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -907,16 +853,16 @@ func (_c *MockService_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Con
 }
 
 // ReportUser provides a mock function for the type MockService
-func (_mock *MockService) ReportUser(ctx context.Context, app string, reporterId uuid.UUID, reportedId uuid.UUID) error {
-	ret := _mock.Called(ctx, app, reporterId, reportedId)
+func (_mock *MockService) ReportUser(ctx context.Context, reporterId uuid.UUID, reportedId uuid.UUID) error {
+	ret := _mock.Called(ctx, reporterId, reportedId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReportUser")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, app, reporterId, reportedId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, reporterId, reportedId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -930,36 +876,30 @@ type MockService_ReportUser_Call struct {
 
 // ReportUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - reporterId uuid.UUID
 //   - reportedId uuid.UUID
-func (_e *MockService_Expecter) ReportUser(ctx any, app any, reporterId any, reportedId any) *MockService_ReportUser_Call {
-	return &MockService_ReportUser_Call{Call: _e.mock.On("ReportUser", ctx, app, reporterId, reportedId)}
+func (_e *MockService_Expecter) ReportUser(ctx any, reporterId any, reportedId any) *MockService_ReportUser_Call {
+	return &MockService_ReportUser_Call{Call: _e.mock.On("ReportUser", ctx, reporterId, reportedId)}
 }
 
-func (_c *MockService_ReportUser_Call) Run(run func(ctx context.Context, app string, reporterId uuid.UUID, reportedId uuid.UUID)) *MockService_ReportUser_Call {
+func (_c *MockService_ReportUser_Call) Run(run func(ctx context.Context, reporterId uuid.UUID, reportedId uuid.UUID)) *MockService_ReportUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
 		var arg2 uuid.UUID
 		if args[2] != nil {
 			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 uuid.UUID
-		if args[3] != nil {
-			arg3 = args[3].(uuid.UUID)
-		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -970,22 +910,22 @@ func (_c *MockService_ReportUser_Call) Return(err error) *MockService_ReportUser
 	return _c
 }
 
-func (_c *MockService_ReportUser_Call) RunAndReturn(run func(ctx context.Context, app string, reporterId uuid.UUID, reportedId uuid.UUID) error) *MockService_ReportUser_Call {
+func (_c *MockService_ReportUser_Call) RunAndReturn(run func(ctx context.Context, reporterId uuid.UUID, reportedId uuid.UUID) error) *MockService_ReportUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SetName provides a mock function for the type MockService
-func (_mock *MockService) SetName(ctx context.Context, app string, memberId uuid.UUID, name string) error {
-	ret := _mock.Called(ctx, app, memberId, name)
+func (_mock *MockService) SetName(ctx context.Context, memberId uuid.UUID, name string) error {
+	ret := _mock.Called(ctx, memberId, name)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetName")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, string) error); ok {
-		r0 = returnFunc(ctx, app, memberId, name)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) error); ok {
+		r0 = returnFunc(ctx, memberId, name)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -999,36 +939,30 @@ type MockService_SetName_Call struct {
 
 // SetName is a helper method to define mock.On call
 //   - ctx context.Context
-//   - app string
 //   - memberId uuid.UUID
 //   - name string
-func (_e *MockService_Expecter) SetName(ctx any, app any, memberId any, name any) *MockService_SetName_Call {
-	return &MockService_SetName_Call{Call: _e.mock.On("SetName", ctx, app, memberId, name)}
+func (_e *MockService_Expecter) SetName(ctx any, memberId any, name any) *MockService_SetName_Call {
+	return &MockService_SetName_Call{Call: _e.mock.On("SetName", ctx, memberId, name)}
 }
 
-func (_c *MockService_SetName_Call) Run(run func(ctx context.Context, app string, memberId uuid.UUID, name string)) *MockService_SetName_Call {
+func (_c *MockService_SetName_Call) Run(run func(ctx context.Context, memberId uuid.UUID, name string)) *MockService_SetName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 uuid.UUID
+		var arg2 string
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		var arg3 string
-		if args[3] != nil {
-			arg3 = args[3].(string)
+			arg2 = args[2].(string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -1039,7 +973,7 @@ func (_c *MockService_SetName_Call) Return(err error) *MockService_SetName_Call 
 	return _c
 }
 
-func (_c *MockService_SetName_Call) RunAndReturn(run func(ctx context.Context, app string, memberId uuid.UUID, name string) error) *MockService_SetName_Call {
+func (_c *MockService_SetName_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID, name string) error) *MockService_SetName_Call {
 	_c.Call.Return(run)
 	return _c
 }

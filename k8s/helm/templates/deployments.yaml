@@ -214,8 +214,8 @@ spec:
       targetPort: {{ $app.port }}
 {{- if $app.allowRoutesFrom }}
 ---
-# HTTPRoutes of these namespaces may point at this service, like the chat route of holidayfriend: a route can't use a
-# service of another namespace unless the namespace of the service allows it here
+# HTTPRoutes of these namespaces may point at this service (their backendNamespace): a route can't use a service of
+# another namespace unless the namespace of the service allows it here
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
