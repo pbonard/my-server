@@ -37,9 +37,15 @@ type deps struct {
 	mailer *MockSMTPClient
 }
 
+// bannedEmail is the one email the repository reports as banned, every other one signs up as before
+const bannedEmail = "banned@example.com"
+
 func newService(t *testing.T) (service.Service, deps) {
 	t.Setenv("BUNDLE_IDENTIFIER", "com.example.app")
 	d := deps{NewMockRepository(t), NewMockSMSClient(t), NewMockGoogleAuthClient(t), NewMockSMTPClient(t)}
+	d.repo.EXPECT().WasEmailBanned(mock.Anything, mock.MatchedBy(func(e string) bool { return e != bannedEmail })).
+		Return(false, nil).Maybe()
+	d.repo.EXPECT().WasEmailBanned(mock.Anything, bannedEmail).Return(true, nil).Maybe()
 	appleKeyFunc := func(*jwt.Token) (any, error) { return &keyApple.PublicKey, nil }
 	keys := service.Keys{PrivateKeyAT: keyAT, PrivateKeyRT: keyRT, PublicKeyRT: &keyRT.PublicKey}
 	return service.NewService(d.repo, keys, d.sms, d.google, appleKeyFunc, d.mailer), d

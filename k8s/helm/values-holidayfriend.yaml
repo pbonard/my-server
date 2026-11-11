@@ -1,4 +1,4 @@
-# holidayfriend: layered on values.yaml, so auth follows the image tag of the mobile deployment
+# holidayfriend: layered on values.yaml, so auth and the chat services follow the image tags of the mobile deployment
 # its web app deploys from its own repo (holidayfriend-web)
 namespace: holidayfriend
 hostname: "holidayfriend.pbonard.com"
@@ -25,12 +25,11 @@ apps:
     twilio: false
     # the key that seals the secrets of authenticators
     totp: true
-  chat: null
+  # chat, messagepreprocess, messagepersist and messagerelay as in values.yaml: a chat stack of holidayfriend's own, on
+  # its keyspace (PROFILE) and its own topics, "holidayfriend.chat-message" and "holidayfriend.prepared-message".
+  # no notification: the web app sends noPush, so messagerelay never hands a message on to be pushed
   expo-notification: null
   fcmnotification: null
-  messagepersist: null
-  messagepreprocess: null
-  messagerelay: null
   notification: null
   signalrelay: null
   search: null

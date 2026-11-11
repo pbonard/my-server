@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) error {
+func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) error {
 	var toIds [][]byte
 	roomId := toId
 	if toIdType == "personal" {
@@ -114,7 +114,8 @@ func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdT
 		FromId:      fromId[:],
 		ContentType: contentType,
 		Contents:    contents,
+		NoPush:      noPush,
 	})
 
-	return s.producer.Commit("prepared-message", nil, p, nil)
+	return s.producer.Commit(common.AppScoped(s.profile, "prepared-message"), nil, p, nil)
 }

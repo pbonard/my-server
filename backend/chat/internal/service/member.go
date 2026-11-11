@@ -2,9 +2,11 @@ package service
 
 import (
 	"backend/chat/internal/dto"
+	"backend/common"
 	"context"
 	"log"
 
+	"github.com/IBM/sarama"
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
 )
@@ -59,15 +61,12 @@ func (s *service) ReportUser(ctx context.Context, reporterId, reportedId uuid.UU
 	}
 	log.Printf("report count of %v : %v", reportedId, rc)
 	if rc > 5 {
-		email, phoneNumber, err1 := s.repository.FindEmailAndPhoneNumberById(ctx, gocql.UUID(reportedId))
-		if err1 != nil {
-			return err1
-		}
-		err = s.repository.DeleteAccount(ctx, gocql.UUID(reportedId), email, phoneNumber)
-		if err != nil {
-			return err
-		}
-		err = s.repository.BanPhoneNumber(ctx, phoneNumber)
+		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of this chat's
+		// app, its PROFILE, so an auth only ever gets its own members. keyed by the member so their events stay ordered.
+		// a report past the limit asks again, auth finds the account already gone
+		p := common.Marshal(common.AuthEvent{Id: reportedId[:]})
+		headers := []sarama.RecordHeader{{Key: []byte(common.TaskTypeHeader), Value: []byte(common.AuthTaskBan)}}
+		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], p, headers)
 		if err != nil {
 			return err
 		}

@@ -172,7 +172,7 @@ func TestManageMessage(t *testing.T) {
 			}
 
 			err := service.NewService(repo, producer).
-				ManageMessage(context.Background(), msgId, fromId, tt.toIdType, toId, tt.contentType, tt.contents)
+				ManageMessage(context.Background(), msgId, fromId, tt.toIdType, toId, tt.contentType, tt.contents, false)
 
 			if tt.wantErr != nil {
 				require.Error(t, err)
@@ -203,9 +203,28 @@ func TestManageMessage_sendFailureIsReturned(t *testing.T) {
 	producer.EXPECT().Commit("prepared-message", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
 
 	err := service.NewService(repo, producer).
-		ManageMessage(context.Background(), msgId, fromId, "personal", toId, "text", []string{"hi"})
+		ManageMessage(context.Background(), msgId, fromId, "personal", toId, "text", []string{"hi"}, false)
 
 	assert.ErrorIs(t, err, errKafka)
+}
+
+// the messagepreprocess of holidayfriend hands its messages on to its own topic, and without a push when asked
+func TestManageMessage_noPushIsCarriedToTheTopicOfThisApp(t *testing.T) {
+	t.Setenv("PROFILE", "holidayfriend")
+	repo := NewMockRepository(t)
+	producer := mocks.NewMockSyncProducer(t)
+	repo.EXPECT().IsBlocked(mock.Anything, gocql.UUID(toId), gocql.UUID(fromId)).Return(false, nil)
+	var pushed []byte
+	producer.EXPECT().Commit("holidayfriend.prepared-message", mock.Anything, mock.Anything, mock.Anything).
+		Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil)
+
+	err := service.NewService(repo, producer).
+		ManageMessage(context.Background(), msgId, fromId, "personal", toId, "text", []string{"hi"}, true)
+
+	require.NoError(t, err)
+	var msg common.PreparedMessage
+	require.NoError(t, json.Unmarshal(pushed, &msg))
+	assert.True(t, msg.NoPush)
 }
 
 // errAny marks a case that must fail without caring which error it is

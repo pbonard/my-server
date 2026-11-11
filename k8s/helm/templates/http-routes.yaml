@@ -35,6 +35,10 @@ spec:
             value: {{ $app.routePath }}
       backendRefs:
         - name: {{ $name }}
+          {{- if $app.backendNamespace }}
+          # an app of another release: its namespace allows this route with a ReferenceGrant (allowRoutesFrom)
+          namespace: {{ $app.backendNamespace }}
+          {{- end }}
           port: 80
 {{- end}}
 
@@ -54,11 +58,15 @@ spec:
   jwt:
     providers:
       - name: jwt-provider
-{{/*        extractFrom:*/}}
-{{/*          headers:*/}}
-{{/*            - name: Authorization*/}}
-{{/*              valuePrefix: "Bearer "*/}}
-{{/*            - name: Sec-WebSocket-Protocol*/}}
+        extractFrom:
+          headers:
+            # every request but a browser WebSocket
+            - name: Authorization
+              valuePrefix: "Bearer "
+            # a browser can't set headers on a WebSocket: new WebSocket(url, ["bearer", token]) sends
+            # "Sec-WebSocket-Protocol: bearer, <token>", and chat answers with "bearer" alone
+            - name: Sec-WebSocket-Protocol
+              valuePrefix: "bearer, "
         claimToHeaders:
           - claim: sub
             header: X-User-Id

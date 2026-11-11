@@ -47,22 +47,28 @@ func TestReportUser(t *testing.T) {
 
 		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
 	})
-	t.Run("more than 5 reports deletes the account and bans the phone", func(t *testing.T) {
+	t.Run("more than 5 reports asks the auth of this chat's app to ban them", func(t *testing.T) {
+		// the chat of holidayfriend, so the auth of holidayfriend bans them
+		t.Setenv("PROFILE", "holidayfriend")
 		s, d := newService(t)
 		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId)).Return(nil)
 		d.repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(otherId)).Return(6, nil)
-		d.repo.EXPECT().FindEmailAndPhoneNumberById(mock.Anything, gocql.UUID(otherId)).Return("a@b.c", "+821012345678", nil)
-		d.repo.EXPECT().DeleteAccount(mock.Anything, gocql.UUID(otherId), "a@b.c", "+821012345678").Return(nil)
-		d.repo.EXPECT().BanPhoneNumber(mock.Anything, "+821012345678").Return(nil)
+		var published []byte
+		ban := []sarama.RecordHeader{{Key: []byte("taskType"), Value: []byte("ban")}}
+		d.producer.EXPECT().Commit("holidayfriend.auth", otherId[:], mock.Anything, ban).
+			Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { published = value }).Return(nil)
 
 		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
+		var e common.AuthEvent
+		require.NoError(t, json.Unmarshal(published, &e))
+		assert.Equal(t, common.AuthEvent{Id: otherId[:]}, e)
 	})
-	t.Run("delete failure stops before the ban", func(t *testing.T) {
+	t.Run("a failed publish is returned", func(t *testing.T) {
+		t.Setenv("PROFILE", "production")
 		s, d := newService(t)
 		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		d.repo.EXPECT().FindReportCountById(mock.Anything, mock.Anything).Return(6, nil)
-		d.repo.EXPECT().FindEmailAndPhoneNumberById(mock.Anything, mock.Anything).Return("a@b.c", "+82", nil)
-		d.repo.EXPECT().DeleteAccount(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errDB)
+		d.producer.EXPECT().Commit("production.auth", mock.Anything, mock.Anything, mock.Anything).Return(errDB)
 
 		assert.ErrorIs(t, s.ReportUser(context.Background(), memberId, otherId), errDB)
 	})
@@ -76,7 +82,7 @@ func TestPublishMessaging_textIsProducedAsChatMessage(t *testing.T) {
 	d.producer.EXPECT().Commit("chat-message", []byte(nil), mock.Anything, []sarama.RecordHeader(nil)).
 		Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil)
 
-	resp, err := s.PublishMessaging(context.Background(), memberId, "group", roomId, "text", []string{"hi"})
+	resp, err := s.PublishMessaging(context.Background(), memberId, "group", roomId, "text", []string{"hi"}, false)
 
 	require.NoError(t, err)
 	id := resp["id"]
@@ -89,12 +95,23 @@ func TestPublishMessaging_textIsProducedAsChatMessage(t *testing.T) {
 	assert.Equal(t, []string{"hi"}, msg.Contents)
 }
 
+// the chat of holidayfriend hands its messages to its own messagepreprocess, never to the one of production
+func TestPublishMessaging_toTheTopicOfThisChatsApp(t *testing.T) {
+	t.Setenv("PROFILE", "holidayfriend")
+	s, d := newService(t)
+	d.producer.EXPECT().Commit("holidayfriend.chat-message", []byte(nil), mock.Anything, []sarama.RecordHeader(nil)).Return(nil)
+
+	_, err := s.PublishMessaging(context.Background(), memberId, "group", roomId, "text", []string{"hi"}, false)
+
+	require.NoError(t, err)
+}
+
 func TestPublishMessaging_sendFailureIsReturned(t *testing.T) {
 	s, d := newService(t)
 	errKafka := errors.New("kafka down")
 	d.producer.EXPECT().Commit("chat-message", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
 
-	resp, err := s.PublishMessaging(context.Background(), memberId, "group", roomId, "text", []string{"hi"})
+	resp, err := s.PublishMessaging(context.Background(), memberId, "group", roomId, "text", []string{"hi"}, false)
 
 	assert.ErrorIs(t, err, errKafka)
 	assert.Nil(t, resp)
@@ -108,7 +125,7 @@ func TestPublishMessaging_mediaMustBeAPresignedUpload(t *testing.T) {
 		d.repo.EXPECT().RemoveFilepath(mock.Anything, key, []string{"f1"}).Return(nil)
 		d.producer.EXPECT().Commit("chat-message", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-		_, err := s.PublishMessaging(context.Background(), memberId, "personal", otherId, "image", []string{"f1"})
+		_, err := s.PublishMessaging(context.Background(), memberId, "personal", otherId, "image", []string{"f1"}, false)
 
 		assert.NoError(t, err)
 	})
@@ -116,10 +133,24 @@ func TestPublishMessaging_mediaMustBeAPresignedUpload(t *testing.T) {
 		s, d := newService(t)
 		d.repo.EXPECT().HasFilepath(mock.Anything, key, []string{"f1"}).Return(false, nil)
 
-		_, err := s.PublishMessaging(context.Background(), memberId, "personal", otherId, "image", []string{"f1"})
+		_, err := s.PublishMessaging(context.Background(), memberId, "personal", otherId, "image", []string{"f1"}, false)
 
 		assert.EqualError(t, err, "bad request")
 	})
+}
+
+func TestPublishMessaging_noPushIsCarried(t *testing.T) {
+	s, d := newService(t)
+	var pushed []byte
+	d.producer.EXPECT().Commit("chat-message", mock.Anything, mock.Anything, mock.Anything).
+		Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil)
+
+	_, err := s.PublishMessaging(context.Background(), memberId, "personal", otherId, "text", []string{"hi"}, true)
+
+	require.NoError(t, err)
+	var msg common.ChatMessage
+	require.NoError(t, json.Unmarshal(pushed, &msg))
+	assert.True(t, msg.NoPush)
 }
 
 // ---------------------------------------------------------------- files

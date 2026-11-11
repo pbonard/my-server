@@ -33,7 +33,8 @@ apps:
     authentication: true
     garage: false
     confluent: false
-    kafka: false
+    # consumes the AuthEvents of its app, like bans from chat's reports, on <PROFILE>.auth
+    kafka: true
     k8ssandra: true
     mongodb: false
     mysql: false

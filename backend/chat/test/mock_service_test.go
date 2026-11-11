@@ -692,8 +692,8 @@ func (_c *MockService_GetRecentMessages_Call) RunAndReturn(run func(ctx context.
 }
 
 // PublishMessaging provides a mock function for the type MockService
-func (_mock *MockService) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) (map[string]uuid.UUID, error) {
-	ret := _mock.Called(ctx, fromId, toIdType, toId, contentType, contents)
+func (_mock *MockService) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
+	ret := _mock.Called(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PublishMessaging")
@@ -701,18 +701,18 @@ func (_mock *MockService) PublishMessaging(ctx context.Context, fromId uuid.UUID
 
 	var r0 map[string]uuid.UUID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string) (map[string]uuid.UUID, error)); ok {
-		return returnFunc(ctx, fromId, toIdType, toId, contentType, contents)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) (map[string]uuid.UUID, error)); ok {
+		return returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string) map[string]uuid.UUID); ok {
-		r0 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) map[string]uuid.UUID); ok {
+		r0 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]uuid.UUID)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string) error); ok {
-		r1 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID, string, []string, bool) error); ok {
+		r1 = returnFunc(ctx, fromId, toIdType, toId, contentType, contents, noPush)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -731,11 +731,12 @@ type MockService_PublishMessaging_Call struct {
 //   - toId uuid.UUID
 //   - contentType string
 //   - contents []string
-func (_e *MockService_Expecter) PublishMessaging(ctx any, fromId any, toIdType any, toId any, contentType any, contents any) *MockService_PublishMessaging_Call {
-	return &MockService_PublishMessaging_Call{Call: _e.mock.On("PublishMessaging", ctx, fromId, toIdType, toId, contentType, contents)}
+//   - noPush bool
+func (_e *MockService_Expecter) PublishMessaging(ctx any, fromId any, toIdType any, toId any, contentType any, contents any, noPush any) *MockService_PublishMessaging_Call {
+	return &MockService_PublishMessaging_Call{Call: _e.mock.On("PublishMessaging", ctx, fromId, toIdType, toId, contentType, contents, noPush)}
 }
 
-func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string)) *MockService_PublishMessaging_Call {
+func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool)) *MockService_PublishMessaging_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -761,6 +762,10 @@ func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, f
 		if args[5] != nil {
 			arg5 = args[5].([]string)
 		}
+		var arg6 bool
+		if args[6] != nil {
+			arg6 = args[6].(bool)
+		}
 		run(
 			arg0,
 			arg1,
@@ -768,6 +773,7 @@ func (_c *MockService_PublishMessaging_Call) Run(run func(ctx context.Context, f
 			arg3,
 			arg4,
 			arg5,
+			arg6,
 		)
 	})
 	return _c
@@ -778,7 +784,7 @@ func (_c *MockService_PublishMessaging_Call) Return(stringToUUID map[string]uuid
 	return _c
 }
 
-func (_c *MockService_PublishMessaging_Call) RunAndReturn(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) (map[string]uuid.UUID, error)) *MockService_PublishMessaging_Call {
+func (_c *MockService_PublishMessaging_Call) RunAndReturn(run func(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)) *MockService_PublishMessaging_Call {
 	_c.Call.Return(run)
 	return _c
 }

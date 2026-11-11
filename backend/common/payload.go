@@ -19,6 +19,9 @@ type ChatMessage struct {
 	ToId        []byte   `json:"toId"`
 	ContentType string   `json:"contentType"`
 	Contents    []string `json:"contents"`
+	// true for a message no one is pushed about, like the ones of the holidayfriend web app. left out it's false, so
+	// the messages from before it was added, and of every client that doesn't send it, push as they always did
+	NoPush bool `json:"noPush,omitempty"`
 }
 
 type PreparedMessage struct {
@@ -29,6 +32,27 @@ type PreparedMessage struct {
 	FromId         []byte   `json:"fromId"`
 	ContentType    string   `json:"contentType"`
 	Contents       []string `json:"contents"`
+	// the ChatMessage's, messagerelay doesn't hand an undelivered one to notification
+	NoPush bool `json:"noPush,omitempty"`
+}
+
+// TaskTypeHeader is the kafka header that says what a record asks for, so a consumer picks its handler without
+// reading the value. kept on the record by the retry job
+const TaskTypeHeader = "taskType"
+
+// AuthTaskBan is the taskType of an AuthEvent that bans a member: auth deletes their account and bans their phone number
+const AuthTaskBan = "ban"
+
+// AuthEvent is a request to the auth of one app, on the topic "<keyspace>.auth" (production.auth, holidayfriend.auth),
+// with what it asks for in the taskType header. the topic and not a field says the app, so an auth never sees the
+// members of another
+type AuthEvent struct {
+	Id []byte `json:"id"`
+}
+
+// AuthTopic is the topic of the auth of the app on the keyspace, the PROFILE env of a service
+func AuthTopic(keyspace string) string {
+	return keyspace + ".auth"
 }
 
 type NotificationMessage struct {

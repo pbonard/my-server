@@ -3,9 +3,11 @@ package internal
 import (
 	"backend/auth/internal/client"
 	"backend/auth/internal/constant"
+	"backend/auth/internal/consumer"
 	"backend/auth/internal/controller"
 	"backend/auth/internal/repository"
 	"backend/auth/internal/service"
+	"backend/common/producer"
 	"log"
 	"log/slog"
 	"net/http"
@@ -33,6 +35,9 @@ func NewServer() {
 
 	s := service.NewService(r, service.LoadKeys(), client.NewSMSClient(), client.NewGoogleAuthClient(), appleJWKs.Keyfunc,
 		client.NewSMTPClient())
+
+	// the AuthEvents of this app, like bans from chat's reports, beside the http server
+	go consumer.NewConsumer(s, producer.NewSyncProducer("auth-"+os.Getenv("PROFILE"))).Run()
 
 	mux := http.NewServeMux()
 

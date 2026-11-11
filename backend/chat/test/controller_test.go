@@ -33,7 +33,7 @@ func serve(svc *MockService, method, target, userId, body string) *httptest.Resp
 func TestController_sendMessaging(t *testing.T) {
 	svc := NewMockService(t)
 	msgId := uuid.New()
-	svc.EXPECT().PublishMessaging(mock.Anything, memberId, "group", roomId, "text", []string{"hi"}).
+	svc.EXPECT().PublishMessaging(mock.Anything, memberId, "group", roomId, "text", []string{"hi"}, false).
 		Return(map[string]uuid.UUID{"id": msgId}, nil)
 
 	rec := serve(svc, http.MethodPost, "/chat/messaging/send", memberId.String(),
@@ -41,6 +41,17 @@ func TestController_sendMessaging(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, rec.Code)
 	assert.JSONEq(t, fmt.Sprintf(`{"id":"%s"}`, msgId), rec.Body.String())
+}
+
+func TestController_sendMessagingWithNoPush(t *testing.T) {
+	svc := NewMockService(t)
+	svc.EXPECT().PublishMessaging(mock.Anything, memberId, "personal", otherId, "text", []string{"hi"}, true).
+		Return(map[string]uuid.UUID{"id": uuid.New()}, nil)
+
+	rec := serve(svc, http.MethodPost, "/chat/messaging/send", memberId.String(),
+		fmt.Sprintf(`{"toIdType":"personal","toId":"%s","contentType":"text","contents":["hi"],"noPush":true}`, otherId))
+
+	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
 func TestController_mediaEndpointsOnlyAcceptMediaTypes(t *testing.T) {
@@ -135,9 +146,13 @@ func TestController_delegatesToTheService(t *testing.T) {
 				s.GetChatParticipants(mock.Anything, roomId).Return([]dto.GetProfileResponse{{Id: otherId}}, nil)
 			}, otherId.String()},
 		{"report user", http.MethodPost, "/chat/report/user", idBody,
-			func(s *MockService_Expecter) { s.ReportUser(mock.Anything, memberId, otherId).Return(nil) }, ""},
+			func(s *MockService_Expecter) {
+				s.ReportUser(mock.Anything, memberId, otherId).Return(nil)
+			}, ""},
 		{"block conversation", http.MethodPost, "/chat/block/conversation", idBody,
-			func(s *MockService_Expecter) { s.BlockConversation(mock.Anything, memberId, otherId).Return(nil) }, ""},
+			func(s *MockService_Expecter) {
+				s.BlockConversation(mock.Anything, memberId, otherId).Return(nil)
+			}, ""},
 		{"blocked conversations", http.MethodGet, "/chat/block/conversations", "",
 			func(s *MockService_Expecter) {
 				s.GetBlockedConversations(mock.Anything, memberId).Return([]dto.BlockReport{{Id: roomId}}, nil)

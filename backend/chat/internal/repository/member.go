@@ -26,23 +26,6 @@ func (r *repository) RemoveServerIP(ctx context.Context, memberId, ip string) er
 	return nil
 }
 
-func (r *repository) DeleteAccount(ctx context.Context, id gocql.UUID, email, phoneNumber string) error {
-	err := r.session.Batch(gocql.LoggedBatch).
-		Query("DELETE FROM member_by_id WHERE id = ?", id).
-		Query("DELETE FROM profile_by_id WHERE id = ?", id).
-		Query("DELETE FROM member_by_email WHERE email = ?", email).
-		Query("DELETE FROM member_by_phone_number WHERE phone_number = ?", phoneNumber).
-		ExecContext(ctx)
-	if err != nil {
-		slog.Error("fail to delete account",
-			"err", err,
-			"id", id.String(),
-		)
-		return err
-	}
-	return nil
-}
-
 func (r *repository) DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error) {
 	var a gocql.UUID
 	err := r.session.Query(
@@ -98,28 +81,6 @@ func (r *repository) FindReportCountById(ctx context.Context, reportedId gocql.U
 		return 0, err
 	}
 	return len(reporterIds), nil
-}
-
-func (r *repository) FindEmailAndPhoneNumberById(ctx context.Context, id gocql.UUID) (email, phoneNumber string, err error) {
-	err = r.session.Query("SELECT email, phone_number FROM member_by_id WHERE id = ?", id).
-		ScanContext(ctx, &email, &phoneNumber)
-	if err != nil {
-		slog.Error("fail to find email and phone number by id",
-			"err", err,
-			"id", id)
-		return "", "", err
-	}
-	return email, phoneNumber, nil
-}
-
-func (r *repository) BanPhoneNumber(ctx context.Context, phoneNumber string) error {
-	err := r.session.Query(`INSERT INTO banned_phone_number (phone_number) VALUES (?)`, phoneNumber).ExecContext(ctx)
-	if err != nil {
-		slog.Error("fail to ban phone number",
-			"err", err)
-		return err
-	}
-	return nil
 }
 
 func (r *repository) AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error {

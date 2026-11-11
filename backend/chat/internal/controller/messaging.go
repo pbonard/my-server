@@ -31,7 +31,7 @@ func (c *Controller) sendMessaging(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	result, err := c.service.PublishMessaging(r.Context(), memberId, req.ToIdType, req.ToId, req.ContentType, req.Contents)
+	result, err := c.service.PublishMessaging(r.Context(), memberId, req.ToIdType, req.ToId, req.ContentType, req.Contents, req.NoPush)
 	if err != nil {
 		handleError(w, err)
 		return

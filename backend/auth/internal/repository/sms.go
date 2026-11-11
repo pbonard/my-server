@@ -2,6 +2,7 @@ package repository
 
 import (
 	"backend/auth/internal/constant"
+	"context"
 	"log/slog"
 
 	"github.com/apache/cassandra-gocql-driver/v2"
@@ -148,6 +149,16 @@ func (r *repository) WasBanned(phoneNumber string) error {
 	err := r.session.Query(`SELECT phone_number FROM banned_phone_number WHERE phone_number = ?`, phoneNumber).Scan(&p)
 	if err != nil {
 		slog.Info("fail to check whether phone number was banned",
+			"err", err)
+		return err
+	}
+	return nil
+}
+
+func (r *repository) BanPhoneNumber(ctx context.Context, phoneNumber string) error {
+	err := r.session.Query(`INSERT INTO banned_phone_number (phone_number) VALUES (?)`, phoneNumber).ExecContext(ctx)
+	if err != nil {
+		slog.Error("fail to ban phone number",
 			"err", err)
 		return err
 	}

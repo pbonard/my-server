@@ -20,13 +20,10 @@ type Repository interface {
 	SaveNameById(ctx context.Context, id gocql.UUID, name string) error
 	SetServerIP(ctx context.Context, memberId, ip string) error
 	RemoveServerIP(ctx context.Context, memberId, ip string) error
-	DeleteAccount(ctx context.Context, id gocql.UUID, email, phoneNumber string) error
 	DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
 	FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error)
 	AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error
 	FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error)
-	FindEmailAndPhoneNumberById(ctx context.Context, id gocql.UUID) (email, phoneNumber string, err error)
-	BanPhoneNumber(ctx context.Context, phoneNumber string) error
 	AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error
 	FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error)
 	FindRecentMessagesByToId(ctx context.Context, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error)
@@ -98,13 +95,6 @@ func NewRepository() Repository {
     room_type text,
     participant_ids set<uuid>,
     PRIMARY KEY (id)
-    );`).Exec()
-	if err != nil {
-		log.Panicf("fail to create table chat_room_by_id: %v", err)
-	}
-	err = session.Query(`CREATE TABLE IF NOT EXISTS banned_phone_number (
-    phone_number text,
-    PRIMARY KEY (phone_number)
     );`).Exec()
 	if err != nil {
 		log.Panicf("fail to create table chat_room_by_id: %v", err)

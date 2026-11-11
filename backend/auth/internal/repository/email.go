@@ -182,3 +182,27 @@ func (r *repository) UpdatePasswordByEmail(ctx context.Context, password string,
 	}
 	return nil
 }
+
+// BanEmail keeps an email from signing up again, lowercased
+func (r *repository) BanEmail(ctx context.Context, email string) error {
+	err := r.session.Query(`INSERT INTO banned_email (email) VALUES (?)`, email).ExecContext(ctx)
+	if err != nil {
+		slog.Error("fail to ban email", "err", err)
+		return err
+	}
+	return nil
+}
+
+// WasEmailBanned is whether the email, lowercased, was banned
+func (r *repository) WasEmailBanned(ctx context.Context, email string) (bool, error) {
+	var e string
+	err := r.session.Query(`SELECT email FROM banned_email WHERE email = ?`, email).ScanContext(ctx, &e)
+	if errors.Is(err, gocql.ErrNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		slog.Error("fail to check whether email was banned", "err", err)
+		return false, err
+	}
+	return true, nil
+}

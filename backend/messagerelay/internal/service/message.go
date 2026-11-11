@@ -21,6 +21,7 @@ func (s *service) RelayMessage(
 	roomId, fromId uuid.UUID,
 	contentType string,
 	contents []string,
+	noPush bool,
 ) error {
 	var wg sync.WaitGroup
 	relayToIdsByIP := make(map[string][][]byte)
@@ -54,7 +55,8 @@ func (s *service) RelayMessage(
 	wg.Wait()
 	log.Printf("pushToId: %v, relayToId: %v", pushToIds, relayToIdsByIP)
 
-	if pushToIds != nil {
+	// no one is pushed about it, so the offline ones get it when they connect and read the recent messages
+	if pushToIds != nil && !noPush {
 		p := common.Marshal(common.PreparedMessage{
 			NotificationId: 0,
 			Id:             id[:],
@@ -64,7 +66,7 @@ func (s *service) RelayMessage(
 			ContentType:    contentType,
 			Contents:       contents,
 		})
-		err := s.producer.Commit("notification", nil, p, nil)
+		err := s.producer.Commit(common.AppScoped(s.profile, "notification"), nil, p, nil)
 		if err != nil {
 			return err
 		}
@@ -119,7 +121,7 @@ func (s *service) RelayMessage(
 		}
 	}
 
-	if filteredIds != nil {
+	if filteredIds != nil && !noPush {
 		p := common.Marshal(common.PreparedMessage{
 			NotificationId: 1,
 			Id:             id[:],
@@ -129,7 +131,7 @@ func (s *service) RelayMessage(
 			ContentType:    contentType,
 			Contents:       contents,
 		})
-		return s.producer.Commit("notification", nil, p, nil)
+		return s.producer.Commit(common.AppScoped(s.profile, "notification"), nil, p, nil)
 	}
 	return nil
 }

@@ -28,6 +28,9 @@ func (s *service) CreateMemberByEmail(ctx context.Context, email, password strin
 		)
 		return nil, ErrSignUpWithEmail
 	}
+	if err := s.checkEmailNotBanned(ctx, email); err != nil {
+		return nil, err
+	}
 
 	exist, err := s.repository.VerifiedEmailExists(ctx, email)
 	if err != nil {

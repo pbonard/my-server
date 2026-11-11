@@ -21,6 +21,7 @@ var (
 	ErrVerifySMSOTP             = errors.New("fail to verify SMS OTP")
 	ErrGenerateToken            = errors.New("fail to generate new access token")
 	ErrFailToSignOut            = errors.New("fail to sign out")
+	ErrEmailBanned              = errors.New("this email is not usable")
 
 	ErrInternalServer = errors.New("something went wrong")
 )

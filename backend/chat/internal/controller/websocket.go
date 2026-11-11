@@ -17,6 +17,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// bearerSubprotocol is how a browser, which can't set headers on a WebSocket, sends its access token:
+// new WebSocket(url, ["bearer", token]) sends "Sec-WebSocket-Protocol: bearer, <token>", the gateway checks the token
+// from there like an Authorization header, and chat answers with "bearer" alone, never the token, as the browser
+// requires one of the offered subprotocols back
+const bearerSubprotocol = "bearer"
+
 func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 	memberId, err := uuid.Parse(r.Header.Get("X-User-Id"))
 	if err != nil {
@@ -25,7 +31,13 @@ func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("fail to parse"))
 		return
 	}
-	deviceId, err := uuid.Parse(r.Header.Get("Device-Id"))
+	// the Device-Id header, or the deviceId query parameter of a browser, which can't set the header on a WebSocket.
+	// it only tells a member's connections apart, it proves nothing, so the url can carry it
+	rawDeviceId := r.Header.Get("Device-Id")
+	if rawDeviceId == "" {
+		rawDeviceId = r.URL.Query().Get("deviceId")
+	}
+	deviceId, err := uuid.Parse(rawDeviceId)
 	if err != nil {
 		slog.Error("fail to parse device id from header",
 			"err", err)
@@ -35,6 +47,8 @@ func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		//OriginPatterns:     []string{"example.com"},
 		InsecureSkipVerify: true,
+		// chosen only when the client offers it, the mobile app sends a header and offers none
+		Subprotocols: []string{bearerSubprotocol},
 	})
 	if err != nil {
 		slog.Error("fail to accept connection", "err", err)

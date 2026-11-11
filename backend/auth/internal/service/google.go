@@ -23,6 +23,9 @@ func (s *service) SignInWithGoogle(ctx context.Context, token string) (
 	emailVerified, phoneNumberVerified, id, _, role1, err1 := s.repository.FindLoginInfoByEmail(email)
 	if errors.Is(err1, gocql.ErrNotFound) {
 		err1 = nil
+		if err = s.checkEmailNotBanned(ctx, email); err != nil {
+			return nil, "", err
+		}
 		idv7, err2 := uuid.NewV7()
 		if err2 != nil {
 			slog.Error("fail to create uuid v7 for google sign in user")

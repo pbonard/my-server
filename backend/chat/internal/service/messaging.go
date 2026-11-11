@@ -33,7 +33,7 @@ func (s *service) GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) (
 	return res, nil
 }
 
-func (s *service) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string) (map[string]uuid.UUID, error) {
+func (s *service) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
@@ -58,8 +58,9 @@ func (s *service) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdTy
 		ToId:        toId[:],
 		ContentType: contentType,
 		Contents:    contents,
+		NoPush:      noPush,
 	})
-	err = s.producer.Commit("chat-message", nil, p, nil)
+	err = s.producer.Commit(common.AppScoped(s.profile, "chat-message"), nil, p, nil)
 	if err != nil {
 		return nil, err
 	}

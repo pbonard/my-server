@@ -98,6 +98,8 @@ func getStatusCode(err error) int {
 		return http.StatusUnauthorized
 	case service.ErrGenerateToken:
 		return http.StatusUnauthorized
+	case service.ErrEmailBanned:
+		return http.StatusForbidden
 	}
 	return http.StatusBadRequest
 }
