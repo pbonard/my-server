@@ -18,9 +18,16 @@ type Repository interface {
 
 type repository struct {
 	session *gocql.Session
+	// how long a message is kept, in seconds: MESSAGE_TTL ("72h"), 3 days when it's not set, for good when "0"
+	messageTTL int
 }
 
 func NewRepository() Repository {
+	messageTTL, err := common.TTLSeconds(os.Getenv("MESSAGE_TTL"), 72*time.Hour)
+	if err != nil {
+		log.Panicf("fail to read MESSAGE_TTL: %v", err)
+	}
+
 	k8ssandraHost := os.Getenv("K8SSANDRA_HOST")
 	cluster := gocql.NewCluster(k8ssandraHost)
 	cluster.Port = 9042
@@ -52,7 +59,8 @@ func NewRepository() Repository {
 	log.Print("success to connect cassandra")
 
 	r := repository{
-		session: session,
+		session:    session,
+		messageTTL: messageTTL,
 	}
 
 	return &r

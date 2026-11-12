@@ -56,6 +56,11 @@ spec:
               memory: {{ $app.memoryLimits }}
           {{- end }}
           env:
+            # the app's own settings, values' env: map of name to value
+            {{- range $key, $value := $app.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
             {{- if $app.javaOptions }}
             - name: JAVA_TOOL_OPTIONS
               value: {{ $app.javaOptions | quote }}
