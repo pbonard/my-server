@@ -48,7 +48,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
-    image: "backend/chat:59f2e3f"
+    image: "backend/chat:832da99"
     port: 8080
     routePath: /chat
     authentication: false
@@ -84,7 +84,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   fcmnotification:
-    image: "backend/fcmnotification:59f2e3f"
+    image: "backend/fcmnotification:832da99"
     port: 8080
     routePath: false
     authentication: false
@@ -102,7 +102,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:59f2e3f"
+    image: "backend/messagepersist:832da99"
     port: 8080
     routePath: false
     env:
@@ -123,7 +123,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepreprocess:
-    image: "backend/messagepreprocess:59f2e3f"
+    image: "backend/messagepreprocess:832da99"
     port: 8080
     routePath: false
     authentication: false
@@ -141,7 +141,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagerelay:
-    image: "backend/messagerelay:59f2e3f"
+    image: "backend/messagerelay:832da99"
     port: 8080
     routePath: false
     authentication: false
@@ -159,7 +159,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   notification:
-    image: "backend/notification:59f2e3f"
+    image: "backend/notification:832da99"
     port: 8080
     routePath: /notification
     authentication: false
@@ -177,7 +177,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   signalrelay:
-    image: "backend/signalrelay:59f2e3f"
+    image: "backend/signalrelay:832da99"
     port: 8080
     routePath: false
     authentication: false
@@ -215,7 +215,7 @@ apps:
     memoryRequests: "384Mi"
     memoryLimits: "448Mi"
   turn:
-    image: "backend/turn:59f2e3f"
+    image: "backend/turn:832da99"
     port: 3478
     routePath: false
     turn: true
