@@ -271,17 +271,14 @@ flink:
     VITESS_VTGATE_GRPC_PORT: "15999"
   jobs:
     # vitess changes to kafka: the conversation tables to conversation-cdc for search, and the outboxes of conversation
-    # and holidayfriend to their chat-message and scheduled-notification. moved here from howwasread-server, where it
-    # ran as conversation-cdc-job
+    # and holidayfriend to their chat-message and scheduled-notification. its sources start at the current vitess
+    # position when it has no checkpoint. adding or removing a table changes the ids of its operators, so their state
+    # can't be restored and the job fails to start: such a change needs a clean start (delete the job and its state)
     cdc-job:
       image: flink/cdcjob:156fcb0
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
-      # the savepoint of conversation-cdc-job, taken when it was stopped, so this job goes on from where it left off.
-      # an unset path fails the start instead of starting at the current position and skipping what came in between.
-      # remove once this job has checkpoints of its own
-      initialSavepointPath: "s3://flink-state/conversation-cdc-job/savepoints/savepoint-1dacad-206f09c2ebc0"
       flinkConfiguration:
         # no keyed state (source offsets are operator state), so no rocksdb and no managed memory
         state.backend.type: hashmap
