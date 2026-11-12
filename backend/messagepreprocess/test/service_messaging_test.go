@@ -185,11 +185,11 @@ func TestManageMessage(t *testing.T) {
 
 			var msg common.PreparedMessage
 			require.NoError(t, json.Unmarshal(pushed, &msg))
-			assert.Equal(t, msgId[:], msg.Id)
-			assert.Equal(t, fromId[:], msg.FromId)
-			assert.Equal(t, toId[:], msg.RoomId)
+			assert.Equal(t, msgId, msg.Id)
+			assert.Equal(t, fromId, msg.FromId)
+			assert.Equal(t, toId, msg.RoomId)
 			assert.Equal(t, tt.contentType, msg.ContentType)
-			assert.Equal(t, toBytes(tt.wantToIds), msg.ToIds)
+			assert.Equal(t, tt.wantToIds, msg.ToIds)
 			assert.Equal(t, tt.wantContents, msg.Contents)
 		})
 	}

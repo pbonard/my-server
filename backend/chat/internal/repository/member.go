@@ -8,8 +8,8 @@ import (
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
-func (r *repository) SetServerIP(ctx context.Context, memberId, ip string) error {
-	result := r.client.Do(ctx, r.client.B().Sadd().Key(memberId).Member(ip).Build())
+func (r *repository) SetServerIP(ctx context.Context, key, ip string) error {
+	result := r.client.Do(ctx, r.client.B().Sadd().Key(key).Member(ip).Build())
 	if result.Error() != nil {
 		slog.Error("fail to save member ip", "err", result.Error())
 		return result.Error()
@@ -17,8 +17,8 @@ func (r *repository) SetServerIP(ctx context.Context, memberId, ip string) error
 	return nil
 }
 
-func (r *repository) RemoveServerIP(ctx context.Context, memberId, ip string) error {
-	result := r.client.Do(ctx, r.client.B().Srem().Key(memberId).Member(ip).Build())
+func (r *repository) RemoveServerIP(ctx context.Context, key, ip string) error {
+	result := r.client.Do(ctx, r.client.B().Srem().Key(key).Member(ip).Build())
 	if result.Error() != nil {
 		slog.Error("fail to remove member ip", "err", result.Error())
 		return result.Error()

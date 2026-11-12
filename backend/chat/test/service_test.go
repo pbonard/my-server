@@ -61,7 +61,7 @@ func TestReportUser(t *testing.T) {
 		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
 		var e common.AuthEvent
 		require.NoError(t, json.Unmarshal(published, &e))
-		assert.Equal(t, common.AuthEvent{Id: otherId[:]}, e)
+		assert.Equal(t, common.AuthEvent{Id: otherId}, e)
 	})
 	t.Run("a failed publish is returned", func(t *testing.T) {
 		t.Setenv("PROFILE", "production")
@@ -88,9 +88,11 @@ func TestPublishMessaging_textIsProducedAsChatMessage(t *testing.T) {
 	id := resp["id"]
 	var msg common.ChatMessage
 	require.NoError(t, json.Unmarshal(pushed, &msg))
-	assert.Equal(t, id[:], msg.Id)
-	assert.Equal(t, memberId[:], msg.FromId)
-	assert.Equal(t, roomId[:], msg.ToId)
+	// the ids are written as uuid strings, readable on the topic
+	assert.Contains(t, string(pushed), `"fromId":"`+memberId.String()+`"`)
+	assert.Equal(t, id, msg.Id)
+	assert.Equal(t, memberId, msg.FromId)
+	assert.Equal(t, roomId, msg.ToId)
 	assert.Equal(t, "group", msg.ToIdType)
 	assert.Equal(t, []string{"hi"}, msg.Contents)
 }
@@ -118,7 +120,7 @@ func TestPublishMessaging_sendFailureIsReturned(t *testing.T) {
 }
 
 func TestPublishMessaging_mediaMustBeAPresignedUpload(t *testing.T) {
-	key := "image" + string(memberId[:])
+	key := "uploads:image:" + memberId.String()
 	t.Run("uploaded file is consumed and published", func(t *testing.T) {
 		s, d := newService(t)
 		d.repo.EXPECT().HasFilepath(mock.Anything, key, []string{"f1"}).Return(true, nil)
@@ -158,7 +160,7 @@ func TestPublishMessaging_noPushIsCarried(t *testing.T) {
 func TestGeneratePresignedURL(t *testing.T) {
 	s, d := newService(t)
 	var saved []string
-	d.repo.EXPECT().SetFilepath(mock.Anything, "image"+string(memberId[:]), mock.Anything).
+	d.repo.EXPECT().SetFilepath(mock.Anything, "uploads:image:"+memberId.String(), mock.Anything).
 		Run(func(_ context.Context, _ string, filenames []string) { saved = filenames }).Return(nil)
 	d.storage.EXPECT().PresignUpload(mock.Anything, "image", mock.Anything).
 		RunAndReturn(func(_ context.Context, contentType, filename string) (string, map[string]string, error) {

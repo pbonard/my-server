@@ -2,7 +2,6 @@ package service
 
 import (
 	"backend/common"
-	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -16,7 +15,7 @@ func (s *service) PreprocessMessageNotification(
 	ctx context.Context,
 	notificationId uint8,
 	messageId uuid.UUID,
-	toIds [][]byte,
+	toIds []uuid.UUID,
 	roomId, fromId uuid.UUID,
 	contentType string,
 	content []string,
@@ -25,11 +24,7 @@ func (s *service) PreprocessMessageNotification(
 	if len(toIds) == 0 {
 		return nil
 	}
-	tIds := make([]uuid.UUID, 0, len(toIds))
-	for _, toId := range toIds {
-		tIds = append(tIds, uuid.UUID(toId))
-	}
-	apntm, fcmtm, err := s.getEachTokenMap(ctx, tIds)
+	apntm, fcmtm, err := s.getEachTokenMap(ctx, toIds)
 	if err != nil {
 		return err
 	}
@@ -38,7 +33,7 @@ func (s *service) PreprocessMessageNotification(
 		return err
 	}
 	var roomName string
-	if !bytes.Equal(toIds[0], roomId[:]) {
+	if toIds[0] != roomId {
 		roomName, err = s.repository.FindRoomNameById(ctx, gocql.UUID(roomId))
 	}
 	if err != nil {

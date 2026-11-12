@@ -2,6 +2,7 @@ package grpccontroller
 
 import (
 	"backend/chat/internal/controller"
+	"backend/common"
 	"backend/common/proto"
 	"context"
 	"log/slog"
@@ -12,6 +13,7 @@ import (
 type GRPCController struct {
 	controller *controller.Controller
 	proto.UnimplementedMessagingServiceServer
+	proto.UnimplementedSignalServiceServer
 }
 
 func NewGRPCController(controller *controller.Controller) *GRPCController {
@@ -26,4 +28,11 @@ func (gc *GRPCController) RelayMessaging(ctx context.Context, in *proto.RelayMes
 	return &proto.RelayMessagingResponse{
 		PushToIds: pushToIds,
 	}, nil
+}
+
+// RelaySignal writes a call signal from another chat server, through signalrelay, to the members connected here
+func (gc *GRPCController) RelaySignal(ctx context.Context, in *proto.RelaySignalRequest) (*proto.RelaySignalResponse, error) {
+	gc.controller.RelaySignal(ctx, common.UUIDsOf(in.ToIds), uuid.UUID(in.FromId), in.Signal)
+	// a response and not nil: grpc can't send a nil message, the caller would get an error
+	return &proto.RelaySignalResponse{}, nil
 }

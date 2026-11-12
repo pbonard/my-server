@@ -33,8 +33,8 @@ func (r *repository) FindRecentMessagesByToId(ctx context.Context, id, cursor go
 	return result, err
 }
 
-func (r *repository) SetFilepath(ctx context.Context, id string, filenames []string) error {
-	result := r.client.Do(ctx, r.client.B().Sadd().Key(id).Member(filenames...).Build())
+func (r *repository) SetFilepath(ctx context.Context, key string, filenames []string) error {
+	result := r.client.Do(ctx, r.client.B().Sadd().Key(key).Member(filenames...).Build())
 	if result.Error() != nil {
 		slog.Error("fail to save member ip", "err", result.Error())
 		return result.Error()
@@ -42,9 +42,9 @@ func (r *repository) SetFilepath(ctx context.Context, id string, filenames []str
 	return nil
 }
 
-func (r *repository) HasFilepath(ctx context.Context, id string, filenames []string) (bool, error) {
+func (r *repository) HasFilepath(ctx context.Context, key string, filenames []string) (bool, error) {
 	for _, f := range filenames {
-		result := r.client.Do(ctx, r.client.B().Sismember().Key(id).Member(f).Build())
+		result := r.client.Do(ctx, r.client.B().Sismember().Key(key).Member(f).Build())
 		if result.Error() != nil {
 			slog.Error("fail to check file path", "err", result.Error())
 			return false, result.Error()
@@ -62,8 +62,8 @@ func (r *repository) HasFilepath(ctx context.Context, id string, filenames []str
 	return true, nil
 }
 
-func (r *repository) RemoveFilepath(ctx context.Context, id string, filenames []string) error {
-	result := r.client.Do(ctx, r.client.B().Srem().Key(id).Member(filenames...).Build())
+func (r *repository) RemoveFilepath(ctx context.Context, key string, filenames []string) error {
+	result := r.client.Do(ctx, r.client.B().Srem().Key(key).Member(filenames...).Build())
 	if result.Error() != nil {
 		slog.Error("fail to check file path", "err", result.Error())
 		return result.Error()

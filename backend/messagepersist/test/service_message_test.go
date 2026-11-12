@@ -28,7 +28,7 @@ func TestPersistMessage_groupSavesOneRowPerReceiverWithRoom(t *testing.T) {
 	}
 
 	assert.NoError(t, service.NewService(repo).PersistMessage(context.Background(), msgId,
-		[][]byte{member1[:], member2[:]}, roomId, fromId, "text", []string{"hi"}))
+		[]uuid.UUID{member1, member2}, roomId, fromId, "text", []string{"hi"}))
 }
 
 func TestPersistMessage_receiverThatIsTheRoomUsesSenderAsRoom(t *testing.T) {
@@ -40,7 +40,7 @@ func TestPersistMessage_receiverThatIsTheRoomUsesSenderAsRoom(t *testing.T) {
 		gocql.UUID(roomId), "text", []string{"hi"}).Return(nil).Once()
 
 	assert.NoError(t, service.NewService(repo).PersistMessage(context.Background(), msgId,
-		[][]byte{fromId[:], roomId[:]}, roomId, fromId, "text", []string{"hi"}))
+		[]uuid.UUID{fromId, roomId}, roomId, fromId, "text", []string{"hi"}))
 }
 
 // the failure is returned so the consumer publishes a retry, the saved rows are upserted again on retry
@@ -53,7 +53,7 @@ func TestPersistMessage_oneFailedSaveDoesNotStopTheOthers(t *testing.T) {
 		gocql.UUID(roomId), "text", []string{"hi"}).Return(nil).Once()
 
 	err := service.NewService(repo).PersistMessage(context.Background(), msgId,
-		[][]byte{member1[:], member2[:]}, roomId, fromId, "text", []string{"hi"})
+		[]uuid.UUID{member1, member2}, roomId, fromId, "text", []string{"hi"})
 
 	assert.ErrorIs(t, err, errDB)
 }

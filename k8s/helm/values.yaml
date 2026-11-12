@@ -61,6 +61,8 @@ apps:
     twilio: false
     firebase: false
     valkey: true
+    # the calls of the mobile app: chat signs the TURN credentials with the secret the turn app checks them with
+    turnSecret: true
 #    cpuRequests: "0.03"
 #    memoryRequests: "10Mi"
 #    cpuLimits: "0.1"

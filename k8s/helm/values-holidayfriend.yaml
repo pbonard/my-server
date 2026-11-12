@@ -25,6 +25,9 @@ apps:
     twilio: false
     # the key that seals the secrets of authenticators
     totp: true
+  # no calls on the web, and no turn secret in this namespace
+  chat:
+    turnSecret: false
   # chat, messagepreprocess, messagepersist and messagerelay as in values.yaml: a chat stack of holidayfriend's own, on
   # its keyspace (PROFILE) and its own topics, "holidayfriend.chat-message" and "holidayfriend.prepared-message".
   # no notification: the web app sends noPush, so messagerelay never hands a message on to be pushed

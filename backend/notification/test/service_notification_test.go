@@ -157,7 +157,7 @@ func TestPreprocessMessageNotification_personalText(t *testing.T) {
 
 	// personal message: the first receiver is the room itself, so there is no room name
 	service.NewService(repo, producer, mocks.NewMockCDNClient(t)).PreprocessMessageNotification(context.Background(), 1,
-		messageId, [][]byte{memberId[:]}, memberId, senderId, "text", []string{"hello"})
+		messageId, []uuid.UUID{memberId}, memberId, senderId, "text", []string{"hello"})
 
 	require.Len(t, pushes["fcm-notification"], 1)
 	msg := pushes["fcm-notification"][0].message(t)
@@ -176,7 +176,7 @@ func TestPreprocessMessageNotification_groupUsesRoomNameAsTitle(t *testing.T) {
 	pushes := capturePushes(producer)
 
 	service.NewService(repo, producer, mocks.NewMockCDNClient(t)).PreprocessMessageNotification(context.Background(), 0,
-		messageId, [][]byte{memberId[:]}, roomId, senderId, "text", []string{"hello"})
+		messageId, []uuid.UUID{memberId}, roomId, senderId, "text", []string{"hello"})
 
 	require.Len(t, pushes["apn-notification"], 1)
 	msg := pushes["apn-notification"][0].message(t)
@@ -192,7 +192,7 @@ func TestPreprocessMessageNotification_imageIsSigned(t *testing.T) {
 	pushes := capturePushes(producer)
 
 	service.NewService(repo, producer, signer).PreprocessMessageNotification(context.Background(), 0,
-		messageId, [][]byte{memberId[:]}, memberId, senderId, "image", []string{"file-1"})
+		messageId, []uuid.UUID{memberId}, memberId, senderId, "image", []string{"file-1"})
 
 	msg := pushes["fcm-notification"][0].message(t)
 	assert.Equal(t, "https://signed", msg.ImageURL)
@@ -207,7 +207,7 @@ func TestPreprocessMessageNotification_signFailureSendsNothing(t *testing.T) {
 	signer.EXPECT().SignedURL(mock.Anything, mock.Anything).Return("", errSign)
 
 	err := service.NewService(repo, mocks.NewMockSyncProducer(t), signer).PreprocessMessageNotification(context.Background(), 0,
-		messageId, [][]byte{memberId[:]}, memberId, senderId, "image", []string{"file-1"})
+		messageId, []uuid.UUID{memberId}, memberId, senderId, "image", []string{"file-1"})
 
 	assert.ErrorIs(t, err, errSign)
 }
@@ -220,7 +220,7 @@ func TestPreprocessMessageNotification_publishFailureIsReturned(t *testing.T) {
 	producer.EXPECT().Commit("fcm-notification", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
 
 	err := service.NewService(repo, producer, mocks.NewMockCDNClient(t)).PreprocessMessageNotification(context.Background(), 1,
-		messageId, [][]byte{memberId[:]}, memberId, senderId, "text", []string{"hello"})
+		messageId, []uuid.UUID{memberId}, memberId, senderId, "text", []string{"hello"})
 
 	assert.ErrorIs(t, err, errKafka)
 }
@@ -232,7 +232,7 @@ func TestPreprocessMessageNotification_otherMediaShowsType(t *testing.T) {
 	pushes := capturePushes(producer)
 
 	service.NewService(repo, producer, mocks.NewMockCDNClient(t)).PreprocessMessageNotification(context.Background(), 0,
-		messageId, [][]byte{memberId[:]}, memberId, senderId, "audio", []string{"file-1"})
+		messageId, []uuid.UUID{memberId}, memberId, senderId, "audio", []string{"file-1"})
 
 	assert.Equal(t, "(audio)", pushes["fcm-notification"][0].message(t).Text)
 }

@@ -11,8 +11,8 @@ import (
 )
 
 type Repository interface {
-	GetServerIP(ctx context.Context, id string) (string, error)
-	RemoveServerIP(ctx context.Context, memberId string) error
+	GetServerIP(ctx context.Context, key string) (string, error)
+	RemoveServerIP(ctx context.Context, key string) error
 }
 
 type repository struct {

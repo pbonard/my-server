@@ -6,32 +6,34 @@ import (
 	"github.com/google/uuid"
 )
 
-type OnlineConversationSignal struct {
-	FromId []byte          `json:"fromId"`
-	ToIds  [][]byte        `json:"toIds"`
+// CallSignal is a WebRTC signal of a call for members connected to another chat server, chat publishes it on
+// "<profile>.conversation-signal" and signalrelay hands it to their chat servers
+type CallSignal struct {
+	FromId uuid.UUID       `json:"fromId"`
+	ToIds  []uuid.UUID     `json:"toIds"`
 	Signal json.RawMessage `json:"signal,omitempty"`
 }
 
 type ChatMessage struct {
-	Id          []byte   `json:"id"`
-	FromId      []byte   `json:"fromId"`
-	ToIdType    string   `json:"toIdType"`
-	ToId        []byte   `json:"toId"`
-	ContentType string   `json:"contentType"`
-	Contents    []string `json:"contents"`
+	Id          uuid.UUID `json:"id"`
+	FromId      uuid.UUID `json:"fromId"`
+	ToIdType    string    `json:"toIdType"`
+	ToId        uuid.UUID `json:"toId"`
+	ContentType string    `json:"contentType"`
+	Contents    []string  `json:"contents"`
 	// true for a message no one is pushed about, like the ones of the holidayfriend web app. left out it's false, so
 	// the messages from before it was added, and of every client that doesn't send it, push as they always did
 	NoPush bool `json:"noPush,omitempty"`
 }
 
 type PreparedMessage struct {
-	NotificationId uint8    `json:"notificationId,omitempty"`
-	Id             []byte   `json:"id"`
-	ToIds          [][]byte `json:"toIds"`
-	RoomId         []byte   `json:"roomId"`
-	FromId         []byte   `json:"fromId"`
-	ContentType    string   `json:"contentType"`
-	Contents       []string `json:"contents"`
+	NotificationId uint8       `json:"notificationId,omitempty"`
+	Id             uuid.UUID   `json:"id"`
+	ToIds          []uuid.UUID `json:"toIds"`
+	RoomId         uuid.UUID   `json:"roomId"`
+	FromId         uuid.UUID   `json:"fromId"`
+	ContentType    string      `json:"contentType"`
+	Contents       []string    `json:"contents"`
 	// the ChatMessage's, messagerelay doesn't hand an undelivered one to notification
 	NoPush bool `json:"noPush,omitempty"`
 }
@@ -47,7 +49,7 @@ const AuthTaskBan = "ban"
 // with what it asks for in the taskType header. the topic and not a field says the app, so an auth never sees the
 // members of another
 type AuthEvent struct {
-	Id []byte `json:"id"`
+	Id uuid.UUID `json:"id"`
 }
 
 // AuthTopic is the topic of the auth of the app on the keyspace, the PROFILE env of a service

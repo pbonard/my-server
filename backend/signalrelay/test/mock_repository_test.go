@@ -47,8 +47,8 @@ func (_m *MockRepository) EXPECT() *MockRepository_Expecter {
 }
 
 // GetServerIP provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetServerIP(ctx context.Context, id string) (string, error) {
-	ret := _mock.Called(ctx, id)
+func (_mock *MockRepository) GetServerIP(ctx context.Context, key string) (string, error) {
+	ret := _mock.Called(ctx, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetServerIP")
@@ -57,15 +57,15 @@ func (_mock *MockRepository) GetServerIP(ctx context.Context, id string) (string
 	var r0 string
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
-		return returnFunc(ctx, id)
+		return returnFunc(ctx, key)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = returnFunc(ctx, id)
+		r0 = returnFunc(ctx, key)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, id)
+		r1 = returnFunc(ctx, key)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,12 +79,12 @@ type MockRepository_GetServerIP_Call struct {
 
 // GetServerIP is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
-func (_e *MockRepository_Expecter) GetServerIP(ctx any, id any) *MockRepository_GetServerIP_Call {
-	return &MockRepository_GetServerIP_Call{Call: _e.mock.On("GetServerIP", ctx, id)}
+//   - key string
+func (_e *MockRepository_Expecter) GetServerIP(ctx any, key any) *MockRepository_GetServerIP_Call {
+	return &MockRepository_GetServerIP_Call{Call: _e.mock.On("GetServerIP", ctx, key)}
 }
 
-func (_c *MockRepository_GetServerIP_Call) Run(run func(ctx context.Context, id string)) *MockRepository_GetServerIP_Call {
+func (_c *MockRepository_GetServerIP_Call) Run(run func(ctx context.Context, key string)) *MockRepository_GetServerIP_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -107,14 +107,14 @@ func (_c *MockRepository_GetServerIP_Call) Return(s string, err error) *MockRepo
 	return _c
 }
 
-func (_c *MockRepository_GetServerIP_Call) RunAndReturn(run func(ctx context.Context, id string) (string, error)) *MockRepository_GetServerIP_Call {
+func (_c *MockRepository_GetServerIP_Call) RunAndReturn(run func(ctx context.Context, key string) (string, error)) *MockRepository_GetServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RemoveServerIP provides a mock function for the type MockRepository
-func (_mock *MockRepository) RemoveServerIP(ctx context.Context, memberId string) error {
-	ret := _mock.Called(ctx, memberId)
+func (_mock *MockRepository) RemoveServerIP(ctx context.Context, key string) error {
+	ret := _mock.Called(ctx, key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveServerIP")
@@ -122,7 +122,7 @@ func (_mock *MockRepository) RemoveServerIP(ctx context.Context, memberId string
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = returnFunc(ctx, memberId)
+		r0 = returnFunc(ctx, key)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -136,12 +136,12 @@ type MockRepository_RemoveServerIP_Call struct {
 
 // RemoveServerIP is a helper method to define mock.On call
 //   - ctx context.Context
-//   - memberId string
-func (_e *MockRepository_Expecter) RemoveServerIP(ctx any, memberId any) *MockRepository_RemoveServerIP_Call {
-	return &MockRepository_RemoveServerIP_Call{Call: _e.mock.On("RemoveServerIP", ctx, memberId)}
+//   - key string
+func (_e *MockRepository_Expecter) RemoveServerIP(ctx any, key any) *MockRepository_RemoveServerIP_Call {
+	return &MockRepository_RemoveServerIP_Call{Call: _e.mock.On("RemoveServerIP", ctx, key)}
 }
 
-func (_c *MockRepository_RemoveServerIP_Call) Run(run func(ctx context.Context, memberId string)) *MockRepository_RemoveServerIP_Call {
+func (_c *MockRepository_RemoveServerIP_Call) Run(run func(ctx context.Context, key string)) *MockRepository_RemoveServerIP_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -164,7 +164,7 @@ func (_c *MockRepository_RemoveServerIP_Call) Return(err error) *MockRepository_
 	return _c
 }
 
-func (_c *MockRepository_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId string) error) *MockRepository_RemoveServerIP_Call {
+func (_c *MockRepository_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, key string) error) *MockRepository_RemoveServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }

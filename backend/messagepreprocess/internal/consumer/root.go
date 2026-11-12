@@ -16,7 +16,6 @@ import (
 	"syscall"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -189,7 +188,7 @@ func (c *Consumer) distinguishMessage(
 			"payload.Value", message.Value)
 		return nil
 	}
-	err = c.service.ManageMessage(ctx, uuid.UUID(p.Id), uuid.UUID(p.FromId), p.ToIdType, uuid.UUID(p.ToId), p.ContentType, p.Contents, p.NoPush)
+	err = c.service.ManageMessage(ctx, p.Id, p.FromId, p.ToIdType, p.ToId, p.ContentType, p.Contents, p.NoPush)
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}
 		for _, h := range message.Headers {

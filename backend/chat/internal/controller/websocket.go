@@ -80,7 +80,7 @@ func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 		slog.Info("success to close connection",
 			"number of current connection", c.numbers)
 		if len(c.conns[memberId]) == 0 {
-			c.service.RemoveServerIP(destroy, memberId[:], ip)
+			c.service.RemoveServerIP(destroy, memberId, ip)
 		}
 		c.csMutex.RUnlock()
 	}()

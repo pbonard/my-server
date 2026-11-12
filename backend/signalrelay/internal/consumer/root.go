@@ -20,16 +20,22 @@ import (
 type Consumer struct {
 	consumerGroup sarama.ConsumerGroup
 	service       service.Service
+	// the app whose chat's calls this relays, read once: its topic and consumer group are built from it
+	profile string
 }
 
+const groupId = "signal-relay"
+
 func NewKafkaConsumer(s service.Service) *Consumer {
-	consumer, err := connectConsumer("signal-relay")
+	profile := os.Getenv("PROFILE")
+	consumer, err := connectConsumer(common.AppScoped(profile, groupId))
 	if err != nil {
 		log.Panicf("fail to create consumer group client: %v", err)
 	}
 	return &Consumer{
 		consumerGroup: consumer,
 		service:       s,
+		profile:       profile,
 	}
 }
 
@@ -82,7 +88,12 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	}
 }
 
-func (c *Consumer) GetMessage(topics []string) error {
+// GetMessage consumes the topics of the names on this app, common.AppScoped
+func (c *Consumer) GetMessage(names []string) error {
+	topics := make([]string, len(names))
+	for i, name := range names {
+		topics[i] = common.AppScoped(c.profile, name)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -150,8 +161,8 @@ func toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
 }
 
 func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.ConsumerMessage) {
-	if message.Topic == "conversation-signal" {
-		var m common.OnlineConversationSignal
+	if message.Topic == common.AppScoped(c.profile, "conversation-signal") {
+		var m common.CallSignal
 		err := json.Unmarshal(message.Value, &m)
 		if err != nil {
 			slog.Error("fail to unmarshal payload value",
@@ -159,6 +170,6 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 				"payload.Value", message.Value)
 			return
 		}
-		c.service.PropagateSignal(ctx, m.ToIds, m.FromId, m.Signal)
+		c.service.PropagateSignal(ctx, common.BytesOf(m.ToIds), m.FromId[:], m.Signal)
 	}
 }

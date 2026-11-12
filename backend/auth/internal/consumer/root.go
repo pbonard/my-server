@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -129,11 +128,7 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 			"payload.Value", message.Value)
 		return nil
 	}
-	id, err := uuid.FromBytes(e.Id)
-	if err != nil {
-		slog.Error("fail to read the member id of an auth event", "err", err, "taskType", taskType)
-		return nil
-	}
+	id := e.Id
 	switch taskType {
 	case common.AuthTaskBan:
 		err = c.service.BanMember(ctx, id)

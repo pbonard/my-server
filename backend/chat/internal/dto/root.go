@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
+
+	"github.com/google/uuid"
+)
 
 type SendMessagingRequest struct {
 	ToIdType    string    `json:"toIdType"`
@@ -46,4 +50,23 @@ type GeneratePresignedURLResponse struct {
 
 type BlockReport struct {
 	Id uuid.UUID `json:"id"`
+}
+
+// CallSignalRequest is what a member sends on the call websocket: a WebRTC signal for some of the other members
+type CallSignalRequest struct {
+	ToIds  []uuid.UUID     `json:"toIds"`
+	Signal json.RawMessage `json:"signal"`
+}
+
+// CallSignalResponse is what the call websocket writes: who sent the signal, or on joining who is already there
+type CallSignalResponse struct {
+	FromIds []uuid.UUID     `json:"fromIds"`
+	Signal  json.RawMessage `json:"signal,omitempty"`
+}
+
+// GetTurnResponse is the TURN server and its short-lived credentials, the turn app checks them with the same secret
+type GetTurnResponse struct {
+	Uris       []string `json:"uris"`
+	Username   string   `json:"username"`
+	Credential string   `json:"credential"`
 }

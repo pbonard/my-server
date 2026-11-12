@@ -108,10 +108,10 @@ func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdT
 	}
 
 	p := common.Marshal(common.PreparedMessage{
-		Id:          id[:],
-		ToIds:       toIds,
-		RoomId:      roomId[:],
-		FromId:      fromId[:],
+		Id:          id,
+		ToIds:       common.UUIDsOf(toIds),
+		RoomId:      roomId,
+		FromId:      fromId,
 		ContentType: contentType,
 		Contents:    contents,
 		NoPush:      noPush,

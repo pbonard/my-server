@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"sync"
@@ -13,7 +12,7 @@ import (
 func (s *service) PersistMessage(
 	ctx context.Context,
 	id uuid.UUID,
-	toIds [][]byte,
+	toIds []uuid.UUID,
 	roomId, fromId uuid.UUID,
 	contentType string,
 	contents []string,
@@ -25,7 +24,7 @@ func (s *service) PersistMessage(
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if bytes.Equal(tid, roomId[:]) {
+			if tid == roomId {
 				err := s.repository.SaveMessage(ctx, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(fromId), contentType, contents)
 				if err != nil {
 					em.Lock()

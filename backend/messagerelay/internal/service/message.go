@@ -37,7 +37,7 @@ func (s *service) RelayMessage(
 			defer wg.Done()
 			ctxr, cancel := context.WithTimeout(ctx, 1*time.Second)
 			defer cancel()
-			ips, err := s.repository.GetServerIPs(ctxr, string(tid))
+			ips, err := s.repository.GetServerIPs(ctxr, common.ChatServersKey(uuid.UUID(tid)))
 			if (err != nil || len(ips) == 0) && !bytes.Equal(tid, fromId[:]) && contentType != "quit" && contentType != "participate" && contentType != "create" {
 				pm.Lock()
 				pushToIds = append(pushToIds, tid)
@@ -59,10 +59,10 @@ func (s *service) RelayMessage(
 	if pushToIds != nil && !noPush {
 		p := common.Marshal(common.PreparedMessage{
 			NotificationId: 0,
-			Id:             id[:],
-			ToIds:          pushToIds,
-			RoomId:         roomId[:],
-			FromId:         fromId[:],
+			Id:             id,
+			ToIds:          common.UUIDsOf(pushToIds),
+			RoomId:         roomId,
+			FromId:         fromId,
 			ContentType:    contentType,
 			Contents:       contents,
 		})
@@ -124,10 +124,10 @@ func (s *service) RelayMessage(
 	if filteredIds != nil && !noPush {
 		p := common.Marshal(common.PreparedMessage{
 			NotificationId: 1,
-			Id:             id[:],
-			ToIds:          filteredIds,
-			RoomId:         roomId[:],
-			FromId:         fromId[:],
+			Id:             id,
+			ToIds:          common.UUIDsOf(filteredIds),
+			RoomId:         roomId,
+			FromId:         fromId,
 			ContentType:    contentType,
 			Contents:       contents,
 		})
@@ -152,12 +152,12 @@ func (s *service) removeStaleIPs(tids [][]byte, ip string) {
 func (s *service) checkAndRemoveStaleIP(tid []byte, ip string) {
 	ctxr, cancel1 := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel1()
-	currentIPs, err1 := s.repository.GetServerIPs(ctxr, string(tid))
+	currentIPs, err1 := s.repository.GetServerIPs(ctxr, common.ChatServersKey(uuid.UUID(tid)))
 	if err1 != nil {
 		return
 	}
 	if slices.Contains(currentIPs, ip) {
-		err1 = s.repository.RemoveServerIP(ctxr, string(tid), ip)
+		err1 = s.repository.RemoveServerIP(ctxr, common.ChatServersKey(uuid.UUID(tid)), ip)
 		if err1 != nil {
 			return
 		}
