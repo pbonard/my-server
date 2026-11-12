@@ -27,7 +27,7 @@ circuitBreaker:
 
 apps:
   auth:
-    image: "backend/auth:156fcb0"
+    image: "backend/auth:59f2e3f"
     port: 8080
     routePath: /auth
     authentication: true
@@ -48,7 +48,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
-    image: "backend/chat:156fcb0"
+    image: "backend/chat:59f2e3f"
     port: 8080
     routePath: /chat
     authentication: false
@@ -84,7 +84,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   fcmnotification:
-    image: "backend/fcmnotification:156fcb0"
+    image: "backend/fcmnotification:59f2e3f"
     port: 8080
     routePath: false
     authentication: false
@@ -102,7 +102,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:156fcb0"
+    image: "backend/messagepersist:59f2e3f"
     port: 8080
     routePath: false
     authentication: false
@@ -120,7 +120,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepreprocess:
-    image: "backend/messagepreprocess:156fcb0"
+    image: "backend/messagepreprocess:59f2e3f"
     port: 8080
     routePath: false
     authentication: false
@@ -138,7 +138,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagerelay:
-    image: "backend/messagerelay:156fcb0"
+    image: "backend/messagerelay:59f2e3f"
     port: 8080
     routePath: false
     authentication: false
@@ -156,7 +156,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   notification:
-    image: "backend/notification:156fcb0"
+    image: "backend/notification:59f2e3f"
     port: 8080
     routePath: /notification
     authentication: false
@@ -174,7 +174,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   signalrelay:
-    image: "backend/signalrelay:156fcb0"
+    image: "backend/signalrelay:59f2e3f"
     port: 8080
     routePath: false
     authentication: false
@@ -212,7 +212,7 @@ apps:
     memoryRequests: "384Mi"
     memoryLimits: "448Mi"
   turn:
-    image: "backend/turn:156fcb0"
+    image: "backend/turn:59f2e3f"
     port: 3478
     routePath: false
     turn: true
