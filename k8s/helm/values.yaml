@@ -27,7 +27,7 @@ circuitBreaker:
 
 apps:
   auth:
-    image: "backend/auth:32c7be7"
+    image: "backend/auth:156fcb0"
     port: 8080
     routePath: /auth
     authentication: true
@@ -48,7 +48,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
-    image: "backend/chat:32c7be7"
+    image: "backend/chat:156fcb0"
     port: 8080
     routePath: /chat
     authentication: false
@@ -66,7 +66,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   expo-notification:
-    image: "backend/expo-notification:fba1f73"
+    image: "backend/expo-notification:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -82,7 +82,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   fcmnotification:
-    image: "backend/fcmnotification:32c7be7"
+    image: "backend/fcmnotification:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -100,7 +100,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:32c7be7"
+    image: "backend/messagepersist:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -118,7 +118,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepreprocess:
-    image: "backend/messagepreprocess:32c7be7"
+    image: "backend/messagepreprocess:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -136,7 +136,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagerelay:
-    image: "backend/messagerelay:32c7be7"
+    image: "backend/messagerelay:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -154,7 +154,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   notification:
-    image: "backend/notification:32c7be7"
+    image: "backend/notification:156fcb0"
     port: 8080
     routePath: /notification
     authentication: false
@@ -172,7 +172,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   signalrelay:
-    image: "backend/signalrelay:32c7be7"
+    image: "backend/signalrelay:156fcb0"
     port: 8080
     routePath: false
     authentication: false
@@ -190,7 +190,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   search:
-    image: "backend/search:d803f54"
+    image: "backend/search:156fcb0"
     port: 8080
     routePath: /search
     authentication: false
@@ -210,7 +210,7 @@ apps:
     memoryRequests: "384Mi"
     memoryLimits: "448Mi"
   turn:
-    image: "backend/turn:32c7be7"
+    image: "backend/turn:156fcb0"
     port: 3478
     routePath: false
     turn: true
@@ -274,7 +274,7 @@ flink:
     # and holidayfriend to their chat-message and scheduled-notification. moved here from howwasread-server, where it
     # ran as conversation-cdc-job
     cdc-job:
-      image: flink/cdcjob:latest
+      image: flink/cdcjob:156fcb0
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
@@ -292,7 +292,7 @@ flink:
       jobManager:
         memory: "1024m"
     scheduled-notification-job:
-      image: flink/schedulednotificationjob:fba1f73
+      image: flink/schedulednotificationjob:156fcb0
       jar: schedulednotificationjob.jar
       entryClass: schedulednotificationjob.ScheduledNotificationJob
       parallelism: 2
@@ -302,7 +302,7 @@ flink:
         taskmanager.memory.managed.size: "64m"
         jobmanager.memory.jvm-metaspace.size: "128m"
     exponential-backoff-retry-job:
-      image: flink/exponentialbackoffretryjob:fba1f73
+      image: flink/exponentialbackoffretryjob:156fcb0
       jar: exponentialbackoffretryjob.jar
       entryClass: exponentialbackoffretryjob.ExponentialBackoffRetryJob
       parallelism: 2
