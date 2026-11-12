@@ -67,6 +67,11 @@ spec:
     parallelism: {{ $job.parallelism }}
     # last-state resumes from the latest checkpoint in garage, found through the kubernetes ha metadata
     upgradeMode: {{ $job.upgradeMode | default "last-state" }}
+    {{- with $job.initialSavepointPath }}
+    # the state of a moved or recreated job, from a savepoint of its old one. without it a vitess source starts at the
+    # current position and skips what was written while no job ran. state that doesn't fit fails the start
+    initialSavepointPath: {{ . | quote }}
+    {{- end }}
 {{- end }}
 ---
 apiVersion: v1

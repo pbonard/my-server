@@ -87,6 +87,15 @@
     ]
   },
   {
+    "name": "cdcjob",
+    "image": "flink/cdcjob",
+    "dockerfile": "./backend/cdcjob/Dockerfile",
+    "context": "./backend/cdcjob",
+    "paths": [
+      "backend/cdcjob/"
+    ]
+  },
+  {
     "name": "schedulednotificationjob",
     "image": "flink/schedulednotificationjob",
     "dockerfile": "./backend/schedulednotificationjob/Dockerfile",
