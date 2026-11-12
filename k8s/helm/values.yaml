@@ -105,6 +105,9 @@ apps:
     image: "backend/messagepersist:59f2e3f"
     port: 8080
     routePath: false
+    env:
+      # how long a message is kept in cassandra, a go duration ("72h", "720h"), "0" to keep it for good
+      MESSAGE_TTL: "72h"
     authentication: false
     garage: false
     kafka: true

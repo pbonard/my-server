@@ -28,6 +28,10 @@ apps:
   # no calls on the web, and no turn secret in this namespace
   chat:
     turnSecret: false
+  # holidayfriend keeps its chats for good, they start from an accepted invite and aren't throwaway
+  messagepersist:
+    env:
+      MESSAGE_TTL: "0"
   # chat, messagepreprocess, messagepersist and messagerelay as in values.yaml: a chat stack of holidayfriend's own, on
   # its keyspace (PROFILE) and its own topics, "holidayfriend.chat-message" and "holidayfriend.prepared-message".
   # no notification: the web app sends noPush, so messagerelay never hands a message on to be pushed
