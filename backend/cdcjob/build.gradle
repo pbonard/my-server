@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.6.1'
+}
+
+group = 'cdcjob'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+ext {
+    flinkVersion = '2.2.1'
+    kafkaConnectorVersion = '5.0.0-2.2'
+    flinkCdcVersion = '3.6.0-2.2'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.apache.flink:flink-streaming-java:${flinkVersion}"
+    compileOnly "org.apache.flink:flink-clients:${flinkVersion}"
+    compileOnly "org.apache.flink:flink-table-api-java:${flinkVersion}"
+    // legacy SourceFunctionProvider, used by the custom vitess source
+    compileOnly "org.apache.flink:flink-table-api-java-bridge:${flinkVersion}"
+
+    // sql connectors are shaded jars, the vitess one relocates debezium and its kafka(3.x)
+    // so it does not clash with kafka-clients(4.x) of the kafka connector
+    implementation "org.apache.flink:flink-sql-connector-vitess-cdc:${flinkCdcVersion}"
+    implementation "org.apache.flink:flink-sql-connector-kafka:${kafkaConnectorVersion}"
+}
+
+shadowJar {
+    archiveBaseName.set('cdcjob')
+    archiveClassifier.set('')
+    archiveVersion.set(project.version.toString())
+
+    manifest {
+        attributes 'Main-Class': 'cdcjob.CdcJob'
+    }
+
+    // both connectors register a table factory service file, they have to be merged not excluded
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    mergeServiceFiles()
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
+}
