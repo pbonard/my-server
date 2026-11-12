@@ -10,8 +10,8 @@ import (
 )
 
 type Repository interface {
-	GetServerIPs(ctx context.Context, id string) ([]string, error)
-	RemoveServerIP(ctx context.Context, memberId, ip string) error
+	GetServerIPs(ctx context.Context, key string) ([]string, error)
+	RemoveServerIP(ctx context.Context, key, ip string) error
 }
 
 type repository struct {

@@ -10,6 +10,7 @@ import (
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/apache/cassandra-gocql-driver/v2/lz4"
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/valkey-io/valkey-go"
 )
@@ -18,8 +19,8 @@ type Repository interface {
 	FindChatRoomInfoById(ctx context.Context, id gocql.UUID) (name string, roomType string, err error)
 	FindProfileById(ctx context.Context, id gocql.UUID) (name string, err error)
 	SaveNameById(ctx context.Context, id gocql.UUID, name string) error
-	SetServerIP(ctx context.Context, memberId, ip string) error
-	RemoveServerIP(ctx context.Context, memberId, ip string) error
+	SetServerIP(ctx context.Context, key, ip string) error
+	RemoveServerIP(ctx context.Context, key, ip string) error
 	DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
 	FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error)
 	AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error
@@ -27,10 +28,15 @@ type Repository interface {
 	AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error
 	FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error)
 	FindRecentMessagesByToId(ctx context.Context, id, cursor gocql.UUID) (result []projection.FindMessagesByToIdAndId, err error)
-	SetFilepath(ctx context.Context, id string, filenames []string) error
-	HasFilepath(ctx context.Context, id string, filenames []string) (bool, error)
-	RemoveFilepath(ctx context.Context, id string, filenames []string) error
+	SetFilepath(ctx context.Context, key string, filenames []string) error
+	HasFilepath(ctx context.Context, key string, filenames []string) (bool, error)
+	RemoveFilepath(ctx context.Context, key string, filenames []string) error
 	FindIdsByFilename(ctx context.Context, filename gocql.UUID) (ids []gocql.UUID, err error)
+	SetCallServerIP(ctx context.Context, key, ip string) error
+	RemoveCallServerIP(ctx context.Context, key string) error
+	FindCallParticipantIds(ctx context.Context, key string) ([]string, error)
+	AddCallParticipantId(ctx context.Context, key string, memberId uuid.UUID) error
+	RemoveCallParticipantId(ctx context.Context, key string, memberId uuid.UUID) error
 }
 
 type repository struct {

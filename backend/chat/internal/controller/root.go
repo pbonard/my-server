@@ -27,21 +27,27 @@ type Controller struct {
 	conns   map[uuid.UUID]map[uuid.UUID]*websocket.Conn
 	numbers int
 	csMutex *sync.RWMutex
-	podIP   string
+	// the call websocket of each member connected here, one call at a time
+	callConns map[uuid.UUID]*websocket.Conn
+	callMutex *sync.RWMutex
+	podIP     string
 }
 
 func NewController(s service.Service, m *http.ServeMux) *Controller {
 
 	c := &Controller{
-		service: s,
-		mux:     m,
-		conns:   make(map[uuid.UUID]map[uuid.UUID]*websocket.Conn),
-		csMutex: &sync.RWMutex{},
-		podIP:   os.Getenv("POD_IP"),
+		service:   s,
+		mux:       m,
+		conns:     make(map[uuid.UUID]map[uuid.UUID]*websocket.Conn),
+		csMutex:   &sync.RWMutex{},
+		callConns: make(map[uuid.UUID]*websocket.Conn),
+		callMutex: &sync.RWMutex{},
+		podIP:     os.Getenv("POD_IP"),
 	}
 
 	messagingRouter(c)
 	infoRouter(c)
+	callRouter(c)
 
 	return c
 }

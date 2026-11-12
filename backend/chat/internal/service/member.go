@@ -12,15 +12,15 @@ import (
 )
 
 func (s *service) SetServerIP(ctx context.Context, memberId uuid.UUID, ip string) error {
-	err := s.repository.SetServerIP(ctx, string(memberId[:]), ip)
+	err := s.repository.SetServerIP(ctx, common.ChatServersKey(memberId), ip)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *service) RemoveServerIP(ctx context.Context, memberId []byte, ip string) error {
-	err := s.repository.RemoveServerIP(ctx, string(memberId), ip)
+func (s *service) RemoveServerIP(ctx context.Context, memberId uuid.UUID, ip string) error {
+	err := s.repository.RemoveServerIP(ctx, common.ChatServersKey(memberId), ip)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (s *service) ReportUser(ctx context.Context, reporterId, reportedId uuid.UU
 		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of this chat's
 		// app, its PROFILE, so an auth only ever gets its own members. keyed by the member so their events stay ordered.
 		// a report past the limit asks again, auth finds the account already gone
-		p := common.Marshal(common.AuthEvent{Id: reportedId[:]})
+		p := common.Marshal(common.AuthEvent{Id: reportedId})
 		headers := []sarama.RecordHeader{{Key: []byte(common.TaskTypeHeader), Value: []byte(common.AuthTaskBan)}}
 		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], p, headers)
 		if err != nil {

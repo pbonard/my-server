@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/apache/cassandra-gocql-driver/v2"
+	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -107,6 +108,69 @@ func (_c *MockRepository_AddBlockedConversation_Call) Return(err error) *MockRep
 }
 
 func (_c *MockRepository_AddBlockedConversation_Call) RunAndReturn(run func(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error) *MockRepository_AddBlockedConversation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// AddCallParticipantId provides a mock function for the type MockRepository
+func (_mock *MockRepository) AddCallParticipantId(ctx context.Context, key string, memberId uuid.UUID) error {
+	ret := _mock.Called(ctx, key, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddCallParticipantId")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, key, memberId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_AddCallParticipantId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddCallParticipantId'
+type MockRepository_AddCallParticipantId_Call struct {
+	*mock.Call
+}
+
+// AddCallParticipantId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+//   - memberId uuid.UUID
+func (_e *MockRepository_Expecter) AddCallParticipantId(ctx any, key any, memberId any) *MockRepository_AddCallParticipantId_Call {
+	return &MockRepository_AddCallParticipantId_Call{Call: _e.mock.On("AddCallParticipantId", ctx, key, memberId)}
+}
+
+func (_c *MockRepository_AddCallParticipantId_Call) Run(run func(ctx context.Context, key string, memberId uuid.UUID)) *MockRepository_AddCallParticipantId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_AddCallParticipantId_Call) Return(err error) *MockRepository_AddCallParticipantId_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_AddCallParticipantId_Call) RunAndReturn(run func(ctx context.Context, key string, memberId uuid.UUID) error) *MockRepository_AddCallParticipantId_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -310,6 +374,74 @@ func (_c *MockRepository_FindBlockedConversations_Call) Return(ids []gocql.UUID,
 }
 
 func (_c *MockRepository_FindBlockedConversations_Call) RunAndReturn(run func(ctx context.Context, id gocql.UUID) ([]gocql.UUID, error)) *MockRepository_FindBlockedConversations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindCallParticipantIds provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindCallParticipantIds(ctx context.Context, key string) ([]string, error) {
+	ret := _mock.Called(ctx, key)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindCallParticipantIds")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]string, error)); ok {
+		return returnFunc(ctx, key)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []string); ok {
+		r0 = returnFunc(ctx, key)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, key)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindCallParticipantIds_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindCallParticipantIds'
+type MockRepository_FindCallParticipantIds_Call struct {
+	*mock.Call
+}
+
+// FindCallParticipantIds is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+func (_e *MockRepository_Expecter) FindCallParticipantIds(ctx any, key any) *MockRepository_FindCallParticipantIds_Call {
+	return &MockRepository_FindCallParticipantIds_Call{Call: _e.mock.On("FindCallParticipantIds", ctx, key)}
+}
+
+func (_c *MockRepository_FindCallParticipantIds_Call) Run(run func(ctx context.Context, key string)) *MockRepository_FindCallParticipantIds_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindCallParticipantIds_Call) Return(strings []string, err error) *MockRepository_FindCallParticipantIds_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *MockRepository_FindCallParticipantIds_Call) RunAndReturn(run func(ctx context.Context, key string) ([]string, error)) *MockRepository_FindCallParticipantIds_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -729,8 +861,8 @@ func (_c *MockRepository_FindReportCountById_Call) RunAndReturn(run func(ctx con
 }
 
 // HasFilepath provides a mock function for the type MockRepository
-func (_mock *MockRepository) HasFilepath(ctx context.Context, id string, filenames []string) (bool, error) {
-	ret := _mock.Called(ctx, id, filenames)
+func (_mock *MockRepository) HasFilepath(ctx context.Context, key string, filenames []string) (bool, error) {
+	ret := _mock.Called(ctx, key, filenames)
 
 	if len(ret) == 0 {
 		panic("no return value specified for HasFilepath")
@@ -739,15 +871,15 @@ func (_mock *MockRepository) HasFilepath(ctx context.Context, id string, filenam
 	var r0 bool
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) (bool, error)); ok {
-		return returnFunc(ctx, id, filenames)
+		return returnFunc(ctx, key, filenames)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) bool); ok {
-		r0 = returnFunc(ctx, id, filenames)
+		r0 = returnFunc(ctx, key, filenames)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []string) error); ok {
-		r1 = returnFunc(ctx, id, filenames)
+		r1 = returnFunc(ctx, key, filenames)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -761,13 +893,13 @@ type MockRepository_HasFilepath_Call struct {
 
 // HasFilepath is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - key string
 //   - filenames []string
-func (_e *MockRepository_Expecter) HasFilepath(ctx any, id any, filenames any) *MockRepository_HasFilepath_Call {
-	return &MockRepository_HasFilepath_Call{Call: _e.mock.On("HasFilepath", ctx, id, filenames)}
+func (_e *MockRepository_Expecter) HasFilepath(ctx any, key any, filenames any) *MockRepository_HasFilepath_Call {
+	return &MockRepository_HasFilepath_Call{Call: _e.mock.On("HasFilepath", ctx, key, filenames)}
 }
 
-func (_c *MockRepository_HasFilepath_Call) Run(run func(ctx context.Context, id string, filenames []string)) *MockRepository_HasFilepath_Call {
+func (_c *MockRepository_HasFilepath_Call) Run(run func(ctx context.Context, key string, filenames []string)) *MockRepository_HasFilepath_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -795,14 +927,134 @@ func (_c *MockRepository_HasFilepath_Call) Return(b bool, err error) *MockReposi
 	return _c
 }
 
-func (_c *MockRepository_HasFilepath_Call) RunAndReturn(run func(ctx context.Context, id string, filenames []string) (bool, error)) *MockRepository_HasFilepath_Call {
+func (_c *MockRepository_HasFilepath_Call) RunAndReturn(run func(ctx context.Context, key string, filenames []string) (bool, error)) *MockRepository_HasFilepath_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RemoveCallParticipantId provides a mock function for the type MockRepository
+func (_mock *MockRepository) RemoveCallParticipantId(ctx context.Context, key string, memberId uuid.UUID) error {
+	ret := _mock.Called(ctx, key, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveCallParticipantId")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, key, memberId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_RemoveCallParticipantId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveCallParticipantId'
+type MockRepository_RemoveCallParticipantId_Call struct {
+	*mock.Call
+}
+
+// RemoveCallParticipantId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+//   - memberId uuid.UUID
+func (_e *MockRepository_Expecter) RemoveCallParticipantId(ctx any, key any, memberId any) *MockRepository_RemoveCallParticipantId_Call {
+	return &MockRepository_RemoveCallParticipantId_Call{Call: _e.mock.On("RemoveCallParticipantId", ctx, key, memberId)}
+}
+
+func (_c *MockRepository_RemoveCallParticipantId_Call) Run(run func(ctx context.Context, key string, memberId uuid.UUID)) *MockRepository_RemoveCallParticipantId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_RemoveCallParticipantId_Call) Return(err error) *MockRepository_RemoveCallParticipantId_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_RemoveCallParticipantId_Call) RunAndReturn(run func(ctx context.Context, key string, memberId uuid.UUID) error) *MockRepository_RemoveCallParticipantId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RemoveCallServerIP provides a mock function for the type MockRepository
+func (_mock *MockRepository) RemoveCallServerIP(ctx context.Context, key string) error {
+	ret := _mock.Called(ctx, key)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveCallServerIP")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, key)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_RemoveCallServerIP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveCallServerIP'
+type MockRepository_RemoveCallServerIP_Call struct {
+	*mock.Call
+}
+
+// RemoveCallServerIP is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+func (_e *MockRepository_Expecter) RemoveCallServerIP(ctx any, key any) *MockRepository_RemoveCallServerIP_Call {
+	return &MockRepository_RemoveCallServerIP_Call{Call: _e.mock.On("RemoveCallServerIP", ctx, key)}
+}
+
+func (_c *MockRepository_RemoveCallServerIP_Call) Run(run func(ctx context.Context, key string)) *MockRepository_RemoveCallServerIP_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_RemoveCallServerIP_Call) Return(err error) *MockRepository_RemoveCallServerIP_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_RemoveCallServerIP_Call) RunAndReturn(run func(ctx context.Context, key string) error) *MockRepository_RemoveCallServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RemoveFilepath provides a mock function for the type MockRepository
-func (_mock *MockRepository) RemoveFilepath(ctx context.Context, id string, filenames []string) error {
-	ret := _mock.Called(ctx, id, filenames)
+func (_mock *MockRepository) RemoveFilepath(ctx context.Context, key string, filenames []string) error {
+	ret := _mock.Called(ctx, key, filenames)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveFilepath")
@@ -810,7 +1062,7 @@ func (_mock *MockRepository) RemoveFilepath(ctx context.Context, id string, file
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) error); ok {
-		r0 = returnFunc(ctx, id, filenames)
+		r0 = returnFunc(ctx, key, filenames)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -824,13 +1076,13 @@ type MockRepository_RemoveFilepath_Call struct {
 
 // RemoveFilepath is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - key string
 //   - filenames []string
-func (_e *MockRepository_Expecter) RemoveFilepath(ctx any, id any, filenames any) *MockRepository_RemoveFilepath_Call {
-	return &MockRepository_RemoveFilepath_Call{Call: _e.mock.On("RemoveFilepath", ctx, id, filenames)}
+func (_e *MockRepository_Expecter) RemoveFilepath(ctx any, key any, filenames any) *MockRepository_RemoveFilepath_Call {
+	return &MockRepository_RemoveFilepath_Call{Call: _e.mock.On("RemoveFilepath", ctx, key, filenames)}
 }
 
-func (_c *MockRepository_RemoveFilepath_Call) Run(run func(ctx context.Context, id string, filenames []string)) *MockRepository_RemoveFilepath_Call {
+func (_c *MockRepository_RemoveFilepath_Call) Run(run func(ctx context.Context, key string, filenames []string)) *MockRepository_RemoveFilepath_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -858,14 +1110,14 @@ func (_c *MockRepository_RemoveFilepath_Call) Return(err error) *MockRepository_
 	return _c
 }
 
-func (_c *MockRepository_RemoveFilepath_Call) RunAndReturn(run func(ctx context.Context, id string, filenames []string) error) *MockRepository_RemoveFilepath_Call {
+func (_c *MockRepository_RemoveFilepath_Call) RunAndReturn(run func(ctx context.Context, key string, filenames []string) error) *MockRepository_RemoveFilepath_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RemoveServerIP provides a mock function for the type MockRepository
-func (_mock *MockRepository) RemoveServerIP(ctx context.Context, memberId string, ip string) error {
-	ret := _mock.Called(ctx, memberId, ip)
+func (_mock *MockRepository) RemoveServerIP(ctx context.Context, key string, ip string) error {
+	ret := _mock.Called(ctx, key, ip)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemoveServerIP")
@@ -873,7 +1125,7 @@ func (_mock *MockRepository) RemoveServerIP(ctx context.Context, memberId string
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = returnFunc(ctx, memberId, ip)
+		r0 = returnFunc(ctx, key, ip)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -887,13 +1139,13 @@ type MockRepository_RemoveServerIP_Call struct {
 
 // RemoveServerIP is a helper method to define mock.On call
 //   - ctx context.Context
-//   - memberId string
+//   - key string
 //   - ip string
-func (_e *MockRepository_Expecter) RemoveServerIP(ctx any, memberId any, ip any) *MockRepository_RemoveServerIP_Call {
-	return &MockRepository_RemoveServerIP_Call{Call: _e.mock.On("RemoveServerIP", ctx, memberId, ip)}
+func (_e *MockRepository_Expecter) RemoveServerIP(ctx any, key any, ip any) *MockRepository_RemoveServerIP_Call {
+	return &MockRepository_RemoveServerIP_Call{Call: _e.mock.On("RemoveServerIP", ctx, key, ip)}
 }
 
-func (_c *MockRepository_RemoveServerIP_Call) Run(run func(ctx context.Context, memberId string, ip string)) *MockRepository_RemoveServerIP_Call {
+func (_c *MockRepository_RemoveServerIP_Call) Run(run func(ctx context.Context, key string, ip string)) *MockRepository_RemoveServerIP_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -921,7 +1173,7 @@ func (_c *MockRepository_RemoveServerIP_Call) Return(err error) *MockRepository_
 	return _c
 }
 
-func (_c *MockRepository_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId string, ip string) error) *MockRepository_RemoveServerIP_Call {
+func (_c *MockRepository_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, key string, ip string) error) *MockRepository_RemoveServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -989,9 +1241,72 @@ func (_c *MockRepository_SaveNameById_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// SetCallServerIP provides a mock function for the type MockRepository
+func (_mock *MockRepository) SetCallServerIP(ctx context.Context, key string, ip string) error {
+	ret := _mock.Called(ctx, key, ip)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetCallServerIP")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, key, ip)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_SetCallServerIP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetCallServerIP'
+type MockRepository_SetCallServerIP_Call struct {
+	*mock.Call
+}
+
+// SetCallServerIP is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key string
+//   - ip string
+func (_e *MockRepository_Expecter) SetCallServerIP(ctx any, key any, ip any) *MockRepository_SetCallServerIP_Call {
+	return &MockRepository_SetCallServerIP_Call{Call: _e.mock.On("SetCallServerIP", ctx, key, ip)}
+}
+
+func (_c *MockRepository_SetCallServerIP_Call) Run(run func(ctx context.Context, key string, ip string)) *MockRepository_SetCallServerIP_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_SetCallServerIP_Call) Return(err error) *MockRepository_SetCallServerIP_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_SetCallServerIP_Call) RunAndReturn(run func(ctx context.Context, key string, ip string) error) *MockRepository_SetCallServerIP_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SetFilepath provides a mock function for the type MockRepository
-func (_mock *MockRepository) SetFilepath(ctx context.Context, id string, filenames []string) error {
-	ret := _mock.Called(ctx, id, filenames)
+func (_mock *MockRepository) SetFilepath(ctx context.Context, key string, filenames []string) error {
+	ret := _mock.Called(ctx, key, filenames)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetFilepath")
@@ -999,7 +1314,7 @@ func (_mock *MockRepository) SetFilepath(ctx context.Context, id string, filenam
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) error); ok {
-		r0 = returnFunc(ctx, id, filenames)
+		r0 = returnFunc(ctx, key, filenames)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1013,13 +1328,13 @@ type MockRepository_SetFilepath_Call struct {
 
 // SetFilepath is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - key string
 //   - filenames []string
-func (_e *MockRepository_Expecter) SetFilepath(ctx any, id any, filenames any) *MockRepository_SetFilepath_Call {
-	return &MockRepository_SetFilepath_Call{Call: _e.mock.On("SetFilepath", ctx, id, filenames)}
+func (_e *MockRepository_Expecter) SetFilepath(ctx any, key any, filenames any) *MockRepository_SetFilepath_Call {
+	return &MockRepository_SetFilepath_Call{Call: _e.mock.On("SetFilepath", ctx, key, filenames)}
 }
 
-func (_c *MockRepository_SetFilepath_Call) Run(run func(ctx context.Context, id string, filenames []string)) *MockRepository_SetFilepath_Call {
+func (_c *MockRepository_SetFilepath_Call) Run(run func(ctx context.Context, key string, filenames []string)) *MockRepository_SetFilepath_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1047,14 +1362,14 @@ func (_c *MockRepository_SetFilepath_Call) Return(err error) *MockRepository_Set
 	return _c
 }
 
-func (_c *MockRepository_SetFilepath_Call) RunAndReturn(run func(ctx context.Context, id string, filenames []string) error) *MockRepository_SetFilepath_Call {
+func (_c *MockRepository_SetFilepath_Call) RunAndReturn(run func(ctx context.Context, key string, filenames []string) error) *MockRepository_SetFilepath_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SetServerIP provides a mock function for the type MockRepository
-func (_mock *MockRepository) SetServerIP(ctx context.Context, memberId string, ip string) error {
-	ret := _mock.Called(ctx, memberId, ip)
+func (_mock *MockRepository) SetServerIP(ctx context.Context, key string, ip string) error {
+	ret := _mock.Called(ctx, key, ip)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetServerIP")
@@ -1062,7 +1377,7 @@ func (_mock *MockRepository) SetServerIP(ctx context.Context, memberId string, i
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = returnFunc(ctx, memberId, ip)
+		r0 = returnFunc(ctx, key, ip)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1076,13 +1391,13 @@ type MockRepository_SetServerIP_Call struct {
 
 // SetServerIP is a helper method to define mock.On call
 //   - ctx context.Context
-//   - memberId string
+//   - key string
 //   - ip string
-func (_e *MockRepository_Expecter) SetServerIP(ctx any, memberId any, ip any) *MockRepository_SetServerIP_Call {
-	return &MockRepository_SetServerIP_Call{Call: _e.mock.On("SetServerIP", ctx, memberId, ip)}
+func (_e *MockRepository_Expecter) SetServerIP(ctx any, key any, ip any) *MockRepository_SetServerIP_Call {
+	return &MockRepository_SetServerIP_Call{Call: _e.mock.On("SetServerIP", ctx, key, ip)}
 }
 
-func (_c *MockRepository_SetServerIP_Call) Run(run func(ctx context.Context, memberId string, ip string)) *MockRepository_SetServerIP_Call {
+func (_c *MockRepository_SetServerIP_Call) Run(run func(ctx context.Context, key string, ip string)) *MockRepository_SetServerIP_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1110,7 +1425,7 @@ func (_c *MockRepository_SetServerIP_Call) Return(err error) *MockRepository_Set
 	return _c
 }
 
-func (_c *MockRepository_SetServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId string, ip string) error) *MockRepository_SetServerIP_Call {
+func (_c *MockRepository_SetServerIP_Call) RunAndReturn(run func(ctx context.Context, key string, ip string) error) *MockRepository_SetServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }

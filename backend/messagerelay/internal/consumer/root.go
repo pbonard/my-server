@@ -16,7 +16,6 @@ import (
 	"syscall"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -190,10 +189,10 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 	}
 	err = c.service.RelayMessage(
 		ctx,
-		uuid.UUID(p.Id),
-		p.ToIds,
-		uuid.UUID(p.RoomId),
-		uuid.UUID(p.FromId),
+		p.Id,
+		common.BytesOf(p.ToIds),
+		p.RoomId,
+		p.FromId,
 		p.ContentType,
 		p.Contents,
 		p.NoPush,

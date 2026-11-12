@@ -47,7 +47,7 @@ func newService(t *testing.T) (service.Service, *deps) {
 }
 
 func ips(d *deps, id uuid.UUID, ips ...string) {
-	d.repo.EXPECT().GetServerIPs(mock.Anything, string(id[:])).Return(ips, nil).Maybe()
+	d.repo.EXPECT().GetServerIPs(mock.Anything, "chat-servers:"+id.String()).Return(ips, nil).Maybe()
 }
 
 func relay(t *testing.T, s service.Service, contentType string, toIds ...uuid.UUID) {
@@ -82,8 +82,8 @@ func TestRelayMessage_offlineReceiverGetsAPushNotification(t *testing.T) {
 
 	require.Len(t, d.pushed, 1)
 	assert.Equal(t, uint8(0), d.pushed[0].NotificationId)
-	assert.Equal(t, [][]byte{offline[:]}, d.pushed[0].ToIds)
-	assert.Equal(t, msgId[:], d.pushed[0].Id)
+	assert.Equal(t, []uuid.UUID{offline}, d.pushed[0].ToIds)
+	assert.Equal(t, msgId, d.pushed[0].Id)
 }
 
 // the consumer publishes a retry when the push notification could not be handed to kafka
@@ -124,13 +124,13 @@ func TestRelayMessage_failedRelayFallsBackToPushAndForgetsTheServer(t *testing.T
 	s, d := newService(t)
 	ips(d, online, serverIP)
 	d.relay.EXPECT().Do(mock.Anything, serverIP, mock.Anything).Return(nil, errors.New("unavailable"))
-	d.repo.EXPECT().RemoveServerIP(mock.Anything, string(online[:]), serverIP).Return(nil)
+	d.repo.EXPECT().RemoveServerIP(mock.Anything, "chat-servers:"+online.String(), serverIP).Return(nil)
 
 	relay(t, s, "text", online)
 
 	require.Len(t, d.pushed, 1)
 	assert.Equal(t, uint8(1), d.pushed[0].NotificationId)
-	assert.Equal(t, [][]byte{online[:]}, d.pushed[0].ToIds)
+	assert.Equal(t, []uuid.UUID{online}, d.pushed[0].ToIds)
 }
 
 func TestRelayMessage_noPushIsNeverPushed(t *testing.T) {
@@ -146,7 +146,7 @@ func TestRelayMessage_noPushIsNeverPushed(t *testing.T) {
 		s, d := newService(t)
 		ips(d, online, serverIP)
 		d.relay.EXPECT().Do(mock.Anything, serverIP, mock.Anything).Return(nil, errors.New("unavailable"))
-		d.repo.EXPECT().RemoveServerIP(mock.Anything, string(online[:]), serverIP).Return(nil)
+		d.repo.EXPECT().RemoveServerIP(mock.Anything, "chat-servers:"+online.String(), serverIP).Return(nil)
 
 		relayWithNoPush(t, s, "text", true, online)
 
@@ -158,20 +158,20 @@ func TestRelayMessage_serverReportsReceiversItCouldNotDeliverTo(t *testing.T) {
 	s, d := newService(t)
 	ips(d, online, serverIP)
 	d.relay.EXPECT().Do(mock.Anything, serverIP, mock.Anything).Return([][]byte{online[:]}, nil)
-	d.repo.EXPECT().RemoveServerIP(mock.Anything, string(online[:]), serverIP).Return(nil)
+	d.repo.EXPECT().RemoveServerIP(mock.Anything, "chat-servers:"+online.String(), serverIP).Return(nil)
 
 	relay(t, s, "text", online)
 
 	require.Len(t, d.pushed, 1)
 	assert.Equal(t, uint8(1), d.pushed[0].NotificationId)
-	assert.Equal(t, [][]byte{online[:]}, d.pushed[0].ToIds)
+	assert.Equal(t, []uuid.UUID{online}, d.pushed[0].ToIds)
 }
 
 func TestRelayMessage_movedMemberKeepsItsNewServer(t *testing.T) {
 	// the member reconnected to another server meanwhile, its ip is not removed
 	s, d := newService(t)
-	d.repo.EXPECT().GetServerIPs(mock.Anything, string(online[:])).Return([]string{serverIP}, nil).Once()
-	d.repo.EXPECT().GetServerIPs(mock.Anything, string(online[:])).Return([]string{"10.0.0.2"}, nil).Once()
+	d.repo.EXPECT().GetServerIPs(mock.Anything, "chat-servers:"+online.String()).Return([]string{serverIP}, nil).Once()
+	d.repo.EXPECT().GetServerIPs(mock.Anything, "chat-servers:"+online.String()).Return([]string{"10.0.0.2"}, nil).Once()
 	d.relay.EXPECT().Do(mock.Anything, serverIP, mock.Anything).Return(nil, errors.New("unavailable"))
 
 	relay(t, s, "text", online)

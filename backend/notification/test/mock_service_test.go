@@ -48,7 +48,7 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // PreprocessMessageNotification provides a mock function for the type MockService
-func (_mock *MockService) PreprocessMessageNotification(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds [][]byte, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string) error {
+func (_mock *MockService) PreprocessMessageNotification(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds []uuid.UUID, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string) error {
 	ret := _mock.Called(ctx, notificationId, messageId, toIds, roomId, fromId, contentType, content)
 
 	if len(ret) == 0 {
@@ -56,7 +56,7 @@ func (_mock *MockService) PreprocessMessageNotification(ctx context.Context, not
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uint8, uuid.UUID, [][]byte, uuid.UUID, uuid.UUID, string, []string) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uint8, uuid.UUID, []uuid.UUID, uuid.UUID, uuid.UUID, string, []string) error); ok {
 		r0 = returnFunc(ctx, notificationId, messageId, toIds, roomId, fromId, contentType, content)
 	} else {
 		r0 = ret.Error(0)
@@ -73,7 +73,7 @@ type MockService_PreprocessMessageNotification_Call struct {
 //   - ctx context.Context
 //   - notificationId uint8
 //   - messageId uuid.UUID
-//   - toIds [][]byte
+//   - toIds []uuid.UUID
 //   - roomId uuid.UUID
 //   - fromId uuid.UUID
 //   - contentType string
@@ -82,7 +82,7 @@ func (_e *MockService_Expecter) PreprocessMessageNotification(ctx any, notificat
 	return &MockService_PreprocessMessageNotification_Call{Call: _e.mock.On("PreprocessMessageNotification", ctx, notificationId, messageId, toIds, roomId, fromId, contentType, content)}
 }
 
-func (_c *MockService_PreprocessMessageNotification_Call) Run(run func(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds [][]byte, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string)) *MockService_PreprocessMessageNotification_Call {
+func (_c *MockService_PreprocessMessageNotification_Call) Run(run func(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds []uuid.UUID, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string)) *MockService_PreprocessMessageNotification_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -96,9 +96,9 @@ func (_c *MockService_PreprocessMessageNotification_Call) Run(run func(ctx conte
 		if args[2] != nil {
 			arg2 = args[2].(uuid.UUID)
 		}
-		var arg3 [][]byte
+		var arg3 []uuid.UUID
 		if args[3] != nil {
-			arg3 = args[3].([][]byte)
+			arg3 = args[3].([]uuid.UUID)
 		}
 		var arg4 uuid.UUID
 		if args[4] != nil {
@@ -135,7 +135,7 @@ func (_c *MockService_PreprocessMessageNotification_Call) Return(err error) *Moc
 	return _c
 }
 
-func (_c *MockService_PreprocessMessageNotification_Call) RunAndReturn(run func(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds [][]byte, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string) error) *MockService_PreprocessMessageNotification_Call {
+func (_c *MockService_PreprocessMessageNotification_Call) RunAndReturn(run func(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds []uuid.UUID, roomId uuid.UUID, fromId uuid.UUID, contentType string, content []string) error) *MockService_PreprocessMessageNotification_Call {
 	_c.Call.Return(run)
 	return _c
 }

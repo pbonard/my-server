@@ -5,8 +5,8 @@ import (
 	"log/slog"
 )
 
-func (r *repository) GetServerIP(ctx context.Context, id string) (string, error) {
-	result := r.client.Do(ctx, r.client.B().Get().Key("conversation"+id).Build())
+func (r *repository) GetServerIP(ctx context.Context, key string) (string, error) {
+	result := r.client.Do(ctx, r.client.B().Get().Key(key).Build())
 	if result.Error() != nil {
 		slog.Error("fail to get member ip", "err", result.Error())
 		return "", result.Error()
@@ -19,8 +19,8 @@ func (r *repository) GetServerIP(ctx context.Context, id string) (string, error)
 	return value, nil
 }
 
-func (r *repository) RemoveServerIP(ctx context.Context, memberId string) error {
-	result := r.client.Do(ctx, r.client.B().Del().Key("conversation"+memberId).Build())
+func (r *repository) RemoveServerIP(ctx context.Context, key string) error {
+	result := r.client.Do(ctx, r.client.B().Del().Key(key).Build())
 	if result.Error() != nil {
 		slog.Error("fail to remove member ip", "err", result.Error())
 		return result.Error()

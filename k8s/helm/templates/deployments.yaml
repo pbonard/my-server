@@ -90,6 +90,11 @@ spec:
             - secretRef:
                 name: cloudflaredns
             {{- end }}
+            {{- if or $app.turn $app.turnSecret }}
+            # TURN_SECRET: the turn app checks call credentials with it, an app with turnSecret (chat) signs them
+            - secretRef:
+                name: turn
+            {{- end }}
             {{- if $app.garage }}
             - secretRef:
                 name: garage-s3

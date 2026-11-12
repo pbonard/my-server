@@ -17,7 +17,6 @@ import (
 	"syscall"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -196,7 +195,7 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 				"payload.Value", message.Value)
 			return nil
 		}
-		err = c.service.PreprocessMessageNotification(ctx, p.NotificationId, uuid.UUID(p.Id), p.ToIds, uuid.UUID(p.RoomId), uuid.UUID(p.FromId), p.ContentType, p.Contents)
+		err = c.service.PreprocessMessageNotification(ctx, p.NotificationId, p.Id, p.ToIds, p.RoomId, p.FromId, p.ContentType, p.Contents)
 	}
 	if err != nil {
 		e := common.RetryEvent{Reason: err.Error()}

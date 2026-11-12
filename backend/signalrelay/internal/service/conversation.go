@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/common"
 	"backend/common/proto"
 	"backend/signalrelay/internal/client"
 	"context"
@@ -9,6 +10,8 @@ import (
 	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (s *service) PropagateSignal(ctx context.Context, toIds [][]byte, fromId []byte, signal json.RawMessage) {
@@ -19,7 +22,7 @@ func (s *service) PropagateSignal(ctx context.Context, toIds [][]byte, fromId []
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ip, err := s.repository.GetServerIP(ctx, string(toId))
+			ip, err := s.repository.GetServerIP(ctx, common.CallServerKey(uuid.UUID(toId)))
 			if err != nil || ip == "" {
 				return
 			}
@@ -62,11 +65,11 @@ func (s *service) removeStaleIPs(ctx context.Context, ids [][]byte, ip string) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			currentIP, err := s.repository.GetServerIP(ctx, string(tid))
+			currentIP, err := s.repository.GetServerIP(ctx, common.CallServerKey(uuid.UUID(tid)))
 			if err != nil || currentIP != ip {
 				return
 			}
-			_ = s.repository.RemoveServerIP(ctx, string(tid))
+			_ = s.repository.RemoveServerIP(ctx, common.CallServerKey(uuid.UUID(tid)))
 		}()
 	}
 	wg.Wait()

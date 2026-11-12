@@ -11,7 +11,7 @@ import (
 )
 
 type Service interface {
-	PreprocessMessageNotification(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds [][]byte, roomId, fromId uuid.UUID, contentType string, content []string) error
+	PreprocessMessageNotification(ctx context.Context, notificationId uint8, messageId uuid.UUID, toIds []uuid.UUID, roomId, fromId uuid.UUID, contentType string, content []string) error
 	PreprocessScheduledNotification(ctx context.Context, partitionId uuid.UUID, notifications map[uuid.UUID]map[int]string, contents map[int]string) error
 	RegisterNotification(ctx context.Context, id uuid.UUID, os, token string) error
 }

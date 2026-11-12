@@ -39,23 +39,23 @@ func (s *service) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdTy
 		return nil, err
 	}
 	if contentType == "image" || contentType == "audio" || contentType == "video" {
-		exists, err1 := s.repository.HasFilepath(ctx, contentType+string(fromId[:]), contents)
+		exists, err1 := s.repository.HasFilepath(ctx, common.UploadsKey(contentType, fromId), contents)
 		if err1 != nil {
 			return nil, err1
 		}
 		if !exists {
 			return nil, errors.New("bad request")
 		}
-		err = s.repository.RemoveFilepath(ctx, contentType+string(fromId[:]), contents)
+		err = s.repository.RemoveFilepath(ctx, common.UploadsKey(contentType, fromId), contents)
 		if err != nil {
 			return nil, err
 		}
 	}
 	p := common.Marshal(common.ChatMessage{
-		Id:          id[:],
-		FromId:      fromId[:],
+		Id:          id,
+		FromId:      fromId,
 		ToIdType:    toIdType,
-		ToId:        toId[:],
+		ToId:        toId,
 		ContentType: contentType,
 		Contents:    contents,
 		NoPush:      noPush,
@@ -78,7 +78,7 @@ func (s *service) GeneratePresignedURL(ctx context.Context, id uuid.UUID, conten
 		filenames = append(filenames, filename.String())
 		res = append(res, dto.GeneratePresignedURLResponse{Filename: filename})
 	}
-	err = s.repository.SetFilepath(ctx, contentType+string(id[:]), filenames)
+	err = s.repository.SetFilepath(ctx, common.UploadsKey(contentType, id), filenames)
 	if err != nil {
 		slog.Error("fail to save filename", "err", err)
 		return nil, err

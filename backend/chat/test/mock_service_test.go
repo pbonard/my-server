@@ -7,6 +7,7 @@ package test
 import (
 	"backend/chat/internal/dto"
 	"context"
+	"encoding/json"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -46,6 +47,69 @@ type MockService_Expecter struct {
 
 func (_m *MockService) EXPECT() *MockService_Expecter {
 	return &MockService_Expecter{mock: &_m.Mock}
+}
+
+// AddCallParticipant provides a mock function for the type MockService
+func (_mock *MockService) AddCallParticipant(ctx context.Context, callId string, memberId uuid.UUID) error {
+	ret := _mock.Called(ctx, callId, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddCallParticipant")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, callId, memberId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_AddCallParticipant_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddCallParticipant'
+type MockService_AddCallParticipant_Call struct {
+	*mock.Call
+}
+
+// AddCallParticipant is a helper method to define mock.On call
+//   - ctx context.Context
+//   - callId string
+//   - memberId uuid.UUID
+func (_e *MockService_Expecter) AddCallParticipant(ctx any, callId any, memberId any) *MockService_AddCallParticipant_Call {
+	return &MockService_AddCallParticipant_Call{Call: _e.mock.On("AddCallParticipant", ctx, callId, memberId)}
+}
+
+func (_c *MockService_AddCallParticipant_Call) Run(run func(ctx context.Context, callId string, memberId uuid.UUID)) *MockService_AddCallParticipant_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_AddCallParticipant_Call) Return(err error) *MockService_AddCallParticipant_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_AddCallParticipant_Call) RunAndReturn(run func(ctx context.Context, callId string, memberId uuid.UUID) error) *MockService_AddCallParticipant_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // BlockConversation provides a mock function for the type MockService
@@ -345,6 +409,52 @@ func (_c *MockService_GenerateSignedURL_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// GenerateTurn provides a mock function for the type MockService
+func (_mock *MockService) GenerateTurn() *dto.GetTurnResponse {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GenerateTurn")
+	}
+
+	var r0 *dto.GetTurnResponse
+	if returnFunc, ok := ret.Get(0).(func() *dto.GetTurnResponse); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.GetTurnResponse)
+		}
+	}
+	return r0
+}
+
+// MockService_GenerateTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenerateTurn'
+type MockService_GenerateTurn_Call struct {
+	*mock.Call
+}
+
+// GenerateTurn is a helper method to define mock.On call
+func (_e *MockService_Expecter) GenerateTurn() *MockService_GenerateTurn_Call {
+	return &MockService_GenerateTurn_Call{Call: _e.mock.On("GenerateTurn")}
+}
+
+func (_c *MockService_GenerateTurn_Call) Run(run func()) *MockService_GenerateTurn_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockService_GenerateTurn_Call) Return(getTurnResponse *dto.GetTurnResponse) *MockService_GenerateTurn_Call {
+	_c.Call.Return(getTurnResponse)
+	return _c
+}
+
+func (_c *MockService_GenerateTurn_Call) RunAndReturn(run func() *dto.GetTurnResponse) *MockService_GenerateTurn_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetBlockedConversations provides a mock function for the type MockService
 func (_mock *MockService) GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error) {
 	ret := _mock.Called(ctx, memberId)
@@ -409,6 +519,80 @@ func (_c *MockService_GetBlockedConversations_Call) Return(blockReports []dto.Bl
 }
 
 func (_c *MockService_GetBlockedConversations_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error)) *MockService_GetBlockedConversations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetCallParticipantsWithoutMe provides a mock function for the type MockService
+func (_mock *MockService) GetCallParticipantsWithoutMe(ctx context.Context, callId string, memberId uuid.UUID) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, callId, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCallParticipantsWithoutMe")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, callId, memberId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, callId, memberId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, callId, memberId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetCallParticipantsWithoutMe_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCallParticipantsWithoutMe'
+type MockService_GetCallParticipantsWithoutMe_Call struct {
+	*mock.Call
+}
+
+// GetCallParticipantsWithoutMe is a helper method to define mock.On call
+//   - ctx context.Context
+//   - callId string
+//   - memberId uuid.UUID
+func (_e *MockService_Expecter) GetCallParticipantsWithoutMe(ctx any, callId any, memberId any) *MockService_GetCallParticipantsWithoutMe_Call {
+	return &MockService_GetCallParticipantsWithoutMe_Call{Call: _e.mock.On("GetCallParticipantsWithoutMe", ctx, callId, memberId)}
+}
+
+func (_c *MockService_GetCallParticipantsWithoutMe_Call) Run(run func(ctx context.Context, callId string, memberId uuid.UUID)) *MockService_GetCallParticipantsWithoutMe_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetCallParticipantsWithoutMe_Call) Return(uUIDs []uuid.UUID, err error) *MockService_GetCallParticipantsWithoutMe_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *MockService_GetCallParticipantsWithoutMe_Call) RunAndReturn(run func(ctx context.Context, callId string, memberId uuid.UUID) ([]uuid.UUID, error)) *MockService_GetCallParticipantsWithoutMe_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -691,6 +875,69 @@ func (_c *MockService_GetRecentMessages_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// PublishCallSignal provides a mock function for the type MockService
+func (_mock *MockService) PublishCallSignal(fromId uuid.UUID, toIds []uuid.UUID, signal json.RawMessage) error {
+	ret := _mock.Called(fromId, toIds, signal)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PublishCallSignal")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(uuid.UUID, []uuid.UUID, json.RawMessage) error); ok {
+		r0 = returnFunc(fromId, toIds, signal)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_PublishCallSignal_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishCallSignal'
+type MockService_PublishCallSignal_Call struct {
+	*mock.Call
+}
+
+// PublishCallSignal is a helper method to define mock.On call
+//   - fromId uuid.UUID
+//   - toIds []uuid.UUID
+//   - signal json.RawMessage
+func (_e *MockService_Expecter) PublishCallSignal(fromId any, toIds any, signal any) *MockService_PublishCallSignal_Call {
+	return &MockService_PublishCallSignal_Call{Call: _e.mock.On("PublishCallSignal", fromId, toIds, signal)}
+}
+
+func (_c *MockService_PublishCallSignal_Call) Run(run func(fromId uuid.UUID, toIds []uuid.UUID, signal json.RawMessage)) *MockService_PublishCallSignal_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 uuid.UUID
+		if args[0] != nil {
+			arg0 = args[0].(uuid.UUID)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 json.RawMessage
+		if args[2] != nil {
+			arg2 = args[2].(json.RawMessage)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_PublishCallSignal_Call) Return(err error) *MockService_PublishCallSignal_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_PublishCallSignal_Call) RunAndReturn(run func(fromId uuid.UUID, toIds []uuid.UUID, signal json.RawMessage) error) *MockService_PublishCallSignal_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // PublishMessaging provides a mock function for the type MockService
 func (_mock *MockService) PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error) {
 	ret := _mock.Called(ctx, fromId, toIdType, toId, contentType, contents, noPush)
@@ -789,8 +1036,128 @@ func (_c *MockService_PublishMessaging_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
+// RemoveCallParticipant provides a mock function for the type MockService
+func (_mock *MockService) RemoveCallParticipant(ctx context.Context, callId string, memberId uuid.UUID) error {
+	ret := _mock.Called(ctx, callId, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveCallParticipant")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, callId, memberId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_RemoveCallParticipant_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveCallParticipant'
+type MockService_RemoveCallParticipant_Call struct {
+	*mock.Call
+}
+
+// RemoveCallParticipant is a helper method to define mock.On call
+//   - ctx context.Context
+//   - callId string
+//   - memberId uuid.UUID
+func (_e *MockService_Expecter) RemoveCallParticipant(ctx any, callId any, memberId any) *MockService_RemoveCallParticipant_Call {
+	return &MockService_RemoveCallParticipant_Call{Call: _e.mock.On("RemoveCallParticipant", ctx, callId, memberId)}
+}
+
+func (_c *MockService_RemoveCallParticipant_Call) Run(run func(ctx context.Context, callId string, memberId uuid.UUID)) *MockService_RemoveCallParticipant_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_RemoveCallParticipant_Call) Return(err error) *MockService_RemoveCallParticipant_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_RemoveCallParticipant_Call) RunAndReturn(run func(ctx context.Context, callId string, memberId uuid.UUID) error) *MockService_RemoveCallParticipant_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RemoveCallServerIP provides a mock function for the type MockService
+func (_mock *MockService) RemoveCallServerIP(ctx context.Context, memberId uuid.UUID) error {
+	ret := _mock.Called(ctx, memberId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveCallServerIP")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, memberId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_RemoveCallServerIP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveCallServerIP'
+type MockService_RemoveCallServerIP_Call struct {
+	*mock.Call
+}
+
+// RemoveCallServerIP is a helper method to define mock.On call
+//   - ctx context.Context
+//   - memberId uuid.UUID
+func (_e *MockService_Expecter) RemoveCallServerIP(ctx any, memberId any) *MockService_RemoveCallServerIP_Call {
+	return &MockService_RemoveCallServerIP_Call{Call: _e.mock.On("RemoveCallServerIP", ctx, memberId)}
+}
+
+func (_c *MockService_RemoveCallServerIP_Call) Run(run func(ctx context.Context, memberId uuid.UUID)) *MockService_RemoveCallServerIP_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_RemoveCallServerIP_Call) Return(err error) *MockService_RemoveCallServerIP_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_RemoveCallServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID) error) *MockService_RemoveCallServerIP_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RemoveServerIP provides a mock function for the type MockService
-func (_mock *MockService) RemoveServerIP(ctx context.Context, memberId []byte, ip string) error {
+func (_mock *MockService) RemoveServerIP(ctx context.Context, memberId uuid.UUID, ip string) error {
 	ret := _mock.Called(ctx, memberId, ip)
 
 	if len(ret) == 0 {
@@ -798,7 +1165,7 @@ func (_mock *MockService) RemoveServerIP(ctx context.Context, memberId []byte, i
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []byte, string) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) error); ok {
 		r0 = returnFunc(ctx, memberId, ip)
 	} else {
 		r0 = ret.Error(0)
@@ -813,21 +1180,21 @@ type MockService_RemoveServerIP_Call struct {
 
 // RemoveServerIP is a helper method to define mock.On call
 //   - ctx context.Context
-//   - memberId []byte
+//   - memberId uuid.UUID
 //   - ip string
 func (_e *MockService_Expecter) RemoveServerIP(ctx any, memberId any, ip any) *MockService_RemoveServerIP_Call {
 	return &MockService_RemoveServerIP_Call{Call: _e.mock.On("RemoveServerIP", ctx, memberId, ip)}
 }
 
-func (_c *MockService_RemoveServerIP_Call) Run(run func(ctx context.Context, memberId []byte, ip string)) *MockService_RemoveServerIP_Call {
+func (_c *MockService_RemoveServerIP_Call) Run(run func(ctx context.Context, memberId uuid.UUID, ip string)) *MockService_RemoveServerIP_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []byte
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].([]byte)
+			arg1 = args[1].(uuid.UUID)
 		}
 		var arg2 string
 		if args[2] != nil {
@@ -847,7 +1214,7 @@ func (_c *MockService_RemoveServerIP_Call) Return(err error) *MockService_Remove
 	return _c
 }
 
-func (_c *MockService_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId []byte, ip string) error) *MockService_RemoveServerIP_Call {
+func (_c *MockService_RemoveServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID, ip string) error) *MockService_RemoveServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -911,6 +1278,69 @@ func (_c *MockService_ReportUser_Call) Return(err error) *MockService_ReportUser
 }
 
 func (_c *MockService_ReportUser_Call) RunAndReturn(run func(ctx context.Context, reporterId uuid.UUID, reportedId uuid.UUID) error) *MockService_ReportUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetCallServerIP provides a mock function for the type MockService
+func (_mock *MockService) SetCallServerIP(ctx context.Context, memberId uuid.UUID, ip string) error {
+	ret := _mock.Called(ctx, memberId, ip)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetCallServerIP")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) error); ok {
+		r0 = returnFunc(ctx, memberId, ip)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockService_SetCallServerIP_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetCallServerIP'
+type MockService_SetCallServerIP_Call struct {
+	*mock.Call
+}
+
+// SetCallServerIP is a helper method to define mock.On call
+//   - ctx context.Context
+//   - memberId uuid.UUID
+//   - ip string
+func (_e *MockService_Expecter) SetCallServerIP(ctx any, memberId any, ip any) *MockService_SetCallServerIP_Call {
+	return &MockService_SetCallServerIP_Call{Call: _e.mock.On("SetCallServerIP", ctx, memberId, ip)}
+}
+
+func (_c *MockService_SetCallServerIP_Call) Run(run func(ctx context.Context, memberId uuid.UUID, ip string)) *MockService_SetCallServerIP_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_SetCallServerIP_Call) Return(err error) *MockService_SetCallServerIP_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockService_SetCallServerIP_Call) RunAndReturn(run func(ctx context.Context, memberId uuid.UUID, ip string) error) *MockService_SetCallServerIP_Call {
 	_c.Call.Return(run)
 	return _c
 }
