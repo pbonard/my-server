@@ -932,6 +932,78 @@ func (_c *MockRepository_HasFilepath_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// HasRoomMessages provides a mock function for the type MockRepository
+func (_mock *MockRepository) HasRoomMessages(ctx context.Context, toId gocql.UUID, roomId gocql.UUID) (bool, error) {
+	ret := _mock.Called(ctx, toId, roomId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for HasRoomMessages")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) (bool, error)); ok {
+		return returnFunc(ctx, toId, roomId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) bool); ok {
+		r0 = returnFunc(ctx, toId, roomId)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, toId, roomId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_HasRoomMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HasRoomMessages'
+type MockRepository_HasRoomMessages_Call struct {
+	*mock.Call
+}
+
+// HasRoomMessages is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+func (_e *MockRepository_Expecter) HasRoomMessages(ctx any, toId any, roomId any) *MockRepository_HasRoomMessages_Call {
+	return &MockRepository_HasRoomMessages_Call{Call: _e.mock.On("HasRoomMessages", ctx, toId, roomId)}
+}
+
+func (_c *MockRepository_HasRoomMessages_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID)) *MockRepository_HasRoomMessages_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_HasRoomMessages_Call) Return(b bool, err error) *MockRepository_HasRoomMessages_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *MockRepository_HasRoomMessages_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID) (bool, error)) *MockRepository_HasRoomMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RemoveCallParticipantId provides a mock function for the type MockRepository
 func (_mock *MockRepository) RemoveCallParticipantId(ctx context.Context, key string, memberId uuid.UUID) error {
 	ret := _mock.Called(ctx, key, memberId)

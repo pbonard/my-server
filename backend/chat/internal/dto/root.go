@@ -70,3 +70,9 @@ type GetTurnResponse struct {
 	Username   string   `json:"username"`
 	Credential string   `json:"credential"`
 }
+
+// CheckInviteResponse is what decides whether an invite between two people goes through, see CheckInvite
+type CheckInviteResponse struct {
+	Blocked       bool
+	SenderHasChat bool
+}

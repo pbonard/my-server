@@ -43,6 +43,22 @@ func (r *repository) DidBlock(ctx context.Context, blockerId gocql.UUID, blocked
 	return true, nil
 }
 
+// HasRoomMessages is whether toId's inbox still has messages of the room: message_id_by_room, which messagepersist
+// keeps, has only messages, a quit deletes the room's from it and a quit or block alone isn't there
+func (r *repository) HasRoomMessages(ctx context.Context, toId, roomId gocql.UUID) (bool, error) {
+	var id gocql.UUID
+	err := r.session.Query(`SELECT id FROM message_id_by_room WHERE to_id = ? AND room_id = ? LIMIT 1`, toId, roomId).
+		ScanContext(ctx, &id)
+	if errors.Is(err, gocql.ErrNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		slog.Error("fail to check room messages", "err", err, "toId", toId, "roomId", roomId)
+		return false, err
+	}
+	return true, nil
+}
+
 func (r *repository) FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error) {
 	err = r.session.Query(
 		`SELECT participant_ids FROM chat_room_by_id WHERE id = ?`, roomId).
