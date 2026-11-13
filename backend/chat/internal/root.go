@@ -47,10 +47,11 @@ func NewServer() {
 	if err != nil {
 		log.Panic("fail to create tcp listener at port 50051")
 	}
-	gc := grpccontroller.NewGRPCController(c)
+	gc := grpccontroller.NewGRPCController(c, s)
 	g := grpc.NewServer()
 	pb.RegisterMessagingServiceServer(g, gc)
 	pb.RegisterSignalServiceServer(g, gc)
+	pb.RegisterInviteServiceServer(g, gc)
 	err = g.Serve(lis)
 	if err != nil {
 		log.Fatalf("fail to serve: %v", err)

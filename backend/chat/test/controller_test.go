@@ -182,7 +182,8 @@ func TestController_serviceErrorIsBadRequest(t *testing.T) {
 }
 
 func TestGRPCController_receiversWithoutConnectionAreReturnedForPush(t *testing.T) {
-	gc := grpccontroller.NewGRPCController(controller.NewController(NewMockService(t), http.NewServeMux()))
+	svc := NewMockService(t)
+	gc := grpccontroller.NewGRPCController(controller.NewController(svc, http.NewServeMux()), svc)
 	msgId := uuid.New()
 
 	res, err := gc.RelayMessaging(context.Background(), &proto.RelayMessagingRequest{

@@ -47,17 +47,361 @@ func (_m *MockRepository) EXPECT() *MockRepository_Expecter {
 	return &MockRepository_Expecter{mock: &_m.Mock}
 }
 
+// DeleteMessage provides a mock function for the type MockRepository
+func (_mock *MockRepository) DeleteMessage(ctx context.Context, toId gocql.UUID, id gocql.UUID) error {
+	ret := _mock.Called(ctx, toId, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteMessage")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, toId, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_DeleteMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteMessage'
+type MockRepository_DeleteMessage_Call struct {
+	*mock.Call
+}
+
+// DeleteMessage is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - id gocql.UUID
+func (_e *MockRepository_Expecter) DeleteMessage(ctx any, toId any, id any) *MockRepository_DeleteMessage_Call {
+	return &MockRepository_DeleteMessage_Call{Call: _e.mock.On("DeleteMessage", ctx, toId, id)}
+}
+
+func (_c *MockRepository_DeleteMessage_Call) Run(run func(ctx context.Context, toId gocql.UUID, id gocql.UUID)) *MockRepository_DeleteMessage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_DeleteMessage_Call) Return(err error) *MockRepository_DeleteMessage_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_DeleteMessage_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, id gocql.UUID) error) *MockRepository_DeleteMessage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteMessages provides a mock function for the type MockRepository
+func (_mock *MockRepository) DeleteMessages(ctx context.Context, toId gocql.UUID, ids []gocql.UUID) error {
+	ret := _mock.Called(ctx, toId, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteMessages")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, []gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, toId, ids)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_DeleteMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteMessages'
+type MockRepository_DeleteMessages_Call struct {
+	*mock.Call
+}
+
+// DeleteMessages is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - ids []gocql.UUID
+func (_e *MockRepository_Expecter) DeleteMessages(ctx any, toId any, ids any) *MockRepository_DeleteMessages_Call {
+	return &MockRepository_DeleteMessages_Call{Call: _e.mock.On("DeleteMessages", ctx, toId, ids)}
+}
+
+func (_c *MockRepository_DeleteMessages_Call) Run(run func(ctx context.Context, toId gocql.UUID, ids []gocql.UUID)) *MockRepository_DeleteMessages_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 []gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_DeleteMessages_Call) Return(err error) *MockRepository_DeleteMessages_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_DeleteMessages_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, ids []gocql.UUID) error) *MockRepository_DeleteMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteRoomMessageId provides a mock function for the type MockRepository
+func (_mock *MockRepository) DeleteRoomMessageId(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID) error {
+	ret := _mock.Called(ctx, toId, roomId, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteRoomMessageId")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, toId, roomId, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_DeleteRoomMessageId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteRoomMessageId'
+type MockRepository_DeleteRoomMessageId_Call struct {
+	*mock.Call
+}
+
+// DeleteRoomMessageId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - id gocql.UUID
+func (_e *MockRepository_Expecter) DeleteRoomMessageId(ctx any, toId any, roomId any, id any) *MockRepository_DeleteRoomMessageId_Call {
+	return &MockRepository_DeleteRoomMessageId_Call{Call: _e.mock.On("DeleteRoomMessageId", ctx, toId, roomId, id)}
+}
+
+func (_c *MockRepository_DeleteRoomMessageId_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID)) *MockRepository_DeleteRoomMessageId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_DeleteRoomMessageId_Call) Return(err error) *MockRepository_DeleteRoomMessageId_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_DeleteRoomMessageId_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID) error) *MockRepository_DeleteRoomMessageId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteRoomMessageIdsBefore provides a mock function for the type MockRepository
+func (_mock *MockRepository) DeleteRoomMessageIdsBefore(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID) error {
+	ret := _mock.Called(ctx, toId, roomId, before)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteRoomMessageIdsBefore")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, toId, roomId, before)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_DeleteRoomMessageIdsBefore_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteRoomMessageIdsBefore'
+type MockRepository_DeleteRoomMessageIdsBefore_Call struct {
+	*mock.Call
+}
+
+// DeleteRoomMessageIdsBefore is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - before gocql.UUID
+func (_e *MockRepository_Expecter) DeleteRoomMessageIdsBefore(ctx any, toId any, roomId any, before any) *MockRepository_DeleteRoomMessageIdsBefore_Call {
+	return &MockRepository_DeleteRoomMessageIdsBefore_Call{Call: _e.mock.On("DeleteRoomMessageIdsBefore", ctx, toId, roomId, before)}
+}
+
+func (_c *MockRepository_DeleteRoomMessageIdsBefore_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID)) *MockRepository_DeleteRoomMessageIdsBefore_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_DeleteRoomMessageIdsBefore_Call) Return(err error) *MockRepository_DeleteRoomMessageIdsBefore_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_DeleteRoomMessageIdsBefore_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID) error) *MockRepository_DeleteRoomMessageIdsBefore_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindRoomMessageIdsBefore provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindRoomMessageIdsBefore(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID) ([]gocql.UUID, error) {
+	ret := _mock.Called(ctx, toId, roomId, before)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindRoomMessageIdsBefore")
+	}
+
+	var r0 []gocql.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID) ([]gocql.UUID, error)); ok {
+		return returnFunc(ctx, toId, roomId, before)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID) []gocql.UUID); ok {
+		r0 = returnFunc(ctx, toId, roomId, before)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]gocql.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, toId, roomId, before)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindRoomMessageIdsBefore_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindRoomMessageIdsBefore'
+type MockRepository_FindRoomMessageIdsBefore_Call struct {
+	*mock.Call
+}
+
+// FindRoomMessageIdsBefore is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - before gocql.UUID
+func (_e *MockRepository_Expecter) FindRoomMessageIdsBefore(ctx any, toId any, roomId any, before any) *MockRepository_FindRoomMessageIdsBefore_Call {
+	return &MockRepository_FindRoomMessageIdsBefore_Call{Call: _e.mock.On("FindRoomMessageIdsBefore", ctx, toId, roomId, before)}
+}
+
+func (_c *MockRepository_FindRoomMessageIdsBefore_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID)) *MockRepository_FindRoomMessageIdsBefore_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindRoomMessageIdsBefore_Call) Return(uUIDs []gocql.UUID, err error) *MockRepository_FindRoomMessageIdsBefore_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *MockRepository_FindRoomMessageIdsBefore_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, before gocql.UUID) ([]gocql.UUID, error)) *MockRepository_FindRoomMessageIdsBefore_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SaveMessage provides a mock function for the type MockRepository
-func (_mock *MockRepository) SaveMessage(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error {
-	ret := _mock.Called(ctx, id, toId, fromId, roomId, contentType, contents)
+func (_mock *MockRepository) SaveMessage(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string, ttl int) error {
+	ret := _mock.Called(ctx, id, toId, fromId, roomId, contentType, contents, ttl)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveMessage")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, string, []string) error); ok {
-		r0 = returnFunc(ctx, id, toId, fromId, roomId, contentType, contents)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, string, []string, int) error); ok {
+		r0 = returnFunc(ctx, id, toId, fromId, roomId, contentType, contents, ttl)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -77,11 +421,12 @@ type MockRepository_SaveMessage_Call struct {
 //   - roomId gocql.UUID
 //   - contentType string
 //   - contents []string
-func (_e *MockRepository_Expecter) SaveMessage(ctx any, id any, toId any, fromId any, roomId any, contentType any, contents any) *MockRepository_SaveMessage_Call {
-	return &MockRepository_SaveMessage_Call{Call: _e.mock.On("SaveMessage", ctx, id, toId, fromId, roomId, contentType, contents)}
+//   - ttl int
+func (_e *MockRepository_Expecter) SaveMessage(ctx any, id any, toId any, fromId any, roomId any, contentType any, contents any, ttl any) *MockRepository_SaveMessage_Call {
+	return &MockRepository_SaveMessage_Call{Call: _e.mock.On("SaveMessage", ctx, id, toId, fromId, roomId, contentType, contents, ttl)}
 }
 
-func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string)) *MockRepository_SaveMessage_Call {
+func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string, ttl int)) *MockRepository_SaveMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -111,6 +456,10 @@ func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, id 
 		if args[6] != nil {
 			arg6 = args[6].([]string)
 		}
+		var arg7 int
+		if args[7] != nil {
+			arg7 = args[7].(int)
+		}
 		run(
 			arg0,
 			arg1,
@@ -119,6 +468,7 @@ func (_c *MockRepository_SaveMessage_Call) Run(run func(ctx context.Context, id 
 			arg4,
 			arg5,
 			arg6,
+			arg7,
 		)
 	})
 	return _c
@@ -129,7 +479,82 @@ func (_c *MockRepository_SaveMessage_Call) Return(err error) *MockRepository_Sav
 	return _c
 }
 
-func (_c *MockRepository_SaveMessage_Call) RunAndReturn(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string) error) *MockRepository_SaveMessage_Call {
+func (_c *MockRepository_SaveMessage_Call) RunAndReturn(run func(ctx context.Context, id gocql.UUID, toId gocql.UUID, fromId gocql.UUID, roomId gocql.UUID, contentType string, contents []string, ttl int) error) *MockRepository_SaveMessage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SaveRoomMessageId provides a mock function for the type MockRepository
+func (_mock *MockRepository) SaveRoomMessageId(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID, ttl int) error {
+	ret := _mock.Called(ctx, toId, roomId, id, ttl)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SaveRoomMessageId")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, int) error); ok {
+		r0 = returnFunc(ctx, toId, roomId, id, ttl)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_SaveRoomMessageId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveRoomMessageId'
+type MockRepository_SaveRoomMessageId_Call struct {
+	*mock.Call
+}
+
+// SaveRoomMessageId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - id gocql.UUID
+//   - ttl int
+func (_e *MockRepository_Expecter) SaveRoomMessageId(ctx any, toId any, roomId any, id any, ttl any) *MockRepository_SaveRoomMessageId_Call {
+	return &MockRepository_SaveRoomMessageId_Call{Call: _e.mock.On("SaveRoomMessageId", ctx, toId, roomId, id, ttl)}
+}
+
+func (_c *MockRepository_SaveRoomMessageId_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID, ttl int)) *MockRepository_SaveRoomMessageId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_SaveRoomMessageId_Call) Return(err error) *MockRepository_SaveRoomMessageId_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_SaveRoomMessageId_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, id gocql.UUID, ttl int) error) *MockRepository_SaveRoomMessageId_Call {
 	_c.Call.Return(run)
 	return _c
 }

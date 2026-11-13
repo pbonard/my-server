@@ -35,6 +35,24 @@ func (s *service) CheckBlock(ctx context.Context, blockerId uuid.UUID, blockedId
 	return map[string]bool{"didBlock": w}, nil
 }
 
+// CheckInvite is whether the invitee blocked the sender, and whether the sender still has their chat: a personal
+// room is the other member, so the sender's inbox keeps it under the invitee's id. not whether the invitee has it,
+// the sender isn't to learn whether the invitee left
+func (s *service) CheckInvite(ctx context.Context, fromId, toId uuid.UUID) (*dto.CheckInviteResponse, error) {
+	blocked, err := s.repository.DidBlock(ctx, gocql.UUID(toId), gocql.UUID(fromId))
+	if err != nil {
+		return nil, err
+	}
+	senderHasChat, err := s.repository.HasRoomMessages(ctx, gocql.UUID(fromId), gocql.UUID(toId))
+	if err != nil {
+		return nil, err
+	}
+	return &dto.CheckInviteResponse{
+		Blocked:       blocked,
+		SenderHasChat: senderHasChat,
+	}, nil
+}
+
 func (s *service) GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error) {
 	ps, err := s.repository.FindChatParticipantIds(ctx, gocql.UUID(roomId))
 	if err != nil {

@@ -22,6 +22,7 @@ type Repository interface {
 	SetServerIP(ctx context.Context, key, ip string) error
 	RemoveServerIP(ctx context.Context, key, ip string) error
 	DidBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
+	HasRoomMessages(ctx context.Context, toId, roomId gocql.UUID) (bool, error)
 	FindChatParticipantIds(ctx context.Context, roomId gocql.UUID) (ids []gocql.UUID, err error)
 	AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error
 	FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error)

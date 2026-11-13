@@ -219,9 +219,17 @@ spec:
   selector:
     app: {{ $name }}
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: {{ $app.port }}
+    {{- if $app.grpcService }}
+    # the grpc server other apps call by the service name, the relays call pods by their ip instead
+    - name: grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+    {{- end }}
 {{- if $app.allowRoutesFrom }}
 ---
 # HTTPRoutes of these namespaces may point at this service (their backendNamespace): a route can't use a service of

@@ -120,7 +120,8 @@ func TestController_turnIsJSON(t *testing.T) {
 }
 
 func TestGRPCController_relaySignalWithoutConnectedMembers(t *testing.T) {
-	gc := grpccontroller.NewGRPCController(controller.NewController(NewMockService(t), http.NewServeMux()))
+	svc := NewMockService(t)
+	gc := grpccontroller.NewGRPCController(controller.NewController(svc, http.NewServeMux()), svc)
 
 	res, err := gc.RelaySignal(context.Background(), &proto.RelaySignalRequest{
 		FromId: memberId[:], ToIds: [][]byte{otherId[:]}, Signal: []byte(`{}`),

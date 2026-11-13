@@ -28,6 +28,8 @@ apps:
   # no calls on the web, and no turn secret in this namespace
   chat:
     turnSecret: false
+    # holidayfriend-server asks chat's InviteService whether an invite goes through
+    grpcService: true
   # holidayfriend keeps its chats for good, they start from an accepted invite and aren't throwaway
   messagepersist:
     env:

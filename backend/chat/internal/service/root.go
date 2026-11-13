@@ -21,6 +21,7 @@ type Service interface {
 	SetServerIP(ctx context.Context, memberId uuid.UUID, ip string) error
 	RemoveServerIP(ctx context.Context, memberId uuid.UUID, ip string) error
 	CheckBlock(ctx context.Context, blockerId uuid.UUID, blockedId uuid.UUID) (map[string]bool, error)
+	CheckInvite(ctx context.Context, fromId, toId uuid.UUID) (*dto.CheckInviteResponse, error)
 	GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]dto.GetProfileResponse, error)
 	ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error
 	BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error
