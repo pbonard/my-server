@@ -4,15 +4,19 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 	"sync"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
 )
 
-// PersistMessage saves the message in the inbox of each of toIds. a quit or delete is the sender's own, to the
-// sender's inbox alone: it first deletes what it removes there, the room's older messages or the one it names,
-// and is saved after it as an event, so the sender's other devices still learn of it on their sync
+// how many inbox rows a quit deletes in one batch: one partition, kept well under cassandra's batch size limit
+const deleteBatchSize = 100
+
+// PersistMessage saves the message in the inbox of each of toIds. a quit or delete first deletes what it removes in
+// the inbox, the room's older rows or the one it names, and is saved after it, so the sender's other devices still
+// learn of it on their sync. messagepreprocess sends those to the sender's inbox alone: they're "for me"
 func (s *service) PersistMessage(
 	ctx context.Context,
 	id uuid.UUID,
@@ -24,57 +28,72 @@ func (s *service) PersistMessage(
 	var wg sync.WaitGroup
 	var es []error
 	var em sync.Mutex
+	fail := func(err error) {
+		em.Lock()
+		es = append(es, err)
+		em.Unlock()
+	}
 	for _, tid := range toIds {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			// a personal message's room is the receiver, in the receiver's inbox the room is the sender
-			room := roomId
+			msg, to, from := gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId)
+			room := gocql.UUID(roomId)
 			if tid == roomId {
-				room = fromId
+				room = from
 			}
-			var err error
-			// in the sender's own inbox, a quit deletes the room's older messages and a delete the one it names
-			if tid == fromId {
-				switch contentType {
-				case "quit":
-					err = s.repository.DeleteRoomMessagesBefore(ctx, gocql.UUID(tid), gocql.UUID(room), gocql.UUID(id))
-				case "delete":
-					// a retry can't fix a missing or bad id, the event is still saved for the devices
-					if len(contents) == 0 {
-						slog.Error("delete without the message id")
-					} else if target, err1 := uuid.Parse(contents[0]); err1 != nil {
-						slog.Error("fail to parse the deleted message id", "err", err1, "content", contents[0])
-					} else {
-						err = s.repository.DeleteMessage(ctx, gocql.UUID(tid), gocql.UUID(room), gocql.UUID(target))
+			switch contentType {
+			case "quit":
+				ids, err := s.repository.FindRoomMessageIdsBefore(ctx, to, room, msg)
+				if err != nil {
+					fail(err)
+					return
+				}
+				for chunk := range slices.Chunk(ids, deleteBatchSize) {
+					if err = s.repository.DeleteMessages(ctx, to, chunk); err != nil {
+						fail(err)
+						return
 					}
 				}
-			}
-			// saved after what it deletes: when the delete fails, the retry deletes and saves again
-			if err == nil {
-				if isEvent(contentType) {
-					err = s.repository.SaveEvent(ctx, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(room), contentType, contents)
-				} else {
-					err = s.repository.SaveMessage(ctx, gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId), gocql.UUID(room), contentType, contents)
+				if err = s.repository.DeleteRoomMessageIdsBefore(ctx, to, room, msg); err != nil {
+					fail(err)
+					return
 				}
-			}
-			if err != nil {
-				em.Lock()
-				es = append(es, err)
-				em.Unlock()
+				if err = s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.DeleteTTL); err != nil {
+					fail(err)
+				}
+			case "delete":
+				if len(contents) == 0 {
+					slog.Error("delete without the message id")
+					return
+				}
+				target, err := uuid.Parse(contents[0])
+				if err != nil {
+					slog.Error("fail to parse the deleted message id", "err", err, "content", contents[0])
+					return
+				}
+				if err = s.repository.DeleteMessage(ctx, to, gocql.UUID(target)); err != nil {
+					fail(err)
+					return
+				}
+				if err = s.repository.DeleteRoomMessageId(ctx, to, room, gocql.UUID(target)); err != nil {
+					fail(err)
+					return
+				}
+				if err = s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.DeleteTTL); err != nil {
+					fail(err)
+				}
+			default:
+				if err := s.repository.SaveRoomMessageId(ctx, to, room, msg, s.config.MessageTTL); err != nil {
+					fail(err)
+					return
+				}
+				if err := s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.MessageTTL); err != nil {
+					fail(err)
+				}
 			}
 		}()
 	}
 	wg.Wait()
 	return errors.Join(es...)
-}
-
-// isEvent is whether the content changes the chat instead of being a message of it: a quit or delete removes
-// messages, a block or unblock is kept by messagepreprocess. a room they alone are in isn't a chat its inbox has
-func isEvent(contentType string) bool {
-	switch contentType {
-	case "quit", "delete", "block", "unblock":
-		return true
-	}
-	return false
 }
