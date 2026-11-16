@@ -48,7 +48,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
-    image: "backend/chat:af6ab9b"
+    image: "backend/chat:200f6ea"
     port: 8080
     routePath: /chat
     authentication: false
