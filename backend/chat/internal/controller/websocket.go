@@ -73,7 +73,9 @@ func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 			slog.Error("fail to close conn", "err", err)
 		}
 		c.csMutex.Lock()
-		delete(c.conns[memberId], deviceId)
+		if c.conns[memberId][deviceId] == conn {
+			delete(c.conns[memberId], deviceId)
+		}
 		c.numbers = c.numbers - 1
 		c.csMutex.Unlock()
 		c.csMutex.RLock()
