@@ -76,3 +76,48 @@ func TestConnectMessaging_withoutADeviceIdIsRefused(t *testing.T) {
 	require.Error(t, err)
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
+
+// a device's socket that went and came back: its new one (B) takes the old one's (A) place before A's end is noticed,
+// as when a phone changes networks. A ending afterwards leaves B in place, so messages still reach the device live
+func TestConnectMessaging_oldSocketEndingAfterReconnectKeepsTheNewOne(t *testing.T) {
+	mux := http.NewServeMux()
+	c := controller.NewController(connectedService(t), mux)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Set("X-User-Id", memberId.String())
+		mux.ServeHTTP(w, r)
+	}))
+	t.Cleanup(srv.Close)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	url := "ws" + strings.TrimPrefix(srv.URL, "http") + "/chat/messaging/connect?deviceId=" + uuid.NewString()
+	dial := func() *websocket.Conn {
+		conn, _, err := websocket.Dial(ctx, url, &websocket.DialOptions{Subprotocols: []string{"bearer", "the.access.token"}})
+		require.NoError(t, err)
+		return conn
+	}
+	roomId, fromId := uuid.New(), uuid.New()
+	relay := func() [][]byte {
+		pushToIds, err := c.RelayMessaging(ctx, uuid.New(), [][]byte{memberId[:]}, roomId, fromId, "text", []string{"hi"})
+		require.NoError(t, err)
+		return pushToIds
+	}
+
+	a := dial()
+	b := dial()
+	defer b.Close(websocket.StatusNormalClosure, "")
+	// B is registered once a message reaches it
+	require.Empty(t, relay())
+	_, _, err := b.Read(ctx)
+	require.NoError(t, err)
+
+	require.NoError(t, a.Close(websocket.StatusNormalClosure, ""))
+	// A's handler cleans up after its close handshake
+	time.Sleep(200 * time.Millisecond)
+
+	assert.Empty(t, relay(), "the message went to push: the device has no socket registered")
+	readCtx, readCancel := context.WithTimeout(ctx, time.Second)
+	defer readCancel()
+	_, data, err := b.Read(readCtx)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), `"hi"`)
+}
