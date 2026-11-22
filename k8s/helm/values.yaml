@@ -106,7 +106,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:af6ab9b"
+    image: "backend/messagepersist:52c9b2a"
     port: 8080
     routePath: false
     env:
