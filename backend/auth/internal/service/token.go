@@ -128,7 +128,7 @@ func (s *service) RemoveJTI(refreshToken string) error {
 	}
 	err = s.repository.RemoveRefreshTokenJTIById(id, jti)
 	if err != nil {
-		return ErrFailToSignOut
+		return ErrInternalServer
 	}
 	return nil
 }

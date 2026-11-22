@@ -184,13 +184,32 @@ func TestController_logout(t *testing.T) {
 		assert.Empty(t, cookie.Value)
 		assert.Negative(t, cookie.MaxAge)
 	})
-	t.Run("failed sign out keeps the cookie", func(t *testing.T) {
+	t.Run("a token that can't be used anyway is logged out", func(t *testing.T) {
 		svc := NewMockService(t)
 		svc.EXPECT().RemoveJTI("rt").Return(service.ErrFailToSignOut)
 
 		rec := serve(svc, http.MethodPost, "/auth/account/logout", "", &http.Cookie{Name: "refresh_token", Value: "rt"})
 
+		assert.Equal(t, http.StatusOK, rec.Code)
+		cookie := refreshCookie(rec)
+		require.NotNil(t, cookie)
+		assert.Negative(t, cookie.MaxAge)
+	})
+	t.Run("no cookie fails", func(t *testing.T) {
+		svc := NewMockService(t)
+
+		rec := serve(svc, http.MethodPost, "/auth/account/logout", "")
+
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Nil(t, refreshCookie(rec))
+	})
+	t.Run("failed revoke keeps the cookie", func(t *testing.T) {
+		svc := NewMockService(t)
+		svc.EXPECT().RemoveJTI("rt").Return(service.ErrInternalServer)
+
+		rec := serve(svc, http.MethodPost, "/auth/account/logout", "", &http.Cookie{Name: "refresh_token", Value: "rt"})
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 		assert.Nil(t, refreshCookie(rec))
 	})
 }
@@ -202,6 +221,20 @@ func TestController_deleteAccount(t *testing.T) {
 	rec := serve(svc, http.MethodDelete, "/auth/account/delete", "", &http.Cookie{Name: "refresh_token", Value: "rt"})
 
 	assert.Equal(t, http.StatusOK, rec.Code)
+	cookie := refreshCookie(rec)
+	require.NotNil(t, cookie)
+	assert.Empty(t, cookie.Value)
+	assert.Negative(t, cookie.MaxAge)
+}
+
+func TestController_deleteAccountFailureKeepsTheCookie(t *testing.T) {
+	svc := NewMockService(t)
+	svc.EXPECT().DeleteAccount(mock.Anything, "rt").Return(service.ErrInternalServer)
+
+	rec := serve(svc, http.MethodDelete, "/auth/account/delete", "", &http.Cookie{Name: "refresh_token", Value: "rt"})
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Nil(t, refreshCookie(rec))
 }
 
 func enableNoPasswordLogin(t *testing.T) {
