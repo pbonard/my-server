@@ -13,13 +13,18 @@ import (
 )
 
 type Repository interface {
-	SaveMessage(ctx context.Context, id, toId, fromId, roomId gocql.UUID, contentType string, contents []string, ttl int) error
-	SaveRoomMessageId(ctx context.Context, toId, roomId, id gocql.UUID, ttl int) error
-	FindRoomMessageIdsBefore(ctx context.Context, toId, roomId, before gocql.UUID) ([]gocql.UUID, error)
-	DeleteMessage(ctx context.Context, toId, id gocql.UUID) error
-	DeleteMessages(ctx context.Context, toId gocql.UUID, ids []gocql.UUID) error
-	DeleteRoomMessageId(ctx context.Context, toId, roomId, id gocql.UUID) error
-	DeleteRoomMessageIdsBefore(ctx context.Context, toId, roomId, before gocql.UUID) error
+	SaveMessage(ctx context.Context, toId, roomId gocql.UUID, m Message, ttl int) error
+	DeleteMessage(ctx context.Context, toId, roomId, id gocql.UUID) error
+	DeleteMessagesBefore(ctx context.Context, toId, roomId, before gocql.UUID) error
+	TouchRoom(ctx context.Context, toId, roomId, id gocql.UUID, ttl int, at int64) error
+}
+
+// Message is a row of a room in an inbox: a message, a block or unblock, or a quit or delete for the devices
+type Message struct {
+	Id          gocql.UUID
+	FromId      gocql.UUID
+	ContentType string
+	Contents    []string
 }
 
 type repository struct {
@@ -55,17 +60,33 @@ func NewRepository() Repository {
 		panic(err)
 	}
 
-	// the ids of each inbox's messages by room, so a quit finds the room's messages in message_by_to_id, whose
-	// key is the inbox alone for the sync's "everything after my cursor". messages only, no quit or delete: a room
-	// with a row here is one its inbox still has, which chat checks before an invite
-	err = session.Query(`CREATE TABLE IF NOT EXISTS message_id_by_room (
+	// each inbox's rows by room, newest first: a room's history a page at a time, and what a device that was away
+	// missed in a room. quits and deletes are rows too, so the inbox's other devices learn of them. chat reads it
+	err = session.Query(`CREATE TABLE IF NOT EXISTS message_by_chat_room (
     to_id uuid,
     room_id uuid,
     id uuid,
+    from_id uuid,
+    content_type text,
+    contents set<text>,
     PRIMARY KEY ((to_id, room_id), id)
     ) WITH CLUSTERING ORDER BY (id DESC);`).Exec()
 	if err != nil {
-		log.Panicf("fail to create table message_id_by_room: %v", err)
+		log.Panicf("fail to create table message_by_chat_room: %v", err)
+	}
+
+	// one row per room of an inbox: which rooms it has (the chat list of a device that starts with nothing), and
+	// updated_id, the room's newest row of any kind, so catching up reads only the rooms that changed since a device's
+	// cursor. written with the time in that row's id (USING TIMESTAMP), so the newest wins whatever order they're
+	// written in, and a retry writes the same again
+	err = session.Query(`CREATE TABLE IF NOT EXISTS chat_room_by_to_id (
+    to_id uuid,
+    room_id uuid,
+    updated_id uuid,
+    PRIMARY KEY ((to_id), room_id)
+    );`).Exec()
+	if err != nil {
+		log.Panicf("fail to create table chat_room_by_to_id: %v", err)
 	}
 
 	log.Print("success to connect cassandra")

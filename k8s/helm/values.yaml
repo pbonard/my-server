@@ -106,8 +106,10 @@ apps:
     port: 8080
     routePath: false
     env:
-      # how long a message is kept in cassandra, a go duration ("72h", "720h"), "0" to keep it for good
-      MESSAGE_TTL: "72h"
+      # how long a message is kept in cassandra, a go duration ("72h", "720h"), "0" to keep it for good. 30 days here,
+      # holidayfriend keeps them for good (values-holidayfriend.yaml).
+      # a quit or delete is kept DELETE_TTL, 30 days when it's not set: a device further behind than that may miss one
+      MESSAGE_TTL: "720h"
     authentication: false
     garage: false
     kafka: true

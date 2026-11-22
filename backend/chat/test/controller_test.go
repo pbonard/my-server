@@ -123,6 +123,22 @@ func TestController_delegatesToTheService(t *testing.T) {
 			func(s *MockService_Expecter) {
 				s.GetRecentMessages(mock.Anything, memberId, roomId).Return([]dto.MessagingResponse{{ContentType: "text"}}, nil)
 			}, `"contentType":"text"`},
+		{"rooms", http.MethodGet, "/chat/messaging/rooms", "",
+			func(s *MockService_Expecter) {
+				s.GetRooms(mock.Anything, memberId).Return(&dto.GetRoomsResponse{Cursor: roomId, Messages: []dto.MessagingResponse{}}, nil)
+			}, `"cursor":"` + roomId.String()},
+		{"history", http.MethodGet, "/chat/messaging/history?roomId=" + roomId.String() + "&ahead=" + otherId.String(), "",
+			func(s *MockService_Expecter) {
+				s.GetRoomHistory(mock.Anything, memberId, roomId, otherId, uuid.Nil).Return([]dto.MessagingResponse{{ContentType: "text"}}, nil)
+			}, `"contentType":"text"`},
+		{"newest history", http.MethodGet, "/chat/messaging/history?roomId=" + roomId.String(), "",
+			func(s *MockService_Expecter) {
+				s.GetRoomHistory(mock.Anything, memberId, roomId, uuid.Nil, uuid.Nil).Return([]dto.MessagingResponse{}, nil)
+			}, `[]`},
+		{"history between", http.MethodGet, "/chat/messaging/history?roomId=" + roomId.String() + "&ahead=" + otherId.String() + "&cursor=" + memberId.String(), "",
+			func(s *MockService_Expecter) {
+				s.GetRoomHistory(mock.Anything, memberId, roomId, otherId, memberId).Return([]dto.MessagingResponse{}, nil)
+			}, `[]`},
 		{"room info", http.MethodGet, "/chat/room/info?id=" + roomId.String(), "",
 			func(s *MockService_Expecter) {
 				s.GetChatRoomInfo(mock.Anything, roomId).Return(&dto.GetChatRoomInfoResponse{Name: "Seoul"}, nil)

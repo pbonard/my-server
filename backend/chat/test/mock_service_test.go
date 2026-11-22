@@ -939,12 +939,166 @@ func (_c *MockService_GetRecentMessages_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
-func (_c *MockService_GetRecentMessages_Call) Return(res []dto.MessagingResponse, err error) *MockService_GetRecentMessages_Call {
-	_c.Call.Return(res, err)
+func (_c *MockService_GetRecentMessages_Call) Return(messagingResponses []dto.MessagingResponse, err error) *MockService_GetRecentMessages_Call {
+	_c.Call.Return(messagingResponses, err)
 	return _c
 }
 
 func (_c *MockService_GetRecentMessages_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error)) *MockService_GetRecentMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRoomHistory provides a mock function for the type MockService
+func (_mock *MockService) GetRoomHistory(ctx context.Context, id uuid.UUID, roomId uuid.UUID, ahead uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error) {
+	ret := _mock.Called(ctx, id, roomId, ahead, cursor)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRoomHistory")
+	}
+
+	var r0 []dto.MessagingResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) ([]dto.MessagingResponse, error)); ok {
+		return returnFunc(ctx, id, roomId, ahead, cursor)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) []dto.MessagingResponse); ok {
+		r0 = returnFunc(ctx, id, roomId, ahead, cursor)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.MessagingResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id, roomId, ahead, cursor)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetRoomHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRoomHistory'
+type MockService_GetRoomHistory_Call struct {
+	*mock.Call
+}
+
+// GetRoomHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+//   - roomId uuid.UUID
+//   - ahead uuid.UUID
+//   - cursor uuid.UUID
+func (_e *MockService_Expecter) GetRoomHistory(ctx any, id any, roomId any, ahead any, cursor any) *MockService_GetRoomHistory_Call {
+	return &MockService_GetRoomHistory_Call{Call: _e.mock.On("GetRoomHistory", ctx, id, roomId, ahead, cursor)}
+}
+
+func (_c *MockService_GetRoomHistory_Call) Run(run func(ctx context.Context, id uuid.UUID, roomId uuid.UUID, ahead uuid.UUID, cursor uuid.UUID)) *MockService_GetRoomHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		var arg4 uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetRoomHistory_Call) Return(messagingResponses []dto.MessagingResponse, err error) *MockService_GetRoomHistory_Call {
+	_c.Call.Return(messagingResponses, err)
+	return _c
+}
+
+func (_c *MockService_GetRoomHistory_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, roomId uuid.UUID, ahead uuid.UUID, cursor uuid.UUID) ([]dto.MessagingResponse, error)) *MockService_GetRoomHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRooms provides a mock function for the type MockService
+func (_mock *MockService) GetRooms(ctx context.Context, id uuid.UUID) (*dto.GetRoomsResponse, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRooms")
+	}
+
+	var r0 *dto.GetRoomsResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*dto.GetRoomsResponse, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *dto.GetRoomsResponse); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.GetRoomsResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_GetRooms_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRooms'
+type MockService_GetRooms_Call struct {
+	*mock.Call
+}
+
+// GetRooms is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockService_Expecter) GetRooms(ctx any, id any) *MockService_GetRooms_Call {
+	return &MockService_GetRooms_Call{Call: _e.mock.On("GetRooms", ctx, id)}
+}
+
+func (_c *MockService_GetRooms_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockService_GetRooms_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_GetRooms_Call) Return(getRoomsResponse *dto.GetRoomsResponse, err error) *MockService_GetRooms_Call {
+	_c.Call.Return(getRoomsResponse, err)
+	return _c
+}
+
+func (_c *MockService_GetRooms_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*dto.GetRoomsResponse, error)) *MockService_GetRooms_Call {
 	_c.Call.Return(run)
 	return _c
 }

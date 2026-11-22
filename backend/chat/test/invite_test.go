@@ -4,6 +4,7 @@ import (
 	"backend/chat/internal/controller"
 	"backend/chat/internal/dto"
 	"backend/chat/internal/grpccontroller"
+	"backend/chat/internal/projection"
 	"backend/common/proto"
 	"context"
 	"net/http"
@@ -20,20 +21,31 @@ import (
 // the sender is memberId, the invitee otherId: the sender's inbox keeps their personal room under the invitee's id.
 // the invitee's inbox isn't read, so the sender can't learn whether the invitee left
 func TestCheckInvite(t *testing.T) {
-	s, d := newService(t)
-	d.repo.EXPECT().DidBlock(mock.Anything, gocql.UUID(otherId), gocql.UUID(memberId)).Return(true, nil)
-	d.repo.EXPECT().HasRoomMessages(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId)).Return(true, nil).Once()
+	for name, tt := range map[string]struct {
+		newest []projection.Message
+		has    bool
+	}{
+		"a message newer than any quit": {[]projection.Message{{ContentType: "text"}}, true},
+		"none, or a quit newest":        {[]projection.Message{}, false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			s, d := newService(t)
+			d.repo.EXPECT().DidBlock(mock.Anything, gocql.UUID(otherId), gocql.UUID(memberId)).Return(true, nil)
+			d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId), gocql.UUID{}, gocql.UUID{}, 1).
+				Return(tt.newest, nil).Once()
 
-	res, err := s.CheckInvite(context.Background(), memberId, otherId)
+			res, err := s.CheckInvite(context.Background(), memberId, otherId)
 
-	require.NoError(t, err)
-	assert.Equal(t, &dto.CheckInviteResponse{Blocked: true, SenderHasChat: true}, res)
+			require.NoError(t, err)
+			assert.Equal(t, &dto.CheckInviteResponse{Blocked: true, SenderHasChat: tt.has}, res)
+		})
+	}
 }
 
 func TestCheckInvite_failedLookup(t *testing.T) {
 	s, d := newService(t)
 	d.repo.EXPECT().DidBlock(mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
-	d.repo.EXPECT().HasRoomMessages(mock.Anything, mock.Anything, mock.Anything).Return(false, errDB)
+	d.repo.EXPECT().FindRoomHistory(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errDB)
 
 	_, err := s.CheckInvite(context.Background(), memberId, otherId)
 

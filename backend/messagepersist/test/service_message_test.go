@@ -1,10 +1,12 @@
 package test
 
 import (
+	"backend/messagepersist/internal/repository"
 	"backend/messagepersist/internal/service"
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
@@ -13,12 +15,13 @@ import (
 )
 
 var (
-	msgId   = uuid.New()
+	msgId   = uuid.Must(uuid.NewV7())
 	fromId  = uuid.New()
 	roomId  = uuid.New()
 	member1 = uuid.New()
 	member2 = uuid.New()
 	errDB   = errors.New("cassandra down")
+	at      = service.WriteTime(msgId)
 )
 
 // distinct ttls, so a test shows which one a row was saved with
@@ -28,24 +31,21 @@ func newService(repo *MockRepository) service.Service {
 	return service.NewService(repo, config)
 }
 
-// expectMessage is a row of the chat saved in toId's inbox: its id under the room first, then the row
-func expectMessage(repo *MockRepository, toId, room uuid.UUID, contentType string, contents []string, err error) {
-	indexed := repo.EXPECT().SaveRoomMessageId(mock.Anything, gocql.UUID(toId), gocql.UUID(room), gocql.UUID(msgId), config.MessageTTL).
-		Return(nil).Once()
-	repo.EXPECT().SaveMessage(mock.Anything, gocql.UUID(msgId), gocql.UUID(toId), gocql.UUID(fromId), gocql.UUID(room),
-		contentType, contents, config.MessageTTL).Return(err).Once().NotBefore(indexed)
+func row(contentType string, contents []string) repository.Message {
+	return repository.Message{Id: gocql.UUID(msgId), FromId: gocql.UUID(fromId), ContentType: contentType, Contents: contents}
 }
 
-// expectEvent is a quit or delete saved in toId's inbox only, with the delete ttl
-func expectEvent(repo *MockRepository, toId uuid.UUID, contentType string, contents []string) *mock.Call {
-	return repo.EXPECT().SaveMessage(mock.Anything, gocql.UUID(msgId), gocql.UUID(toId), gocql.UUID(fromId), gocql.UUID(roomId),
-		contentType, contents, config.DeleteTTL).Return(nil).Once()
+// expectShown is a row of the chat saved in toId's room, then the room marked as changed
+func expectShown(repo *MockRepository, toId, room uuid.UUID, contentType string, contents []string) {
+	to, r, m := gocql.UUID(toId), gocql.UUID(room), row(contentType, contents)
+	saved := repo.EXPECT().SaveMessage(mock.Anything, to, r, m, config.MessageTTL).Return(nil).Once()
+	repo.EXPECT().TouchRoom(mock.Anything, to, r, m.Id, config.DeleteTTL, at).Return(nil).Once().NotBefore(saved)
 }
 
 func TestPersistMessage_groupSavesOneRowPerReceiverWithRoom(t *testing.T) {
 	repo := NewMockRepository(t)
-	expectMessage(repo, member1, roomId, "text", []string{"hi"}, nil)
-	expectMessage(repo, member2, roomId, "text", []string{"hi"}, nil)
+	expectShown(repo, member1, roomId, "text", []string{"hi"})
+	expectShown(repo, member2, roomId, "text", []string{"hi"})
 
 	assert.NoError(t, newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{member1, member2}, roomId, fromId, "text", []string{"hi"}))
@@ -54,18 +54,19 @@ func TestPersistMessage_groupSavesOneRowPerReceiverWithRoom(t *testing.T) {
 func TestPersistMessage_receiverThatIsTheRoomUsesSenderAsRoom(t *testing.T) {
 	// personal message: the room id is the receiver itself, its row is stored under the sender's room
 	repo := NewMockRepository(t)
-	expectMessage(repo, roomId, fromId, "text", []string{"hi"}, nil)
-	expectMessage(repo, fromId, roomId, "text", []string{"hi"}, nil)
+	expectShown(repo, roomId, fromId, "text", []string{"hi"})
+	expectShown(repo, fromId, roomId, "text", []string{"hi"})
 
 	assert.NoError(t, newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{fromId, roomId}, roomId, fromId, "text", []string{"hi"}))
 }
 
-// the failure is returned so the consumer publishes a retry, the saved rows are upserted again on retry
+// the failure is returned so the consumer publishes a retry, the saved rows are written again the same on retry
 func TestPersistMessage_oneFailedSaveDoesNotStopTheOthers(t *testing.T) {
 	repo := NewMockRepository(t)
-	expectMessage(repo, member1, roomId, "text", []string{"hi"}, errDB)
-	expectMessage(repo, member2, roomId, "text", []string{"hi"}, nil)
+	repo.EXPECT().SaveMessage(mock.Anything, gocql.UUID(member1), gocql.UUID(roomId), row("text", []string{"hi"}), config.MessageTTL).
+		Return(errDB).Once()
+	expectShown(repo, member2, roomId, "text", []string{"hi"})
 
 	err := newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{member1, member2}, roomId, fromId, "text", []string{"hi"})
@@ -76,38 +77,30 @@ func TestPersistMessage_oneFailedSaveDoesNotStopTheOthers(t *testing.T) {
 // a block is a row of the chat, the app shows it in the conversation: kept like a message, a quit deletes it with the room
 func TestPersistMessage_blockIsSavedAsAMessage(t *testing.T) {
 	repo := NewMockRepository(t)
-	expectMessage(repo, fromId, roomId, "block", []string{}, nil)
+	expectShown(repo, fromId, roomId, "block", []string{})
 
 	assert.NoError(t, newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{fromId}, roomId, fromId, "block", []string{}))
 }
 
-// a personal quit to the room of another member: the sender's older rows of that room go, in batches, then their ids,
-// then the quit is saved
+// a personal quit to the room of another member: the sender's older rows of that room go, then the quit is saved, the
+// room's oldest row, and the room marked as changed
 func TestPersistMessage_quitDeletesTheRoomsOlderRowsFirst(t *testing.T) {
 	repo := NewMockRepository(t)
-	ids := make([]gocql.UUID, 150)
-	for i := range ids {
-		ids[i] = gocql.UUID(uuid.New())
-	}
-	to, room, before := gocql.UUID(fromId), gocql.UUID(roomId), gocql.UUID(msgId)
-	found := repo.EXPECT().FindRoomMessageIdsBefore(mock.Anything, to, room, before).Return(ids, nil).Once()
-	first := repo.EXPECT().DeleteMessages(mock.Anything, to, ids[:100]).Return(nil).Once().NotBefore(found)
-	second := repo.EXPECT().DeleteMessages(mock.Anything, to, ids[100:]).Return(nil).Once().NotBefore(first)
-	unindexed := repo.EXPECT().DeleteRoomMessageIdsBefore(mock.Anything, to, room, before).Return(nil).Once().NotBefore(second)
-	expectEvent(repo, fromId, "quit", []string{}).NotBefore(unindexed)
+	to, room, m := gocql.UUID(fromId), gocql.UUID(roomId), row("quit", []string{})
+	deleted := repo.EXPECT().DeleteMessagesBefore(mock.Anything, to, room, m.Id).Return(nil).Once()
+	saved := repo.EXPECT().SaveMessage(mock.Anything, to, room, m, config.DeleteTTL).Return(nil).Once().NotBefore(deleted)
+	repo.EXPECT().TouchRoom(mock.Anything, to, room, m.Id, config.DeleteTTL, at).Return(nil).Once().NotBefore(saved)
 
 	assert.NoError(t, newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{fromId}, roomId, fromId, "quit", []string{}))
 }
 
-// a failed delete keeps the ids, so the retry finds the rest again, and the quit isn't saved until it's done
+// a failed delete isn't followed by the quit, the retry deletes again
 func TestPersistMessage_quitThatFailsToDeleteIsNotSaved(t *testing.T) {
 	repo := NewMockRepository(t)
-	ids := []gocql.UUID{gocql.UUID(uuid.New())}
-	repo.EXPECT().FindRoomMessageIdsBefore(mock.Anything, gocql.UUID(fromId), gocql.UUID(roomId), gocql.UUID(msgId)).
-		Return(ids, nil).Once()
-	repo.EXPECT().DeleteMessages(mock.Anything, gocql.UUID(fromId), ids).Return(errDB).Once()
+	repo.EXPECT().DeleteMessagesBefore(mock.Anything, gocql.UUID(fromId), gocql.UUID(roomId), gocql.UUID(msgId)).
+		Return(errDB).Once()
 
 	err := newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{fromId}, roomId, fromId, "quit", []string{})
@@ -115,13 +108,14 @@ func TestPersistMessage_quitThatFailsToDeleteIsNotSaved(t *testing.T) {
 	assert.ErrorIs(t, err, errDB)
 }
 
+// the message it names goes, then the delete is saved and the room marked as changed
 func TestPersistMessage_deleteDeletesTheMessageItNames(t *testing.T) {
 	repo := NewMockRepository(t)
 	target := uuid.New()
-	deleted := repo.EXPECT().DeleteMessage(mock.Anything, gocql.UUID(fromId), gocql.UUID(target)).Return(nil).Once()
-	unindexed := repo.EXPECT().DeleteRoomMessageId(mock.Anything, gocql.UUID(fromId), gocql.UUID(roomId), gocql.UUID(target)).
-		Return(nil).Once().NotBefore(deleted)
-	expectEvent(repo, fromId, "delete", []string{target.String()}).NotBefore(unindexed)
+	to, room, m := gocql.UUID(fromId), gocql.UUID(roomId), row("delete", []string{target.String()})
+	deleted := repo.EXPECT().DeleteMessage(mock.Anything, to, room, gocql.UUID(target)).Return(nil).Once()
+	saved := repo.EXPECT().SaveMessage(mock.Anything, to, room, m, config.DeleteTTL).Return(nil).Once().NotBefore(deleted)
+	repo.EXPECT().TouchRoom(mock.Anything, to, room, m.Id, config.DeleteTTL, at).Return(nil).Once().NotBefore(saved)
 
 	assert.NoError(t, newService(repo).PersistMessage(context.Background(), msgId,
 		[]uuid.UUID{fromId}, roomId, fromId, "delete", []string{target.String()}))
@@ -138,4 +132,34 @@ func TestPersistMessage_deleteOfABadIdIsDropped(t *testing.T) {
 				[]uuid.UUID{fromId}, roomId, fromId, "delete", contents))
 		})
 	}
+}
+
+// the write time is the id's time, and ids made one after another never write out of order, within a millisecond too.
+// two made within the same microsecond tie, which cassandra breaks the same way on every replica
+func TestWriteTime_followsTheIdsTime(t *testing.T) {
+	before := time.Now().UnixMicro()
+	ids := make([]uuid.UUID, 50)
+	for i := range ids {
+		ids[i] = uuid.Must(uuid.NewV7())
+	}
+	after := time.Now().UnixMicro()
+
+	for i, id := range ids {
+		assert.GreaterOrEqual(t, service.WriteTime(id), before-1000)
+		assert.LessOrEqual(t, service.WriteTime(id), after+1000)
+		if i > 0 {
+			assert.GreaterOrEqual(t, service.WriteTime(id), service.WriteTime(ids[i-1]))
+		}
+	}
+}
+
+// with no ttl for messages, the room's row is kept for good too
+func TestPersistMessage_roomIsKeptForGoodWhenMessagesAre(t *testing.T) {
+	repo := NewMockRepository(t)
+	to, room, m := gocql.UUID(fromId), gocql.UUID(roomId), row("text", []string{"hi"})
+	repo.EXPECT().SaveMessage(mock.Anything, to, room, m, 0).Return(nil).Once()
+	repo.EXPECT().TouchRoom(mock.Anything, to, room, m.Id, 0, at).Return(nil).Once()
+
+	s := service.NewService(repo, service.Config{MessageTTL: 0, DeleteTTL: config.DeleteTTL})
+	assert.NoError(t, s.PersistMessage(context.Background(), msgId, []uuid.UUID{fromId}, roomId, fromId, "text", []string{"hi"}))
 }

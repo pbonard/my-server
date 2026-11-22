@@ -22,11 +22,19 @@ type Config struct {
 type service struct {
 	repository repository.Repository
 	config     Config
+	// the ttl of a room's updated_id: it outlives every row of the room, so a device that catches up late still finds
+	// the room of a quit or delete. 0 keeps it for good, as it keeps a row
+	updatedTTL int
 }
 
 func NewService(r repository.Repository, config Config) Service {
+	updatedTTL := max(config.MessageTTL, config.DeleteTTL)
+	if config.MessageTTL == 0 || config.DeleteTTL == 0 {
+		updatedTTL = 0
+	}
 	return &service{
 		repository: r,
 		config:     config,
+		updatedTTL: updatedTTL,
 	}
 }

@@ -26,7 +26,9 @@ type Service interface {
 	ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error
 	BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error
 	GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error)
-	GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) (res []dto.MessagingResponse, err error)
+	GetRooms(ctx context.Context, id uuid.UUID) (*dto.GetRoomsResponse, error)
+	GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) ([]dto.MessagingResponse, error)
+	GetRoomHistory(ctx context.Context, id, roomId, ahead, cursor uuid.UUID) ([]dto.MessagingResponse, error)
 	PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)
 	GeneratePresignedURL(ctx context.Context, id uuid.UUID, contentType string, n int) (res []dto.GeneratePresignedURLResponse, err error)
 	GenerateSignedURL(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)
