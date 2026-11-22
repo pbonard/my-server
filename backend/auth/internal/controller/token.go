@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"backend/auth/internal/service"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -39,19 +41,11 @@ func (c *Controller) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = c.service.RemoveJTI(rt.Value)
-	if err != nil {
+	if err != nil && !errors.Is(err, service.ErrFailToSignOut) {
 		handleError(w, err)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{Name: "refresh_token",
-		Value:    "",
-		Expires:  time.Now(),
-		Path:     "/",
-		Domain:   "",
-		MaxAge:   -1,
-		HttpOnly: true,
-		Secure:   true,
-	})
+	clearRefreshTokenCookie(w)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -66,5 +60,18 @@ func (c *Controller) deleteAccount(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+	clearRefreshTokenCookie(w)
 	w.WriteHeader(http.StatusOK)
+}
+
+func clearRefreshTokenCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: "refresh_token",
+		Value:    "",
+		Expires:  time.Now(),
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+	})
 }

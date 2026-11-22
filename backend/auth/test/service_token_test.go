@@ -3,6 +3,7 @@ package test
 import (
 	"backend/auth/internal/service"
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -66,6 +67,17 @@ func TestRemoveJTI(t *testing.T) {
 		s, _ := newService(t)
 
 		assert.ErrorIs(t, s.RemoveJTI("not-a-token"), service.ErrFailToSignOut)
+	})
+	t.Run("expired token", func(t *testing.T) {
+		s, _ := newService(t)
+
+		assert.ErrorIs(t, s.RemoveJTI(refreshToken(t, keyRT, memberId, jti, time.Now().Add(-time.Minute))), service.ErrFailToSignOut)
+	})
+	t.Run("failed revoke", func(t *testing.T) {
+		s, d := newService(t)
+		d.repo.EXPECT().RemoveRefreshTokenJTIById(gid(memberId), gid(jti)).Return(errors.New("cassandra down"))
+
+		assert.ErrorIs(t, s.RemoveJTI(refreshToken(t, keyRT, memberId, jti, future)), service.ErrInternalServer)
 	})
 }
 
