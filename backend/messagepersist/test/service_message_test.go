@@ -35,7 +35,6 @@ func row(contentType string, contents []string) repository.Message {
 	return repository.Message{Id: gocql.UUID(msgId), FromId: gocql.UUID(fromId), ContentType: contentType, Contents: contents}
 }
 
-// expectShown is a row of the chat saved in toId's room, then the room marked as changed
 func expectShown(repo *MockRepository, toId, room uuid.UUID, contentType string, contents []string) {
 	to, r, m := gocql.UUID(toId), gocql.UUID(room), row(contentType, contents)
 	saved := repo.EXPECT().SaveMessage(mock.Anything, to, r, m, config.MessageTTL).Return(nil).Once()
@@ -61,7 +60,6 @@ func TestPersistMessage_receiverThatIsTheRoomUsesSenderAsRoom(t *testing.T) {
 		[]uuid.UUID{fromId, roomId}, roomId, fromId, "text", []string{"hi"}))
 }
 
-// the failure is returned so the consumer publishes a retry, the saved rows are written again the same on retry
 func TestPersistMessage_oneFailedSaveDoesNotStopTheOthers(t *testing.T) {
 	repo := NewMockRepository(t)
 	repo.EXPECT().SaveMessage(mock.Anything, gocql.UUID(member1), gocql.UUID(roomId), row("text", []string{"hi"}), config.MessageTTL).
@@ -83,8 +81,6 @@ func TestPersistMessage_blockIsSavedAsAMessage(t *testing.T) {
 		[]uuid.UUID{fromId}, roomId, fromId, "block", []string{}))
 }
 
-// a personal quit to the room of another member: the sender's older rows of that room go, then the quit is saved, the
-// room's oldest row, and the room marked as changed
 func TestPersistMessage_quitDeletesTheRoomsOlderRowsFirst(t *testing.T) {
 	repo := NewMockRepository(t)
 	to, room, m := gocql.UUID(fromId), gocql.UUID(roomId), row("quit", []string{})
@@ -96,7 +92,6 @@ func TestPersistMessage_quitDeletesTheRoomsOlderRowsFirst(t *testing.T) {
 		[]uuid.UUID{fromId}, roomId, fromId, "quit", []string{}))
 }
 
-// a failed delete isn't followed by the quit, the retry deletes again
 func TestPersistMessage_quitThatFailsToDeleteIsNotSaved(t *testing.T) {
 	repo := NewMockRepository(t)
 	repo.EXPECT().DeleteMessagesBefore(mock.Anything, gocql.UUID(fromId), gocql.UUID(roomId), gocql.UUID(msgId)).
@@ -108,7 +103,6 @@ func TestPersistMessage_quitThatFailsToDeleteIsNotSaved(t *testing.T) {
 	assert.ErrorIs(t, err, errDB)
 }
 
-// the message it names goes, then the delete is saved and the room marked as changed
 func TestPersistMessage_deleteDeletesTheMessageItNames(t *testing.T) {
 	repo := NewMockRepository(t)
 	target := uuid.New()
@@ -134,8 +128,6 @@ func TestPersistMessage_deleteOfABadIdIsDropped(t *testing.T) {
 	}
 }
 
-// the write time is the id's time, and ids made one after another never write out of order, within a millisecond too.
-// two made within the same microsecond tie, which cassandra breaks the same way on every replica
 func TestWriteTime_followsTheIdsTime(t *testing.T) {
 	before := time.Now().UnixMicro()
 	ids := make([]uuid.UUID, 50)
@@ -153,7 +145,6 @@ func TestWriteTime_followsTheIdsTime(t *testing.T) {
 	}
 }
 
-// with no ttl for messages, the room's row is kept for good too
 func TestPersistMessage_roomIsKeptForGoodWhenMessagesAre(t *testing.T) {
 	repo := NewMockRepository(t)
 	to, room, m := gocql.UUID(fromId), gocql.UUID(roomId), row("text", []string{"hi"})

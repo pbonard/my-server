@@ -8,7 +8,6 @@ import (
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 )
 
-// FindRooms is every room of toId's inbox: a quit's room too, and one whose messages expired
 func (r *repository) FindRooms(ctx context.Context, toId gocql.UUID) ([]projection.Room, error) {
 	iter := r.session.Query(`SELECT room_id, updated_id FROM chat_room_by_to_id WHERE to_id = ?`, toId).IterContext(ctx)
 	var rooms []projection.Room
@@ -24,55 +23,46 @@ func (r *repository) FindRooms(ctx context.Context, toId gocql.UUID) ([]projecti
 	return rooms, nil
 }
 
-// FindRoomRecent is what came to the room in toId's inbox after after, newest first: up to limit of its messages, and
-// every quit and delete among them and past them, which may name messages a device has from before. none past a quit,
-// it removed everything older
-func (r *repository) FindRoomRecent(ctx context.Context, toId, roomId, after gocql.UUID, limit int) ([]projection.Message, error) {
+func (r *repository) FindRoomRecent(ctx context.Context, toId, roomId, after gocql.UUID, limit int) (
+	messages []projection.Message, reset bool, err error,
+) {
+	pageSize := 100
+	if limit > 0 {
+		pageSize = limit + 1
+	}
 	iter := r.session.Query(`SELECT id, from_id, content_type, contents FROM message_by_chat_room
-    WHERE to_id = ? AND room_id = ? AND id > ?`, toId, roomId, after).PageSize(100).IterContext(ctx)
-	messages := make([]projection.Message, 0)
-	shown := 0
+    WHERE to_id = ? AND room_id = ? AND id > ?`, toId, roomId, after).PageSize(pageSize).IterContext(ctx)
+	messages = make([]projection.Message, 0)
 	var m projection.Message
 	for iter.Scan(&m.Id, &m.FromId, &m.ContentType, &m.Contents) {
-		switch {
-		case m.ContentType == "quit" || m.ContentType == "delete":
-			messages = append(messages, m)
-		case shown < limit:
-			messages = append(messages, m)
-			shown++
+		if limit > 0 && len(messages) == limit {
+			reset = true
+			break
 		}
+		messages = append(messages, m)
 		if m.ContentType == "quit" {
 			break
 		}
 		m = projection.Message{}
 	}
-	if err := iter.Close(); err != nil {
+	if err = iter.Close(); err != nil {
 		slog.Error("fail to find room recent", "err", err, "toId", toId, "roomId", roomId)
-		return nil, err
+		return nil, false, err
 	}
-	return messages, nil
+	return messages, reset, nil
 }
 
-// FindRoomHistory is up to limit of the room's messages in toId's inbox older than ahead (the newest, when it's zero)
-// and newer than cursor (any, when it's zero), newest first. only what the chat shows: quits and deletes are for
-// catching up, what they removed is gone already
-func (r *repository) FindRoomHistory(ctx context.Context, toId, roomId, ahead, cursor gocql.UUID, limit int) ([]projection.Message, error) {
+func (r *repository) FindRoomHistory(ctx context.Context, toId, roomId, cursor gocql.UUID, limit int) ([]projection.Message, error) {
 	query := `SELECT id, from_id, content_type, contents FROM message_by_chat_room WHERE to_id = ? AND room_id = ?`
 	args := []any{toId, roomId}
-	if ahead != (gocql.UUID{}) {
-		query += ` AND id < ?`
-		args = append(args, ahead)
-	}
 	if cursor != (gocql.UUID{}) {
-		query += ` AND id > ?`
+		query += ` AND id < ?`
 		args = append(args, cursor)
 	}
-	// a few more than limit a page, for the deletes skipped on the way
 	iter := r.session.Query(query, args...).PageSize(limit + 10).IterContext(ctx)
 	messages := make([]projection.Message, 0)
 	var m projection.Message
 	for len(messages) < limit && iter.Scan(&m.Id, &m.FromId, &m.ContentType, &m.Contents) {
-		// the oldest row there is, nothing before it is left
 		if m.ContentType == "quit" {
 			break
 		}

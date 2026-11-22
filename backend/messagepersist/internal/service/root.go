@@ -22,8 +22,6 @@ type Config struct {
 type service struct {
 	repository repository.Repository
 	config     Config
-	// the ttl of a room's updated_id: it outlives every row of the room, so a device that catches up late still finds
-	// the room of a quit or delete. 0 keeps it for good, as it keeps a row
 	updatedTTL int
 }
 

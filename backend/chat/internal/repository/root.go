@@ -28,8 +28,8 @@ type Repository interface {
 	AddBlockedConversation(ctx context.Context, memberId gocql.UUID, conversationId gocql.UUID) error
 	FindBlockedConversations(ctx context.Context, id gocql.UUID) (ids []gocql.UUID, err error)
 	FindRooms(ctx context.Context, toId gocql.UUID) ([]projection.Room, error)
-	FindRoomRecent(ctx context.Context, toId, roomId, after gocql.UUID, limit int) ([]projection.Message, error)
-	FindRoomHistory(ctx context.Context, toId, roomId, ahead, cursor gocql.UUID, limit int) ([]projection.Message, error)
+	FindRoomRecent(ctx context.Context, toId, roomId, after gocql.UUID, limit int) (messages []projection.Message, reset bool, err error)
+	FindRoomHistory(ctx context.Context, toId, roomId, cursor gocql.UUID, limit int) ([]projection.Message, error)
 	SetFilepath(ctx context.Context, key string, filenames []string) error
 	HasFilepath(ctx context.Context, key string, filenames []string) (bool, error)
 	RemoveFilepath(ctx context.Context, key string, filenames []string) error
@@ -75,7 +75,6 @@ func NewRepository() Repository {
 		panic(err)
 	}
 
-	// message_by_chat_room and chat_room_by_to_id, which chat reads, are messagepersist's: it writes them, and creates them
 	err = session.Query(`CREATE TABLE IF NOT EXISTS profile_by_id (
     id uuid,
     name text,

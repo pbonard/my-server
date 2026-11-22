@@ -27,6 +27,9 @@ apps:
     totp: true
   # no calls on the web, and no turn secret in this namespace
   chat:
+    # messagepersist's below, keep the two the same
+    env:
+      MESSAGE_TTL: "0"
     turnSecret: false
     # holidayfriend-server asks chat's InviteService whether an invite goes through
     grpcService: true

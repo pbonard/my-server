@@ -31,7 +31,7 @@ func TestCheckInvite(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			s, d := newService(t)
 			d.repo.EXPECT().DidBlock(mock.Anything, gocql.UUID(otherId), gocql.UUID(memberId)).Return(true, nil)
-			d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId), gocql.UUID{}, gocql.UUID{}, 1).
+			d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId), gocql.UUID{}, 1).
 				Return(tt.newest, nil).Once()
 
 			res, err := s.CheckInvite(context.Background(), memberId, otherId)
@@ -45,7 +45,7 @@ func TestCheckInvite(t *testing.T) {
 func TestCheckInvite_failedLookup(t *testing.T) {
 	s, d := newService(t)
 	d.repo.EXPECT().DidBlock(mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errDB)
+	d.repo.EXPECT().FindRoomHistory(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errDB)
 
 	_, err := s.CheckInvite(context.Background(), memberId, otherId)
 

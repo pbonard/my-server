@@ -8,7 +8,9 @@ import (
 	"backend/common/producer"
 	"context"
 	"encoding/json"
+	"log"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
@@ -26,9 +28,8 @@ type Service interface {
 	ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error
 	BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error
 	GetBlockedConversations(ctx context.Context, memberId uuid.UUID) ([]dto.BlockReport, error)
-	GetRooms(ctx context.Context, id uuid.UUID) (*dto.GetRoomsResponse, error)
 	GetRecentMessages(ctx context.Context, id, cursor uuid.UUID) ([]dto.MessagingResponse, error)
-	GetRoomHistory(ctx context.Context, id, roomId, ahead, cursor uuid.UUID) ([]dto.MessagingResponse, error)
+	GetRoomHistory(ctx context.Context, id, roomId, cursor uuid.UUID) ([]dto.MessagingResponse, error)
 	PublishMessaging(ctx context.Context, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) (map[string]uuid.UUID, error)
 	GeneratePresignedURL(ctx context.Context, id uuid.UUID, contentType string, n int) (res []dto.GeneratePresignedURLResponse, err error)
 	GenerateSignedURL(ctx context.Context, memberId uuid.UUID, contentType string, filename uuid.UUID) (map[string]string, error)
@@ -49,8 +50,9 @@ type service struct {
 	// the app this chat runs for, read once: its topics are built from it
 	profile string
 	// the secret the turn app checks call credentials with, and its host
-	turnSecret string
-	turnRealm  string
+	turnSecret  string
+	turnRealm   string
+	recentLimit int
 }
 
 func NewService(r repository.Repository, kp producer.SyncProducer, storageClient client.StorageClient, cdnClient common.CDNClient) Service {
@@ -62,6 +64,13 @@ func NewService(r repository.Repository, kp producer.SyncProducer, storageClient
 		profile:       os.Getenv("PROFILE"),
 		turnSecret:    os.Getenv("TURN_SECRET"),
 		turnRealm:     os.Getenv("TURN_REALM"),
+	}
+	messageTTL, err := common.TTLSeconds(os.Getenv("MESSAGE_TTL"), 72*time.Hour)
+	if err != nil {
+		log.Panicf("fail to read MESSAGE_TTL: %v", err)
+	}
+	if messageTTL == 0 {
+		s.recentLimit = 20
 	}
 	return &s
 }

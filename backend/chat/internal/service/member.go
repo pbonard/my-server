@@ -43,8 +43,7 @@ func (s *service) CheckInvite(ctx context.Context, fromId, toId uuid.UUID) (*dto
 	if err != nil {
 		return nil, err
 	}
-	// a message shown in the chat, newer than any quit: the history stops at a quit, and skips deletes
-	newest, err := s.repository.FindRoomHistory(ctx, gocql.UUID(fromId), gocql.UUID(toId), gocql.UUID{}, gocql.UUID{}, 1)
+	newest, err := s.repository.FindRoomHistory(ctx, gocql.UUID(fromId), gocql.UUID(toId), gocql.UUID{}, 1)
 	if err != nil {
 		return nil, err
 	}
