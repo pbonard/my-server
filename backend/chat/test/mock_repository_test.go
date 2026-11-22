@@ -720,80 +720,6 @@ func (_c *MockRepository_FindProfileById_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
-// FindRecentMessagesByToId provides a mock function for the type MockRepository
-func (_mock *MockRepository) FindRecentMessagesByToId(ctx context.Context, id gocql.UUID, cursor gocql.UUID) ([]projection.FindMessagesByToIdAndId, error) {
-	ret := _mock.Called(ctx, id, cursor)
-
-	if len(ret) == 0 {
-		panic("no return value specified for FindRecentMessagesByToId")
-	}
-
-	var r0 []projection.FindMessagesByToIdAndId
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) ([]projection.FindMessagesByToIdAndId, error)); ok {
-		return returnFunc(ctx, id, cursor)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) []projection.FindMessagesByToIdAndId); ok {
-		r0 = returnFunc(ctx, id, cursor)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]projection.FindMessagesByToIdAndId)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r1 = returnFunc(ctx, id, cursor)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_FindRecentMessagesByToId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindRecentMessagesByToId'
-type MockRepository_FindRecentMessagesByToId_Call struct {
-	*mock.Call
-}
-
-// FindRecentMessagesByToId is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id gocql.UUID
-//   - cursor gocql.UUID
-func (_e *MockRepository_Expecter) FindRecentMessagesByToId(ctx any, id any, cursor any) *MockRepository_FindRecentMessagesByToId_Call {
-	return &MockRepository_FindRecentMessagesByToId_Call{Call: _e.mock.On("FindRecentMessagesByToId", ctx, id, cursor)}
-}
-
-func (_c *MockRepository_FindRecentMessagesByToId_Call) Run(run func(ctx context.Context, id gocql.UUID, cursor gocql.UUID)) *MockRepository_FindRecentMessagesByToId_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 gocql.UUID
-		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
-		}
-		var arg2 gocql.UUID
-		if args[2] != nil {
-			arg2 = args[2].(gocql.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_FindRecentMessagesByToId_Call) Return(result []projection.FindMessagesByToIdAndId, err error) *MockRepository_FindRecentMessagesByToId_Call {
-	_c.Call.Return(result, err)
-	return _c
-}
-
-func (_c *MockRepository_FindRecentMessagesByToId_Call) RunAndReturn(run func(ctx context.Context, id gocql.UUID, cursor gocql.UUID) ([]projection.FindMessagesByToIdAndId, error)) *MockRepository_FindRecentMessagesByToId_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // FindReportCountById provides a mock function for the type MockRepository
 func (_mock *MockRepository) FindReportCountById(ctx context.Context, reportedId gocql.UUID) (int, error) {
 	ret := _mock.Called(ctx, reportedId)
@@ -856,6 +782,252 @@ func (_c *MockRepository_FindReportCountById_Call) Return(count int, err error) 
 }
 
 func (_c *MockRepository_FindReportCountById_Call) RunAndReturn(run func(ctx context.Context, reportedId gocql.UUID) (int, error)) *MockRepository_FindReportCountById_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindRoomHistory provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindRoomHistory(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, ahead gocql.UUID, cursor gocql.UUID, limit int) ([]projection.Message, error) {
+	ret := _mock.Called(ctx, toId, roomId, ahead, cursor, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindRoomHistory")
+	}
+
+	var r0 []projection.Message
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, int) ([]projection.Message, error)); ok {
+		return returnFunc(ctx, toId, roomId, ahead, cursor, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, int) []projection.Message); ok {
+		r0 = returnFunc(ctx, toId, roomId, ahead, cursor, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]projection.Message)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, gocql.UUID, int) error); ok {
+		r1 = returnFunc(ctx, toId, roomId, ahead, cursor, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindRoomHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindRoomHistory'
+type MockRepository_FindRoomHistory_Call struct {
+	*mock.Call
+}
+
+// FindRoomHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - ahead gocql.UUID
+//   - cursor gocql.UUID
+//   - limit int
+func (_e *MockRepository_Expecter) FindRoomHistory(ctx any, toId any, roomId any, ahead any, cursor any, limit any) *MockRepository_FindRoomHistory_Call {
+	return &MockRepository_FindRoomHistory_Call{Call: _e.mock.On("FindRoomHistory", ctx, toId, roomId, ahead, cursor, limit)}
+}
+
+func (_c *MockRepository_FindRoomHistory_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, ahead gocql.UUID, cursor gocql.UUID, limit int)) *MockRepository_FindRoomHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		var arg4 gocql.UUID
+		if args[4] != nil {
+			arg4 = args[4].(gocql.UUID)
+		}
+		var arg5 int
+		if args[5] != nil {
+			arg5 = args[5].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindRoomHistory_Call) Return(messages []projection.Message, err error) *MockRepository_FindRoomHistory_Call {
+	_c.Call.Return(messages, err)
+	return _c
+}
+
+func (_c *MockRepository_FindRoomHistory_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, ahead gocql.UUID, cursor gocql.UUID, limit int) ([]projection.Message, error)) *MockRepository_FindRoomHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindRoomRecent provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindRoomRecent(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, after gocql.UUID, limit int) ([]projection.Message, error) {
+	ret := _mock.Called(ctx, toId, roomId, after, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindRoomRecent")
+	}
+
+	var r0 []projection.Message
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, int) ([]projection.Message, error)); ok {
+		return returnFunc(ctx, toId, roomId, after, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, int) []projection.Message); ok {
+		r0 = returnFunc(ctx, toId, roomId, after, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]projection.Message)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID, gocql.UUID, int) error); ok {
+		r1 = returnFunc(ctx, toId, roomId, after, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindRoomRecent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindRoomRecent'
+type MockRepository_FindRoomRecent_Call struct {
+	*mock.Call
+}
+
+// FindRoomRecent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+//   - roomId gocql.UUID
+//   - after gocql.UUID
+//   - limit int
+func (_e *MockRepository_Expecter) FindRoomRecent(ctx any, toId any, roomId any, after any, limit any) *MockRepository_FindRoomRecent_Call {
+	return &MockRepository_FindRoomRecent_Call{Call: _e.mock.On("FindRoomRecent", ctx, toId, roomId, after, limit)}
+}
+
+func (_c *MockRepository_FindRoomRecent_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, after gocql.UUID, limit int)) *MockRepository_FindRoomRecent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		var arg3 gocql.UUID
+		if args[3] != nil {
+			arg3 = args[3].(gocql.UUID)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindRoomRecent_Call) Return(messages []projection.Message, err error) *MockRepository_FindRoomRecent_Call {
+	_c.Call.Return(messages, err)
+	return _c
+}
+
+func (_c *MockRepository_FindRoomRecent_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID, after gocql.UUID, limit int) ([]projection.Message, error)) *MockRepository_FindRoomRecent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindRooms provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindRooms(ctx context.Context, toId gocql.UUID) ([]projection.Room, error) {
+	ret := _mock.Called(ctx, toId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindRooms")
+	}
+
+	var r0 []projection.Room
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) ([]projection.Room, error)); ok {
+		return returnFunc(ctx, toId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) []projection.Room); ok {
+		r0 = returnFunc(ctx, toId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]projection.Room)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, toId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindRooms_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindRooms'
+type MockRepository_FindRooms_Call struct {
+	*mock.Call
+}
+
+// FindRooms is a helper method to define mock.On call
+//   - ctx context.Context
+//   - toId gocql.UUID
+func (_e *MockRepository_Expecter) FindRooms(ctx any, toId any) *MockRepository_FindRooms_Call {
+	return &MockRepository_FindRooms_Call{Call: _e.mock.On("FindRooms", ctx, toId)}
+}
+
+func (_c *MockRepository_FindRooms_Call) Run(run func(ctx context.Context, toId gocql.UUID)) *MockRepository_FindRooms_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindRooms_Call) Return(rooms []projection.Room, err error) *MockRepository_FindRooms_Call {
+	_c.Call.Return(rooms, err)
+	return _c
+}
+
+func (_c *MockRepository_FindRooms_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID) ([]projection.Room, error)) *MockRepository_FindRooms_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -928,78 +1100,6 @@ func (_c *MockRepository_HasFilepath_Call) Return(b bool, err error) *MockReposi
 }
 
 func (_c *MockRepository_HasFilepath_Call) RunAndReturn(run func(ctx context.Context, key string, filenames []string) (bool, error)) *MockRepository_HasFilepath_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// HasRoomMessages provides a mock function for the type MockRepository
-func (_mock *MockRepository) HasRoomMessages(ctx context.Context, toId gocql.UUID, roomId gocql.UUID) (bool, error) {
-	ret := _mock.Called(ctx, toId, roomId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for HasRoomMessages")
-	}
-
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) (bool, error)); ok {
-		return returnFunc(ctx, toId, roomId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) bool); ok {
-		r0 = returnFunc(ctx, toId, roomId)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
-		r1 = returnFunc(ctx, toId, roomId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_HasRoomMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HasRoomMessages'
-type MockRepository_HasRoomMessages_Call struct {
-	*mock.Call
-}
-
-// HasRoomMessages is a helper method to define mock.On call
-//   - ctx context.Context
-//   - toId gocql.UUID
-//   - roomId gocql.UUID
-func (_e *MockRepository_Expecter) HasRoomMessages(ctx any, toId any, roomId any) *MockRepository_HasRoomMessages_Call {
-	return &MockRepository_HasRoomMessages_Call{Call: _e.mock.On("HasRoomMessages", ctx, toId, roomId)}
-}
-
-func (_c *MockRepository_HasRoomMessages_Call) Run(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID)) *MockRepository_HasRoomMessages_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 gocql.UUID
-		if args[1] != nil {
-			arg1 = args[1].(gocql.UUID)
-		}
-		var arg2 gocql.UUID
-		if args[2] != nil {
-			arg2 = args[2].(gocql.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_HasRoomMessages_Call) Return(b bool, err error) *MockRepository_HasRoomMessages_Call {
-	_c.Call.Return(b, err)
-	return _c
-}
-
-func (_c *MockRepository_HasRoomMessages_Call) RunAndReturn(run func(ctx context.Context, toId gocql.UUID, roomId gocql.UUID) (bool, error)) *MockRepository_HasRoomMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,22 +1,22 @@
 package service
 
 import (
+	"backend/messagepersist/internal/repository"
 	"context"
+	"encoding/binary"
 	"errors"
 	"log/slog"
-	"slices"
 	"sync"
 
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
 )
 
-// how many inbox rows a quit deletes in one batch: one partition, kept well under cassandra's batch size limit
-const deleteBatchSize = 100
-
-// PersistMessage saves the message in the inbox of each of toIds. a quit or delete first deletes what it removes in
-// the inbox, the room's older rows or the one it names, and is saved after it, so the sender's other devices still
-// learn of it on their sync. messagepreprocess sends those to the sender's inbox alone: they're "for me"
+// PersistMessage saves the message in the room of each of toIds' inboxes, and marks the room as changed (updated_id),
+// for catching up. a quit or delete first removes what it removes, the room's older rows or the one it names, and is
+// saved after it, so the sender's other devices still learn of it when they catch up. messagepreprocess sends those
+// to the sender's inbox alone: they're "for me". updated_id is written at the time in the message's id, so a retry
+// writes the same again, and an older message written late doesn't replace a newer one
 func (s *service) PersistMessage(
 	ctx context.Context,
 	id uuid.UUID,
@@ -33,67 +33,80 @@ func (s *service) PersistMessage(
 		es = append(es, err)
 		em.Unlock()
 	}
+	at := WriteTime(id)
 	for _, tid := range toIds {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			msg, to, from := gocql.UUID(id), gocql.UUID(tid), gocql.UUID(fromId)
+			to := gocql.UUID(tid)
 			room := gocql.UUID(roomId)
 			if tid == roomId {
-				room = from
+				room = gocql.UUID(fromId)
 			}
+			m := repository.Message{Id: gocql.UUID(id), FromId: gocql.UUID(fromId), ContentType: contentType, Contents: contents}
+			var err error
 			switch contentType {
 			case "quit":
-				ids, err := s.repository.FindRoomMessageIdsBefore(ctx, to, room, msg)
-				if err != nil {
-					fail(err)
-					return
-				}
-				for chunk := range slices.Chunk(ids, deleteBatchSize) {
-					if err = s.repository.DeleteMessages(ctx, to, chunk); err != nil {
-						fail(err)
-						return
-					}
-				}
-				if err = s.repository.DeleteRoomMessageIdsBefore(ctx, to, room, msg); err != nil {
-					fail(err)
-					return
-				}
-				if err = s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.DeleteTTL); err != nil {
-					fail(err)
-				}
+				err = s.persistQuit(ctx, to, room, m, at)
 			case "delete":
-				if len(contents) == 0 {
-					slog.Error("delete without the message id")
-					return
-				}
-				target, err := uuid.Parse(contents[0])
-				if err != nil {
-					slog.Error("fail to parse the deleted message id", "err", err, "content", contents[0])
-					return
-				}
-				if err = s.repository.DeleteMessage(ctx, to, gocql.UUID(target)); err != nil {
-					fail(err)
-					return
-				}
-				if err = s.repository.DeleteRoomMessageId(ctx, to, room, gocql.UUID(target)); err != nil {
-					fail(err)
-					return
-				}
-				if err = s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.DeleteTTL); err != nil {
-					fail(err)
-				}
+				err = s.persistDelete(ctx, to, room, m, at)
 			default:
-				if err := s.repository.SaveRoomMessageId(ctx, to, room, msg, s.config.MessageTTL); err != nil {
-					fail(err)
-					return
-				}
-				if err := s.repository.SaveMessage(ctx, msg, to, from, room, contentType, contents, s.config.MessageTTL); err != nil {
-					fail(err)
-				}
+				err = s.persistShown(ctx, to, room, m, at)
+			}
+			if err != nil {
+				fail(err)
 			}
 		}()
 	}
 	wg.Wait()
 	return errors.Join(es...)
+}
+
+// a row of the chat: a message, a block or unblock
+func (s *service) persistShown(ctx context.Context, to, room gocql.UUID, m repository.Message, at int64) error {
+	if err := s.repository.SaveMessage(ctx, to, room, m, s.config.MessageTTL); err != nil {
+		return err
+	}
+	return s.repository.TouchRoom(ctx, to, room, m.Id, s.updatedTTL, at)
+}
+
+// the room's older rows go with one range delete. the quit stays its oldest row: the chat list leaves the room out
+// until a new start comes after it
+func (s *service) persistQuit(ctx context.Context, to, room gocql.UUID, m repository.Message, at int64) error {
+	if err := s.repository.DeleteMessagesBefore(ctx, to, room, m.Id); err != nil {
+		return err
+	}
+	if err := s.repository.SaveMessage(ctx, to, room, m, s.config.DeleteTTL); err != nil {
+		return err
+	}
+	return s.repository.TouchRoom(ctx, to, room, m.Id, s.updatedTTL, at)
+}
+
+// the message it names goes
+func (s *service) persistDelete(ctx context.Context, to, room gocql.UUID, m repository.Message, at int64) error {
+	if len(m.Contents) == 0 {
+		slog.Error("delete without the message id")
+		return nil
+	}
+	target, err := uuid.Parse(m.Contents[0])
+	if err != nil {
+		slog.Error("fail to parse the deleted message id", "err", err, "content", m.Contents[0])
+		return nil
+	}
+	if err = s.repository.DeleteMessage(ctx, to, room, gocql.UUID(target)); err != nil {
+		return err
+	}
+	if err = s.repository.SaveMessage(ctx, to, room, m, s.config.DeleteTTL); err != nil {
+		return err
+	}
+	return s.repository.TouchRoom(ctx, to, room, m.Id, s.updatedTTL, at)
+}
+
+// WriteTime is the time in a v7 id, in microseconds as cassandra's write times are: its milliseconds, and the 12 bits
+// after the version, where google/uuid keeps the time within the millisecond, spread over its microseconds
+func WriteTime(id uuid.UUID) int64 {
+	var ms [8]byte
+	copy(ms[2:], id[:6])
+	sub := int64(binary.BigEndian.Uint16(id[6:8]) & 0x0fff)
+	return int64(binary.BigEndian.Uint64(ms[:]))*1000 + sub*1000>>12
 }

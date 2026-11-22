@@ -23,6 +23,13 @@ type MessagingResponse struct {
 	Contents    []string  `json:"contents"`
 }
 
+// GetRoomsResponse is the chat list of a device that has none of it yet: each room's newest messages, room by room,
+// each room's newest first (the device puts them in order), and the cursor it catches up from afterwards
+type GetRoomsResponse struct {
+	Cursor   uuid.UUID           `json:"cursor"`
+	Messages []MessagingResponse `json:"messages"`
+}
+
 type GetChatRoomInfoResponse struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
