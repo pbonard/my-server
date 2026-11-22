@@ -240,7 +240,6 @@ func TestGetChatParticipants_skipsZeroIds(t *testing.T) {
 	assert.Equal(t, memberId, res[0].Id)
 }
 
-// v7 ids at times from now: ids sort as their times do
 func idAt(d time.Duration) uuid.UUID {
 	id := uuid.Must(uuid.NewV7())
 	ms := uint64(time.Now().Add(d).UnixMilli())
@@ -251,50 +250,6 @@ func idAt(d time.Duration) uuid.UUID {
 	return id
 }
 
-// each room's newest messages, room by room as they're read, unsorted: the device puts them in order. a room with none
-// left (quit, expired, all deleted) has none
-func TestGetRooms_newestMessagesOfEachRoomAsRead(t *testing.T) {
-	s, d := newService(t)
-	older, newer := idAt(-time.Hour), idAt(-time.Minute)
-	room2, emptyRoom := uuid.New(), uuid.New()
-	d.repo.EXPECT().FindRooms(mock.Anything, gocql.UUID(memberId)).Return([]projection.Room{
-		{RoomId: gocql.UUID(room2), UpdatedId: gocql.UUID(newer)},
-		{RoomId: gocql.UUID(emptyRoom), UpdatedId: gocql.UUID(newer)},
-		{RoomId: gocql.UUID(roomId), UpdatedId: gocql.UUID(older)},
-	}, nil)
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), gocql.UUID{}, gocql.UUID{}, 20).
-		Return([]projection.Message{{Id: gocql.UUID(older), FromId: gocql.UUID(otherId), ContentType: "text", Contents: []string{"hi"}}}, nil)
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(emptyRoom), gocql.UUID{}, gocql.UUID{}, 20).
-		Return([]projection.Message{}, nil)
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(room2), gocql.UUID{}, gocql.UUID{}, 20).
-		Return([]projection.Message{{Id: gocql.UUID(newer), FromId: gocql.UUID(memberId), ContentType: "text", Contents: []string{"yo"}}}, nil)
-	start := idAt(0)
-
-	res, err := s.GetRooms(context.Background(), memberId)
-
-	require.NoError(t, err)
-	require.Len(t, res.Messages, 2)
-	assert.Equal(t, newer, res.Messages[0].Id)
-	assert.Equal(t, room2, res.Messages[0].RoomId)
-	assert.Equal(t, older, res.Messages[1].Id)
-	assert.Equal(t, roomId, res.Messages[1].RoomId)
-	assert.Equal(t, otherId, res.Messages[1].FromId)
-	// the cursor is taken as they're read, past every room's newest
-	assert.GreaterOrEqual(t, res.Cursor.String()[:13], start.String()[:13])
-}
-
-func TestGetRooms_failedRead(t *testing.T) {
-	s, d := newService(t)
-	d.repo.EXPECT().FindRooms(mock.Anything, gocql.UUID(memberId)).Return([]projection.Room{{RoomId: gocql.UUID(roomId)}}, nil)
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errDB)
-
-	_, err := s.GetRooms(context.Background(), memberId)
-
-	assert.ErrorIs(t, err, errDB)
-}
-
-// only the rooms that changed after a little before the cursor are read, each for its newest 20 and every quit and
-// delete, and the rows come room by room as they're read, unsorted: the device puts them in order
 func TestGetRecentMessages_readsTheRoomsThatChanged(t *testing.T) {
 	s, d := newService(t)
 	cursor := idAt(-time.Minute)
@@ -306,14 +261,14 @@ func TestGetRecentMessages_readsTheRoomsThatChanged(t *testing.T) {
 		{RoomId: gocql.UUID(uuid.New()), UpdatedId: gocql.UUID(idAt(-time.Hour))},
 	}, nil)
 	var after gocql.UUID
-	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), mock.Anything, 20).
+	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), mock.Anything, 0).
 		Run(func(_ context.Context, _, _ gocql.UUID, a gocql.UUID, _ int) { after = a }).
 		Return([]projection.Message{
 			{Id: gocql.UUID(m3), FromId: gocql.UUID(otherId), ContentType: "text", Contents: []string{"3"}},
 			{Id: gocql.UUID(m1), FromId: gocql.UUID(otherId), ContentType: "text", Contents: []string{"1"}},
-		}, nil)
-	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(room2), mock.Anything, 20).
-		Return([]projection.Message{{Id: gocql.UUID(m2), FromId: gocql.UUID(memberId), ContentType: "quit"}}, nil)
+		}, false, nil)
+	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(room2), mock.Anything, 0).
+		Return([]projection.Message{{Id: gocql.UUID(m2), FromId: gocql.UUID(memberId), ContentType: "quit"}}, false, nil)
 
 	res, err := s.GetRecentMessages(context.Background(), memberId, cursor)
 
@@ -322,20 +277,77 @@ func TestGetRecentMessages_readsTheRoomsThatChanged(t *testing.T) {
 	assert.Equal(t, []uuid.UUID{m3, m1, m2}, []uuid.UUID{res[0].Id, res[1].Id, res[2].Id})
 	assert.Equal(t, roomId, res[0].RoomId)
 	assert.Equal(t, room2, res[2].RoomId)
-	// from 10 seconds before the cursor, a v7 id
 	assert.Equal(t, byte(0x70), after[6])
 	assert.Less(t, string(after[:6]), string(cursor[:6]))
 	earliest := idAt(-time.Minute - 11*time.Second)
 	assert.Greater(t, string(after[:6]), string(earliest[:6]))
 }
 
+func TestGetRecentMessages_keptForGoodResetsARoomWithMore(t *testing.T) {
+	t.Setenv("MESSAGE_TTL", "0")
+	s, d := newService(t)
+	newest, oldestKept, deleted := idAt(-time.Second), idAt(-2*time.Second), idAt(-3*time.Second)
+	d.repo.EXPECT().FindRooms(mock.Anything, gocql.UUID(memberId)).
+		Return([]projection.Room{{RoomId: gocql.UUID(roomId), UpdatedId: gocql.UUID(newest)}}, nil)
+	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), mock.Anything, 20).
+		Return([]projection.Message{
+			{Id: gocql.UUID(newest), ContentType: "text"},
+			{Id: gocql.UUID(oldestKept), ContentType: "text"},
+			{Id: gocql.UUID(deleted), ContentType: "delete"},
+		}, true, nil)
+
+	res, err := s.GetRecentMessages(context.Background(), memberId, idAt(-time.Hour))
+
+	require.NoError(t, err)
+	require.Len(t, res, 4)
+	reset := res[0]
+	assert.Equal(t, "reset", reset.ContentType)
+	assert.Equal(t, roomId, reset.RoomId)
+	assert.Empty(t, reset.Contents)
+	assert.Equal(t, uuid.Nil, reset.Id)
+	assert.Equal(t, []uuid.UUID{newest, oldestKept, deleted}, []uuid.UUID{res[1].Id, res[2].Id, res[3].Id})
+	encoded, err := json.Marshal(res)
+	require.NoError(t, err)
+	var rows []map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &rows))
+	assert.NotContains(t, rows[0], "id")
+	assert.NotContains(t, rows[0], "fromId")
+	assert.Contains(t, rows[1], "id")
+}
+
+func TestGetRecentMessages_failedRead(t *testing.T) {
+	s, d := newService(t)
+	d.repo.EXPECT().FindRooms(mock.Anything, gocql.UUID(memberId)).
+		Return([]projection.Room{{RoomId: gocql.UUID(roomId), UpdatedId: gocql.UUID(idAt(0))}}, nil)
+	d.repo.EXPECT().FindRoomRecent(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, false, errDB)
+
+	_, err := s.GetRecentMessages(context.Background(), memberId, idAt(-time.Hour))
+
+	assert.ErrorIs(t, err, errDB)
+}
+
+func TestGetRecentMessages_keptForGoodNoResetWhenNoneLeftOut(t *testing.T) {
+	t.Setenv("MESSAGE_TTL", "0")
+	s, d := newService(t)
+	d.repo.EXPECT().FindRooms(mock.Anything, gocql.UUID(memberId)).
+		Return([]projection.Room{{RoomId: gocql.UUID(roomId), UpdatedId: gocql.UUID(idAt(0))}}, nil)
+	d.repo.EXPECT().FindRoomRecent(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), mock.Anything, 20).
+		Return([]projection.Message{{Id: gocql.UUID(idAt(0)), ContentType: "text"}}, false, nil)
+
+	res, err := s.GetRecentMessages(context.Background(), memberId, idAt(-time.Hour))
+
+	require.NoError(t, err)
+	require.Len(t, res, 1)
+	assert.Equal(t, "text", res[0].ContentType)
+}
+
 func TestGetRoomHistory_mapsRowsWithTheRoom(t *testing.T) {
 	s, d := newService(t)
-	ahead, cursor, msgId := uuid.New(), uuid.New(), uuid.New()
-	d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), gocql.UUID(ahead), gocql.UUID(cursor), 30).
+	cursor, msgId := uuid.New(), uuid.New()
+	d.repo.EXPECT().FindRoomHistory(mock.Anything, gocql.UUID(memberId), gocql.UUID(roomId), gocql.UUID(cursor), 30).
 		Return([]projection.Message{{Id: gocql.UUID(msgId), FromId: gocql.UUID(otherId), ContentType: "text", Contents: []string{"hi"}}}, nil)
 
-	res, err := s.GetRoomHistory(context.Background(), memberId, roomId, ahead, cursor)
+	res, err := s.GetRoomHistory(context.Background(), memberId, roomId, cursor)
 
 	require.NoError(t, err)
 	require.Len(t, res, 1)

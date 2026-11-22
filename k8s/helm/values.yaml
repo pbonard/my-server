@@ -48,6 +48,10 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
+    env:
+      # messagepersist's, keep the two the same: messages that expire, a device catches up on all of them; kept for
+      # good ("0"), each chat's newest, the gap below them filled as it's scrolled
+      MESSAGE_TTL: "720h"
     image: "backend/chat:200f6ea"
     port: 8080
     routePath: /chat

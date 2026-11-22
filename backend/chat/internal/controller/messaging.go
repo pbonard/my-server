@@ -12,7 +12,6 @@ import (
 
 func messagingRouter(c *Controller) {
 	c.Router(GET, "/chat/messaging/connect", c.connectMessaging)
-	c.Router(GET, "/chat/messaging/rooms", c.getRooms)
 	c.Router(GET, "/chat/messaging/recent", c.getRecentMessages)
 	c.Router(GET, "/chat/messaging/history", c.getRoomHistory)
 	c.Router(POST, "/chat/messaging/send", c.sendMessaging)
@@ -71,28 +70,6 @@ func (c *Controller) getRecentMessages(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Controller) getRooms(w http.ResponseWriter, r *http.Request) {
-	memberId, err := uuid.Parse(r.Header.Get("X-User-Id"))
-	if err != nil {
-		handleError(w, errors.New("fail to parse"))
-		return
-	}
-	result, err := c.service.GetRooms(r.Context(), memberId)
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(result)
-	if err != nil {
-		slog.Error("fail to write response body", "err", err)
-	}
-}
-
-// getRoomHistory is a page of a room's messages, newest first, between two message ids: roomId, ahead (the oldest the
-// device shows, its messages are older: the newest when it's left out) and cursor (the next one the device has below
-// it, its messages are newer: any when it's left out), to find a gap. the page size is the server's, an empty page
-// means there's none more
 func (c *Controller) getRoomHistory(w http.ResponseWriter, r *http.Request) {
 	memberId, err := uuid.Parse(r.Header.Get("X-User-Id"))
 	if err != nil {
@@ -105,15 +82,7 @@ func (c *Controller) getRoomHistory(w http.ResponseWriter, r *http.Request) {
 		handleError(w, errors.New("bad request"))
 		return
 	}
-	// uuid.Nil: none given
-	var ahead, cursor uuid.UUID
-	if raw := query.Get("ahead"); raw != "" {
-		ahead, err = uuid.Parse(raw)
-		if err != nil {
-			handleError(w, errors.New("bad request"))
-			return
-		}
-	}
+	var cursor uuid.UUID
 	if raw := query.Get("cursor"); raw != "" {
 		cursor, err = uuid.Parse(raw)
 		if err != nil {
@@ -121,7 +90,7 @@ func (c *Controller) getRoomHistory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	result, err := c.service.GetRoomHistory(r.Context(), memberId, roomId, ahead, cursor)
+	result, err := c.service.GetRoomHistory(r.Context(), memberId, roomId, cursor)
 	if err != nil {
 		handleError(w, err)
 		return

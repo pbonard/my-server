@@ -16,18 +16,11 @@ type SendMessagingRequest struct {
 }
 
 type MessagingResponse struct {
-	Id          uuid.UUID `json:"id"`
+	Id          uuid.UUID `json:"id,omitzero"`
 	RoomId      uuid.UUID `json:"roomId"`
-	FromId      uuid.UUID `json:"fromId"`
+	FromId      uuid.UUID `json:"fromId,omitzero"`
 	ContentType string    `json:"contentType"`
 	Contents    []string  `json:"contents"`
-}
-
-// GetRoomsResponse is the chat list of a device that has none of it yet: each room's newest messages, room by room,
-// each room's newest first (the device puts them in order), and the cursor it catches up from afterwards
-type GetRoomsResponse struct {
-	Cursor   uuid.UUID           `json:"cursor"`
-	Messages []MessagingResponse `json:"messages"`
 }
 
 type GetChatRoomInfoResponse struct {
