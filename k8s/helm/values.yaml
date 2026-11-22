@@ -48,7 +48,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   chat:
-    image: "backend/chat:200f6ea"
+    image: "backend/chat:52c9b2a"
     port: 8080
     routePath: /chat
     authentication: false
@@ -102,7 +102,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:af6ab9b"
+    image: "backend/messagepersist:52c9b2a"
     port: 8080
     routePath: false
     env:
