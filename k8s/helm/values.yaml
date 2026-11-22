@@ -52,7 +52,7 @@ apps:
       # messagepersist's, keep the two the same: messages that expire, a device catches up on all of them; kept for
       # good ("0"), each chat's newest, the gap below them filled as it's scrolled
       MESSAGE_TTL: "720h"
-    image: "backend/chat:200f6ea"
+    image: "backend/chat:c476a68"
     port: 8080
     routePath: /chat
     authentication: false
@@ -106,7 +106,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:52c9b2a"
+    image: "backend/messagepersist:c476a68"
     port: 8080
     routePath: false
     env:
