@@ -27,7 +27,7 @@ circuitBreaker:
 
 apps:
   auth:
-    image: "backend/auth:d492199"
+    image: "backend/auth:74350fc"
     port: 8080
     routePath: /auth
     authentication: true
@@ -52,7 +52,7 @@ apps:
       # messagepersist's, keep the two the same: messages that expire, a device catches up on all of them; kept for
       # good ("0"), each chat's newest, the gap below them filled as it's scrolled
       MESSAGE_TTL: "720h"
-    image: "backend/chat:c476a68"
+    image: "backend/chat:74350fc"
     port: 8080
     routePath: /chat
     authentication: false
@@ -88,7 +88,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   fcmnotification:
-    image: "backend/fcmnotification:af6ab9b"
+    image: "backend/fcmnotification:74350fc"
     port: 8080
     routePath: false
     authentication: false
@@ -106,7 +106,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepersist:
-    image: "backend/messagepersist:c476a68"
+    image: "backend/messagepersist:74350fc"
     port: 8080
     routePath: false
     env:
@@ -129,7 +129,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagepreprocess:
-    image: "backend/messagepreprocess:af6ab9b"
+    image: "backend/messagepreprocess:74350fc"
     port: 8080
     routePath: false
     authentication: false
@@ -147,7 +147,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   messagerelay:
-    image: "backend/messagerelay:af6ab9b"
+    image: "backend/messagerelay:74350fc"
     port: 8080
     routePath: false
     authentication: false
@@ -165,7 +165,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   notification:
-    image: "backend/notification:af6ab9b"
+    image: "backend/notification:74350fc"
     port: 8080
     routePath: /notification
     authentication: false
@@ -183,7 +183,7 @@ apps:
 #    cpuLimits: "0.1"
 #    memoryLimits: "10Mi"
   signalrelay:
-    image: "backend/signalrelay:af6ab9b"
+    image: "backend/signalrelay:74350fc"
     port: 8080
     routePath: false
     authentication: false
@@ -221,7 +221,7 @@ apps:
     memoryRequests: "384Mi"
     memoryLimits: "448Mi"
   turn:
-    image: "backend/turn:af6ab9b"
+    image: "backend/turn:74350fc"
     port: 3478
     routePath: false
     turn: true
@@ -286,7 +286,7 @@ flink:
     # position when it has no checkpoint. adding or removing a table changes the ids of its operators, so their state
     # can't be restored and the job fails to start: such a change needs a clean start (delete the job and its state)
     cdc-job:
-      image: flink/cdcjob:156fcb0
+      image: flink/cdcjob:74350fc
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
