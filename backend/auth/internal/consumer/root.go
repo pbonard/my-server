@@ -5,7 +5,6 @@ import (
 	"backend/common"
 	"backend/common/producer"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -120,15 +120,13 @@ func (c *Consumer) distinguishMessage(ctx context.Context, message *sarama.Consu
 			break
 		}
 	}
-	var e common.AuthEvent
-	err := json.Unmarshal(message.Value, &e)
+	id, err := uuid.FromBytes(message.Key)
 	if err != nil {
-		slog.Error("fail to unmarshal payload value",
+		slog.Error("fail to parse the member from the key",
 			"err", err,
-			"payload.Value", message.Value)
+			"key", message.Key)
 		return nil
 	}
-	id := e.Id
 	switch taskType {
 	case common.AuthTaskBan:
 		err = c.service.BanMember(ctx, id)

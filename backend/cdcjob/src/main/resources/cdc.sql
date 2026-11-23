@@ -261,6 +261,33 @@ CREATE TEMPORARY TABLE holidayfriend_chat_message_sink (
     'value.fields-include' = 'EXCEPT_KEY'
 ) LIKE kafka_sink_base (EXCLUDING ALL OVERWRITING OPTIONS);
 
+CREATE TEMPORARY TABLE holidayfriend_auth_sink (
+    id      BYTES,
+    headers MAP<STRING, BYTES> METADATA,
+    ts      TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'topic' = 'holidayfriend.auth',
+    'key.format' = 'raw',
+    'key.fields' = 'id',
+    'value.format' = 'json',
+    'value.fields-include' = 'EXCEPT_KEY'
+) LIKE kafka_sink_base (EXCLUDING ALL OVERWRITING OPTIONS);
+
+CREATE TEMPORARY TABLE holidayfriend_sink (
+    id      BYTES,
+    payload STRING,
+    headers MAP<STRING, BYTES> METADATA,
+    ts      TIMESTAMP_LTZ(3) METADATA FROM 'timestamp'
+) WITH (
+    'connector' = 'kafka',
+    'topic' = 'holidayfriend',
+    'key.format' = 'raw',
+    'key.fields' = 'id',
+    'value.format' = 'raw',
+    'value.fields-include' = 'EXCEPT_KEY'
+) LIKE kafka_sink_base (EXCLUDING ALL OVERWRITING OPTIONS);
+
 -- ------------------------------------------------------------
 -- pipelines, submitted together as one job
 -- ------------------------------------------------------------
@@ -335,3 +362,19 @@ SELECT BIN_TO_UUID(id), payload,
        op_ts
 FROM holidayfriend_outbox_source
 WHERE topic = 'chat-message';
+
+INSERT INTO holidayfriend_auth_sink
+SELECT id,
+       CASE WHEN task_type IS NULL THEN CAST(NULL AS MAP<STRING, BYTES>)
+            ELSE MAP['taskType', ENCODE(task_type, 'UTF-8')] END,
+       op_ts
+FROM holidayfriend_outbox_source
+WHERE topic = 'auth';
+
+INSERT INTO holidayfriend_sink
+SELECT id, payload,
+       CASE WHEN task_type IS NULL THEN CAST(NULL AS MAP<STRING, BYTES>)
+            ELSE MAP['taskType', ENCODE(task_type, 'UTF-8')] END,
+       op_ts
+FROM holidayfriend_outbox_source
+WHERE topic = 'holidayfriend';

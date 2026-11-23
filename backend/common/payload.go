@@ -45,13 +45,6 @@ const TaskTypeHeader = "taskType"
 // AuthTaskBan is the taskType of an AuthEvent that bans a member: auth deletes their account and bans their phone number
 const AuthTaskBan = "ban"
 
-// AuthEvent is a request to the auth of one app, on the topic "<keyspace>.auth" (production.auth, holidayfriend.auth),
-// with what it asks for in the taskType header. the topic and not a field says the app, so an auth never sees the
-// members of another
-type AuthEvent struct {
-	Id uuid.UUID `json:"id"`
-}
-
 // AuthTopic is the topic of the auth of the app on the keyspace, the PROFILE env of a service
 func AuthTopic(keyspace string) string {
 	return keyspace + ".auth"
