@@ -54,15 +54,10 @@ func TestReportUser(t *testing.T) {
 		s, d := newService(t)
 		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId)).Return(nil)
 		d.repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(otherId)).Return(6, nil)
-		var published []byte
 		ban := []sarama.RecordHeader{{Key: []byte("taskType"), Value: []byte("ban")}}
-		d.producer.EXPECT().Commit("holidayfriend.auth", otherId[:], mock.Anything, ban).
-			Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { published = value }).Return(nil)
+		d.producer.EXPECT().Commit("holidayfriend.auth", otherId[:], []byte(nil), ban).Return(nil)
 
 		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
-		var e common.AuthEvent
-		require.NoError(t, json.Unmarshal(published, &e))
-		assert.Equal(t, common.AuthEvent{Id: otherId}, e)
 	})
 	t.Run("a failed publish is returned", func(t *testing.T) {
 		t.Setenv("PROFILE", "production")

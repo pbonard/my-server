@@ -82,9 +82,8 @@ func (s *service) ReportUser(ctx context.Context, reporterId, reportedId uuid.UU
 		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of this chat's
 		// app, its PROFILE, so an auth only ever gets its own members. keyed by the member so their events stay ordered.
 		// a report past the limit asks again, auth finds the account already gone
-		p := common.Marshal(common.AuthEvent{Id: reportedId})
 		headers := []sarama.RecordHeader{{Key: []byte(common.TaskTypeHeader), Value: []byte(common.AuthTaskBan)}}
-		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], p, headers)
+		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], nil, headers)
 		if err != nil {
 			return err
 		}
