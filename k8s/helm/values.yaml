@@ -286,7 +286,7 @@ flink:
     # start at the current vitess position when it has no checkpoint. a table added last keeps the ids of the other
     # sources but not of the sinks, so it starts from a savepoint with allowNonRestoredState
     cdc-job:
-      image: flink/cdcjob:74350fc
+      image: flink/cdcjob:d1e615e
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
