@@ -121,3 +121,61 @@ func TestConnectMessaging_oldSocketEndingAfterReconnectKeepsTheNewOne(t *testing
 	require.NoError(t, err)
 	assert.Contains(t, string(data), `"hi"`)
 }
+
+// a client that stops reading, as its buffers are full: others still get their messages and can connect meanwhile,
+// and the relay ends before messagerelay gives up on every member of the call
+func TestRelayMessaging_clientThatStopsReadingFailsAlone(t *testing.T) {
+	svc := NewMockService(t)
+	svc.EXPECT().SetServerIP(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	svc.EXPECT().RemoveServerIP(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
+	mux := http.NewServeMux()
+	c := controller.NewController(svc, mux)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Set("X-User-Id", r.URL.Query().Get("member"))
+		mux.ServeHTTP(w, r)
+	}))
+	t.Cleanup(srv.Close)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	stuckId, healthyId, lateId := uuid.New(), uuid.New(), uuid.New()
+	roomId, fromId := uuid.New(), uuid.New()
+	relay := func(content string, toIds ...uuid.UUID) [][]byte {
+		var raw [][]byte
+		for _, id := range toIds {
+			raw = append(raw, id[:])
+		}
+		pushToIds, err := c.RelayMessaging(ctx, uuid.New(), raw, roomId, fromId, "text", []string{content})
+		assert.NoError(t, err)
+		return pushToIds
+	}
+	// returns once a message reaches the new connection
+	connect := func(id uuid.UUID) *websocket.Conn {
+		url := "ws" + strings.TrimPrefix(srv.URL, "http") + "/chat/messaging/connect?member=" + id.String() + "&deviceId=" + uuid.NewString()
+		conn, _, err := websocket.Dial(ctx, url, nil)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = conn.CloseNow() })
+		conn.SetReadLimit(-1)
+		require.Eventually(t, func() bool { return len(relay("hi", id)) == 0 }, time.Second, 10*time.Millisecond)
+		return conn
+	}
+	connect(stuckId)
+	healthy := connect(healthyId)
+	go func() {
+		for {
+			if _, _, err := healthy.Read(ctx); err != nil {
+				return
+			}
+		}
+	}()
+
+	start := time.Now()
+	relayed := make(chan [][]byte, 1)
+	go func() { relayed <- relay(strings.Repeat("a", 32<<20), stuckId, healthyId) }()
+	time.Sleep(500 * time.Millisecond)
+	connect(lateId)
+	require.Empty(t, relayed, "the stuck client wasn't stuck")
+	assert.Less(t, time.Since(start), 1500*time.Millisecond, "connecting waited for the stuck client")
+
+	assert.Equal(t, [][]byte{stuckId[:]}, <-relayed)
+	assert.Less(t, time.Since(start), 4*time.Second)
+}
