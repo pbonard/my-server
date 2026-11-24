@@ -155,6 +155,16 @@ CREATE TEMPORARY TABLE holidayfriend_outbox_source (
     'insert-only' = 'true'
 ) LIKE vitess_source_base (EXCLUDING ALL OVERWRITING OPTIONS);
 
+-- only which post changed: holidayfriend-server reads the post itself, with its places, to index it
+CREATE TEMPORARY TABLE holidayfriend_post_source (
+    id BYTES,
+    op_ts TIMESTAMP_LTZ(3) METADATA FROM 'op_ts' VIRTUAL
+) WITH (
+    'keyspace' = 'holidayfriend',
+    'table-name' = 'holidayfriend.post',
+    'name' = 'holidayfriend_post'
+) LIKE vitess_source_base (EXCLUDING ALL OVERWRITING OPTIONS);
+
 -- ------------------------------------------------------------
 -- sinks
 -- ------------------------------------------------------------
@@ -288,6 +298,18 @@ CREATE TEMPORARY TABLE holidayfriend_sink (
     'value.fields-include' = 'EXCEPT_KEY'
 ) LIKE kafka_sink_base (EXCLUDING ALL OVERWRITING OPTIONS);
 
+-- the key alone, a deleted post's value is null: keyed by the post id, so a post's changes stay in order
+CREATE TEMPORARY TABLE holidayfriend_post_sink (
+    id      BYTES,
+    headers MAP<STRING, BYTES> METADATA,
+    ts      TIMESTAMP_LTZ(3) METADATA FROM 'timestamp',
+    PRIMARY KEY (id) NOT ENFORCED
+) WITH (
+    'topic' = 'holidayfriend',
+    'key.format' = 'raw',
+    'value.fields-include' = 'EXCEPT_KEY'
+) LIKE kafka_sink_base (EXCLUDING ALL OVERWRITING OPTIONS);
+
 -- ------------------------------------------------------------
 -- pipelines, submitted together as one job
 -- ------------------------------------------------------------
@@ -378,3 +400,7 @@ SELECT id, payload,
        op_ts
 FROM holidayfriend_outbox_source
 WHERE topic = 'holidayfriend';
+
+INSERT INTO holidayfriend_post_sink
+SELECT id, MAP['taskType', ENCODE('index-post', 'UTF-8')], op_ts
+FROM holidayfriend_post_source;

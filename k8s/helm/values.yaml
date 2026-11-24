@@ -282,15 +282,17 @@ flink:
     VITESS_VTGATE_GRPC_PORT: "15999"
   jobs:
     # vitess changes to kafka: the conversation tables to conversation-cdc for search, and the outboxes of conversation
-    # and holidayfriend to their chat-message and scheduled-notification. its sources start at the current vitess
-    # position when it has no checkpoint. adding or removing a table changes the ids of its operators, so their state
-    # can't be restored and the job fails to start: such a change needs a clean start (delete the job and its state)
+    # and holidayfriend to their chat-message and scheduled-notification, and holidayfriend's changed posts. its sources
+    # start at the current vitess position when it has no checkpoint. a table added last keeps the ids of the other
+    # sources but not of the sinks, so it starts from a savepoint with allowNonRestoredState
     cdc-job:
       image: flink/cdcjob:74350fc
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
-      allowNonRestoredState: false
+      # for holidayfriend_post_source, back to last-state and false once it's deployed
+      upgradeMode: savepoint
+      allowNonRestoredState: true
       flinkConfiguration:
         # no keyed state (source offsets are operator state), so no rocksdb and no managed memory
         state.backend.type: hashmap
