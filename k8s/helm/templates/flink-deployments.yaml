@@ -72,6 +72,9 @@ spec:
     # current position and skips what was written while no job ran. state that doesn't fit fails the start
     initialSavepointPath: {{ . | quote }}
     {{- end }}
+    {{- if $job.allowNonRestoredState }}
+    allowNonRestoredState: true
+    {{- end }}
 {{- end }}
 ---
 apiVersion: v1
