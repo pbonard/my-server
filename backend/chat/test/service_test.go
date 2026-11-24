@@ -40,33 +40,32 @@ func newService(t *testing.T) (service.Service, deps) {
 
 // ---------------------------------------------------------------- report
 
+// messagepreprocess does the rest, so a report is one publish and touches nothing else
 func TestReportUser(t *testing.T) {
-	t.Run("up to 5 reports only records the report", func(t *testing.T) {
-		s, d := newService(t)
-		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId)).Return(nil)
-		d.repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(otherId)).Return(5, nil)
-
-		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
-	})
-	t.Run("more than 5 reports asks the auth of this chat's app to ban them", func(t *testing.T) {
-		// the chat of holidayfriend, so the auth of holidayfriend bans them
+	t.Run("publishes a report of the reporter to the topic of this chat's app", func(t *testing.T) {
 		t.Setenv("PROFILE", "holidayfriend")
 		s, d := newService(t)
-		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, gocql.UUID(memberId), gocql.UUID(otherId)).Return(nil)
-		d.repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(otherId)).Return(6, nil)
-		ban := []sarama.RecordHeader{{Key: []byte("taskType"), Value: []byte("ban")}}
-		d.producer.EXPECT().Commit("holidayfriend.auth", otherId[:], []byte(nil), ban).Return(nil)
+		var pushed []byte
+		d.producer.EXPECT().Commit("holidayfriend.chat-message", []byte(nil), mock.Anything, []sarama.RecordHeader(nil)).
+			Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil).Once()
 
-		assert.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
+		require.NoError(t, s.ReportUser(context.Background(), memberId, otherId))
+
+		var msg common.ChatMessage
+		require.NoError(t, json.Unmarshal(pushed, &msg))
+		assert.Equal(t, "report", msg.ContentType)
+		assert.Equal(t, memberId, msg.FromId)
+		assert.Equal(t, "personal", msg.ToIdType)
+		assert.Equal(t, otherId, msg.ToId)
+		assert.Empty(t, msg.Contents)
+		assert.True(t, msg.NoPush)
 	})
 	t.Run("a failed publish is returned", func(t *testing.T) {
-		t.Setenv("PROFILE", "production")
 		s, d := newService(t)
-		d.repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(nil)
-		d.repo.EXPECT().FindReportCountById(mock.Anything, mock.Anything).Return(6, nil)
-		d.producer.EXPECT().Commit("production.auth", mock.Anything, mock.Anything, mock.Anything).Return(errDB)
+		errKafka := errors.New("kafka down")
+		d.producer.EXPECT().Commit("chat-message", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
 
-		assert.ErrorIs(t, s.ReportUser(context.Background(), memberId, otherId), errDB)
+		assert.ErrorIs(t, s.ReportUser(context.Background(), memberId, otherId), errKafka)
 	})
 }
 

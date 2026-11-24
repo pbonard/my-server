@@ -227,6 +227,89 @@ func TestManageMessage_noPushIsCarriedToTheTopicOfThisApp(t *testing.T) {
 	assert.True(t, msg.NoPush)
 }
 
+func TestManageMessage_report(t *testing.T) {
+	ban := []sarama.RecordHeader{{Key: []byte("taskType"), Value: []byte("ban")}}
+	report := func(repo *MockRepository, producer *mocks.MockSyncProducer, toIdType string) error {
+		return service.NewService(repo, producer).
+			ManageMessage(context.Background(), msgId, fromId, toIdType, toId, "report", []string{}, true)
+	}
+
+	t.Run("blocks and records, and goes on as a block to the reporter alone", func(t *testing.T) {
+		repo := NewMockRepository(t)
+		producer := mocks.NewMockSyncProducer(t)
+		// not more than 5, so no ban
+		repo.EXPECT().AddBlock(mock.Anything, gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
+		repo.EXPECT().AddReporterIdByReportedId(mock.Anything, gocql.UUID(fromId), gocql.UUID(toId)).Return(nil)
+		repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(toId)).Return(5, nil)
+		var pushed []byte
+		producer.EXPECT().Commit("prepared-message", mock.Anything, mock.Anything, mock.Anything).
+			Run(func(_ string, _ []byte, value []byte, _ []sarama.RecordHeader) { pushed = value }).Return(nil).Once()
+
+		require.NoError(t, report(repo, producer, "personal"))
+
+		var msg common.PreparedMessage
+		require.NoError(t, json.Unmarshal(pushed, &msg))
+		assert.Equal(t, msgId, msg.Id)
+		assert.Equal(t, "block", msg.ContentType)
+		assert.Equal(t, []uuid.UUID{fromId}, msg.ToIds)
+		assert.Equal(t, fromId, msg.FromId)
+		assert.Equal(t, toId, msg.RoomId)
+		assert.True(t, msg.NoPush)
+	})
+	t.Run("more than 5 reports asks the auth of this app to ban them", func(t *testing.T) {
+		t.Setenv("PROFILE", "holidayfriend")
+		repo := NewMockRepository(t)
+		producer := mocks.NewMockSyncProducer(t)
+		repo.EXPECT().AddBlock(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().FindReportCountById(mock.Anything, gocql.UUID(toId)).Return(6, nil)
+		producer.EXPECT().Commit("holidayfriend.auth", toId[:], []byte(nil), ban).Return(nil).Once()
+		producer.EXPECT().Commit("holidayfriend.prepared-message", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+		assert.NoError(t, report(repo, producer, "personal"))
+	})
+	// returned, so the consumer retries the whole message
+	t.Run("a failed block is returned before anything else", func(t *testing.T) {
+		repo := NewMockRepository(t)
+		repo.EXPECT().AddBlock(mock.Anything, mock.Anything, mock.Anything).Return(errRepo)
+
+		assert.ErrorIs(t, report(repo, mocks.NewMockSyncProducer(t), "personal"), errRepo)
+	})
+	t.Run("a failed record is returned", func(t *testing.T) {
+		repo := NewMockRepository(t)
+		repo.EXPECT().AddBlock(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(errRepo)
+
+		assert.ErrorIs(t, report(repo, mocks.NewMockSyncProducer(t), "personal"), errRepo)
+	})
+	t.Run("a failed count is returned", func(t *testing.T) {
+		repo := NewMockRepository(t)
+		repo.EXPECT().AddBlock(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().FindReportCountById(mock.Anything, mock.Anything).Return(0, errRepo)
+
+		assert.ErrorIs(t, report(repo, mocks.NewMockSyncProducer(t), "personal"), errRepo)
+	})
+	t.Run("a failed ban publish is returned", func(t *testing.T) {
+		t.Setenv("PROFILE", "production")
+		repo := NewMockRepository(t)
+		producer := mocks.NewMockSyncProducer(t)
+		errKafka := errors.New("kafka down")
+		repo.EXPECT().AddBlock(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().AddReporterIdByReportedId(mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		repo.EXPECT().FindReportCountById(mock.Anything, mock.Anything).Return(6, nil)
+		producer.EXPECT().Commit("production.auth", mock.Anything, mock.Anything, mock.Anything).Return(errKafka)
+
+		assert.ErrorIs(t, report(repo, producer, "personal"), errKafka)
+	})
+	t.Run("one to a group is dropped, nobody in it gets it", func(t *testing.T) {
+		assert.NoError(t, report(NewMockRepository(t), mocks.NewMockSyncProducer(t), "group"))
+	})
+	t.Run("one to no known kind of room is dropped", func(t *testing.T) {
+		assert.NoError(t, report(NewMockRepository(t), mocks.NewMockSyncProducer(t), ""))
+	})
+}
+
 // errAny marks a case that must fail without caring which error it is
 var errAny = errors.New("any error")
 

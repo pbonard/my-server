@@ -22,6 +22,8 @@ type Repository interface {
 	IsBlocked(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) (bool, error)
 	AddBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error
 	RemoveBlock(ctx context.Context, blockerId gocql.UUID, blockedId gocql.UUID) error
+	AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error
+	FindReportCountById(ctx context.Context, reportedId gocql.UUID) (count int, err error)
 }
 
 type repository struct {

@@ -173,6 +173,69 @@ func (_c *MockRepository_AddParticipantId_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// AddReporterIdByReportedId provides a mock function for the type MockRepository
+func (_mock *MockRepository) AddReporterIdByReportedId(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error {
+	ret := _mock.Called(ctx, reporterId, reportedId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddReporterIdByReportedId")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID, gocql.UUID) error); ok {
+		r0 = returnFunc(ctx, reporterId, reportedId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockRepository_AddReporterIdByReportedId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddReporterIdByReportedId'
+type MockRepository_AddReporterIdByReportedId_Call struct {
+	*mock.Call
+}
+
+// AddReporterIdByReportedId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - reporterId gocql.UUID
+//   - reportedId gocql.UUID
+func (_e *MockRepository_Expecter) AddReporterIdByReportedId(ctx any, reporterId any, reportedId any) *MockRepository_AddReporterIdByReportedId_Call {
+	return &MockRepository_AddReporterIdByReportedId_Call{Call: _e.mock.On("AddReporterIdByReportedId", ctx, reporterId, reportedId)}
+}
+
+func (_c *MockRepository_AddReporterIdByReportedId_Call) Run(run func(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID)) *MockRepository_AddReporterIdByReportedId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		var arg2 gocql.UUID
+		if args[2] != nil {
+			arg2 = args[2].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_AddReporterIdByReportedId_Call) Return(err error) *MockRepository_AddReporterIdByReportedId_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockRepository_AddReporterIdByReportedId_Call) RunAndReturn(run func(ctx context.Context, reporterId gocql.UUID, reportedId gocql.UUID) error) *MockRepository_AddReporterIdByReportedId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateChatRoom provides a mock function for the type MockRepository
 func (_mock *MockRepository) CreateChatRoom(ctx context.Context, roomId gocql.UUID, memberId gocql.UUID, roomName string) error {
 	ret := _mock.Called(ctx, roomId, memberId, roomName)
@@ -306,6 +369,72 @@ func (_c *MockRepository_FindParticipantIds_Call) Return(uUIDs []gocql.UUID, err
 }
 
 func (_c *MockRepository_FindParticipantIds_Call) RunAndReturn(run func(ctx context.Context, roomId gocql.UUID) ([]gocql.UUID, error)) *MockRepository_FindParticipantIds_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindReportCountById provides a mock function for the type MockRepository
+func (_mock *MockRepository) FindReportCountById(ctx context.Context, reportedId gocql.UUID) (int, error) {
+	ret := _mock.Called(ctx, reportedId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindReportCountById")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) (int, error)); ok {
+		return returnFunc(ctx, reportedId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, gocql.UUID) int); ok {
+		r0 = returnFunc(ctx, reportedId)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, gocql.UUID) error); ok {
+		r1 = returnFunc(ctx, reportedId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_FindReportCountById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindReportCountById'
+type MockRepository_FindReportCountById_Call struct {
+	*mock.Call
+}
+
+// FindReportCountById is a helper method to define mock.On call
+//   - ctx context.Context
+//   - reportedId gocql.UUID
+func (_e *MockRepository_Expecter) FindReportCountById(ctx any, reportedId any) *MockRepository_FindReportCountById_Call {
+	return &MockRepository_FindReportCountById_Call{Call: _e.mock.On("FindReportCountById", ctx, reportedId)}
+}
+
+func (_c *MockRepository_FindReportCountById_Call) Run(run func(ctx context.Context, reportedId gocql.UUID)) *MockRepository_FindReportCountById_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 gocql.UUID
+		if args[1] != nil {
+			arg1 = args[1].(gocql.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_FindReportCountById_Call) Return(count int, err error) *MockRepository_FindReportCountById_Call {
+	_c.Call.Return(count, err)
+	return _c
+}
+
+func (_c *MockRepository_FindReportCountById_Call) RunAndReturn(run func(ctx context.Context, reportedId gocql.UUID) (int, error)) *MockRepository_FindReportCountById_Call {
 	_c.Call.Return(run)
 	return _c
 }

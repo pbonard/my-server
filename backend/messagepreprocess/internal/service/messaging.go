@@ -12,6 +12,16 @@ import (
 )
 
 func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdType string, toId uuid.UUID, contentType string, contents []string, noPush bool) error {
+	// a report blocks too, and is a block from here on: it goes to the reporter alone, so the isReport isn't told, and
+	// the apps show it as one. the send endpoint takes any type to any room, one to a group is dropped, not retried
+	isReport := contentType == "report"
+	if isReport {
+		if toIdType != "personal" {
+			slog.Warn("drop a report that isn't of a member", "fromId", fromId, "toIdType", toIdType, "toId", toId)
+			return nil
+		}
+		contentType = "block"
+	}
 	var toIds [][]byte
 	roomId := toId
 	if toIdType == "personal" {
@@ -28,6 +38,13 @@ func (s *service) ManageMessage(ctx context.Context, id, fromId uuid.UUID, toIdT
 	}
 	if contentType == "block" {
 		err := s.repository.AddBlock(ctx, gocql.UUID(fromId), gocql.UUID(toId))
+		if err != nil {
+			return err
+		}
+	}
+	// after the block, so the reporter is protected even when the rest keeps failing
+	if isReport {
+		err := s.reportUser(ctx, fromId, toId)
 		if err != nil {
 			return err
 		}

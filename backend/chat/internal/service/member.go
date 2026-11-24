@@ -4,9 +4,7 @@ import (
 	"backend/chat/internal/dto"
 	"backend/common"
 	"context"
-	"log"
 
-	"github.com/IBM/sarama"
 	gocql "github.com/apache/cassandra-gocql-driver/v2"
 	"github.com/google/uuid"
 )
@@ -68,27 +66,11 @@ func (s *service) GetChatParticipants(ctx context.Context, roomId uuid.UUID) ([]
 	return res, nil
 }
 
+// ReportUser publishes the report, once and nothing else, so it's never half done: messagepreprocess blocks the
+// reported for the reporter, records the report and has auth ban a member reported too many times, and retries it
 func (s *service) ReportUser(ctx context.Context, reporterId, reportedId uuid.UUID) error {
-	err := s.repository.AddReporterIdByReportedId(ctx, gocql.UUID(reporterId), gocql.UUID(reportedId))
-	if err != nil {
-		return err
-	}
-	rc, err := s.repository.FindReportCountById(ctx, gocql.UUID(reportedId))
-	if err != nil {
-		return err
-	}
-	log.Printf("report count of %v : %v", reportedId, rc)
-	if rc > 5 {
-		// the account and the banned phone numbers are auth's, so auth bans them. the topic of the auth of this chat's
-		// app, its PROFILE, so an auth only ever gets its own members. keyed by the member so their events stay ordered.
-		// a report past the limit asks again, auth finds the account already gone
-		headers := []sarama.RecordHeader{{Key: []byte(common.TaskTypeHeader), Value: []byte(common.AuthTaskBan)}}
-		err = s.producer.Commit(common.AuthTopic(s.profile), reportedId[:], nil, headers)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	_, err := s.PublishMessaging(ctx, reporterId, "personal", reportedId, "report", []string{}, true)
+	return err
 }
 
 func (s *service) BlockConversation(ctx context.Context, memberId, conversationId uuid.UUID) error {
