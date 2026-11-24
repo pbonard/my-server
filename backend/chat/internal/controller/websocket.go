@@ -8,8 +8,10 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"maps"
 	"net"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -22,6 +24,10 @@ import (
 // from there like an Authorization header, and chat answers with "bearer" alone, never the token, as the browser
 // requires one of the offered subprotocols back
 const bearerSubprotocol = "bearer"
+
+// relayWriteTimeout ends before messagerelay's 5 second call, so a client that stops reading fails alone and not
+// with every member of the call
+const relayWriteTimeout = 2 * time.Second
 
 func (c *Controller) connectMessaging(w http.ResponseWriter, r *http.Request) {
 	memberId, err := uuid.Parse(r.Header.Get("X-User-Id"))
@@ -161,36 +167,36 @@ func (c *Controller) RelayMessaging(
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.csMutex.RLock()
-			ct, ok := c.conns[uuid.UUID(toId)]
 			var sm sync.Mutex
 			var success bool
-			if ok {
-				var wg1 sync.WaitGroup
-				for _, cd := range ct {
-					wg1.Add(1)
-					go func() {
-						defer wg1.Done()
-						err1 := cd.Write(ctx, websocket.MessageText, r)
-						if err1 != nil {
-							slog.Error("fail to write payload",
-								"err", err1,
-							)
+			var wg1 sync.WaitGroup
+			for _, cd := range c.connsOf(uuid.UUID(toId)) {
+				wg1.Add(1)
+				go func() {
+					defer wg1.Done()
+					ctxw, cancel := context.WithTimeout(ctx, relayWriteTimeout)
+					defer cancel()
+					err1 := cd.Write(ctxw, websocket.MessageText, r)
+					if err1 != nil {
+						slog.Error("fail to write payload",
+							"err", err1,
+						)
+						// CloseNow waits for a close that is already running, the relay doesn't
+						go func() {
 							err2 := cd.CloseNow()
-							if err2 != nil {
+							if err2 != nil && !errors.Is(err2, net.ErrClosed) {
 								slog.Error("fail to close zombie connection", "err", err2)
 							}
-							return
-						}
-						sm.Lock()
-						success = true
-						sm.Unlock()
-					}()
-				}
-				wg1.Wait()
+						}()
+						return
+					}
+					sm.Lock()
+					success = true
+					sm.Unlock()
+				}()
 			}
-			c.csMutex.RUnlock()
-			if !ok || !success {
+			wg1.Wait()
+			if !success {
 				mu.Lock()
 				pushToIds = append(pushToIds, toId[:])
 				mu.Unlock()
@@ -200,4 +206,11 @@ func (c *Controller) RelayMessaging(
 	wg.Wait()
 
 	return pushToIds, nil
+}
+
+// connsOf copies the connections of the member, so csMutex isn't held while they are written to
+func (c *Controller) connsOf(memberId uuid.UUID) []*websocket.Conn {
+	c.csMutex.RLock()
+	defer c.csMutex.RUnlock()
+	return slices.Collect(maps.Values(c.conns[memberId]))
 }
