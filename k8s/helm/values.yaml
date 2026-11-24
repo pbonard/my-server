@@ -290,6 +290,7 @@ flink:
       jar: cdcjob.jar
       entryClass: cdcjob.CdcJob
       parallelism: 1
+      allowNonRestoredState: false
       flinkConfiguration:
         # no keyed state (source offsets are operator state), so no rocksdb and no managed memory
         state.backend.type: hashmap
