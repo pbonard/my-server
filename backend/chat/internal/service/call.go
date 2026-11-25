@@ -21,7 +21,7 @@ func (s *service) GenerateTurn() *dto.GetTurnResponse {
 	res := &dto.GetTurnResponse{
 		Uris: []string{
 			fmt.Sprintf("turn:%s:3478?transport=udp", s.turnRealm),
-			fmt.Sprintf("turn:%s:5349?transport=tcp", s.turnRealm),
+			fmt.Sprintf("turns:%s:5349?transport=tcp", s.turnRealm),
 		},
 		Username: fmt.Sprintf("%d", time.Now().Add(2*time.Hour).Unix()),
 	}

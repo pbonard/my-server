@@ -36,7 +36,7 @@ func TestGenerateTurn_credentialIsHmacOfExpiry(t *testing.T) {
 	assert.Equal(t, base64.StdEncoding.EncodeToString(mac.Sum(nil)), resp.Credential)
 	assert.Equal(t, []string{
 		"turn:turn.example.com:3478?transport=udp",
-		"turn:turn.example.com:5349?transport=tcp",
+		"turns:turn.example.com:5349?transport=tcp",
 	}, resp.Uris)
 }
 
