@@ -25,24 +25,26 @@ apps:
     twilio: false
     # the key that seals the secrets of authenticators
     totp: true
-  # no calls on the web, and no turn secret in this namespace
   chat:
     # messagepersist's below, keep the two the same
     env:
       MESSAGE_TTL: "0"
-    turnSecret: false
+    # the calls of the web app: the turn secret the reflector copies here (my-infra sealed-secret-turn.yaml), and
+    # TURN_REALM in holidayfriend-server's config-map. without the secret chat's pods don't start
+    turnSecret: true
     # holidayfriend-server asks chat's InviteService whether an invite goes through
     grpcService: true
   # holidayfriend keeps its chats for good, they start from an accepted invite and aren't throwaway
   messagepersist:
     env:
       MESSAGE_TTL: "0"
-  # chat, messagepreprocess, messagepersist and messagerelay as in values.yaml: a chat stack of holidayfriend's own, on
-  # its keyspace (PROFILE) and its own topics, "holidayfriend.chat-message" and "holidayfriend.prepared-message".
+  # chat, messagepreprocess, messagepersist, messagerelay and signalrelay as in values.yaml: a chat stack of
+  # holidayfriend's own, on its keyspace (PROFILE) and its own topics, "holidayfriend.chat-message",
+  # "holidayfriend.prepared-message" and "holidayfriend.conversation-signal".
   # no notification: the web app sends noPush, so messagerelay never hands a message on to be pushed
   expo-notification: null
   fcmnotification: null
   notification: null
-  signalrelay: null
   search: null
+  # the calls go through the mobile app's turn, it checks credentials with the same secret
   turn: null
